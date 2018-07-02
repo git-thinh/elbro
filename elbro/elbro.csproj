@@ -1468,6 +1468,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="LIB\Geckofx\Core\Readme.txt" />
+    <Content Include="LIB\Geckofx\Readme.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="LIB\Geckofx\Core\Generated\Components\" />
