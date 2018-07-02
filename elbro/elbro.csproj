@@ -41,6 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="app.cs" />
+    <Compile Include="FORM\fGeckFX.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="LIB\Geckofx\Core\AutoJSContext.cs" />
     <Compile Include="LIB\Geckofx\Core\BaseNsFactory.cs" />
     <Compile Include="LIB\Geckofx\Core\BaseTypes\AccessibleTextBoundary.cs" />
@@ -1351,7 +1354,6 @@
     </Compile>
     <Compile Include="LIB\Geckofx\Form\Utils\SaveImageElement.cs" />
     <Compile Include="LIB\Geckofx\Form\Utils\WindowsImageCreator.cs" />
-    <Compile Include="LIB\Geckofx\Main.cs" />
     <Compile Include="LIB\System.Linq\DeepCopy.Assign.cs" />
     <Compile Include="LIB\System.Linq\IsNumber.cs" />
     <Compile Include="LIB\System.Linq\LinqExt.cs" />

@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace appie
+namespace elbro
 {
     public class app {
 
@@ -61,6 +61,7 @@ namespace appie
             GeckoPreferences.User["gfx.font_rendering.graphite.enabled"] = true;
             GeckoPreferences.User["full-screen-api.enabled"] = true;
 
+            GeckoPreferences.User["media.navigator.permission.disabled"] = true;
 
             //////var settings = new Settings();
             ////////settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36";
@@ -84,7 +85,7 @@ namespace appie
             //Application.Run(new fMain());
             //Application.Run(new fEdit());
             //Application.Run(new fBrowser());
-            Application.Run(new GeckoFxTest.MyForm());
+            Application.Run(new fGeckFX());
         }
 
         //public static IFORM get_Main() {

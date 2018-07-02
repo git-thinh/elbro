@@ -1558,8 +1558,7 @@ namespace Gecko
 
 		#endregion		
 		
-		#region nsIWebProgressListener Members
-
+        ////??????????????????????????????????????????????????????
 		void nsIWebProgressListener.OnStateChange(nsIWebProgress aWebProgress, nsIRequest aRequest, uint aStateFlags, int aStatus) {
 			const int NS_BINDING_ABORTED = unchecked((int)0x804B0002);
 			
@@ -1586,7 +1585,50 @@ namespace Gecko
 				#region request parameters
 				Uri destUri = null;
 				Uri.TryCreate(request.Name, UriKind.Absolute, out destUri);
-				var domWindow = aWebProgress.GetDOMWindowAttribute().Wrap(x => new GeckoWindow(x));
+
+                ////////////////////////////////////////////////////////////////////
+                string url = destUri.ToString();
+
+                ////////if (url.Contains(".js") || url.Contains("/js/")
+                ////////    //|| url.Contains(brow_Domain) == false
+                ////////    || url.Contains("about:")
+                ////////    || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
+                ////////    || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+                ////////{
+                ////////    Debug.WriteLine("----> " + url);
+                ////////    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
+                ////////    return;
+                ////////}
+                ////////Debug.WriteLine(url);
+
+                // maybe we'll add another event here to allow users to cancel certain content types
+                //if ((aStateFlags & nsIWebProgressListenerConstants.STATE_TRANSFERRING) != 0)
+                //{
+                //      GeckoResponse rsp = new GeckoResponse(aRequest);
+                //      if (rsp.ContentType == "application/x-executable")
+                //      {
+                //            // do something
+                //      }
+                //}
+
+                //if (url.Contains(".js") || url.Contains("/js/"))
+                //{
+                //    Debug.WriteLine("----> " + url);
+
+
+                //    GeckoResponse res = new GeckoResponse(aRequest);
+                //    if (res.ContentType == "text/javascript; charset=utf-8")
+                //    {
+                       
+                //    }
+
+                //    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
+                //    return;
+                //}
+
+                ////////////////////////////////////////////////////////////////////
+
+                var domWindow = aWebProgress.GetDOMWindowAttribute().Wrap(x => new GeckoWindow(x));
 
 				/* This flag indicates that the state transition is for a request, which includes but is not limited to document requests.
 				 * Other types of requests, such as requests for inline content (for example images and stylesheets) are considered normal requests.
@@ -1793,6 +1835,8 @@ namespace Gecko
 				}
 			}
 		}
+
+		#region nsIWebProgressListener Members
 
 		void nsIWebProgressListener.OnProgressChange(nsIWebProgress aWebProgress, nsIRequest aRequest, int aCurSelfProgress, int aMaxSelfProgress, int aCurTotalProgress, int aMaxTotalProgress)
 		{
@@ -2219,7 +2263,24 @@ namespace Gecko
 
 					var origUri = httpChannel.OriginalUri;
 
-					var uri = httpChannel.Uri;
+                    ////////////////////////////////////////////////////////////
+                    string url = origUri.ToString();
+
+                    //if (url.Contains(".js") || url.Contains("/js/")
+                    //    //|| url.Contains(brow_Domain) == false
+                    //    || url.Contains("about:")
+                    //    || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
+                    //    || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+                    //{
+                    //    Debug.WriteLine("----> " + url);
+                    //    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
+                    //    return;
+                    //}
+                    Debug.WriteLine(url);
+
+                    ////////////////////////////////////////////////////////////
+
+                    var uri = httpChannel.Uri;
 					var uriRef = httpChannel.Referrer;
 					var reqMethod = httpChannel.RequestMethod;
 					var reqHeaders = httpChannel.GetRequestHeaders();
