@@ -45,9 +45,9 @@ namespace elbro
             };
         }
 
-        //static IJobStore jobs;
+        static IJobStore jobs;
 
-        public static void RUN()
+        public static void f_RUN()
         {
             System.Net.ServicePointManager.DefaultConnectionLimit = 1000;
             // active SSL 1.1, 1.2, 1.3 for WebClient request HTTPS
@@ -60,8 +60,8 @@ namespace elbro
             GeckoPreferences.User["browser.xul.error_pages.enabled"] = true;
             GeckoPreferences.User["gfx.font_rendering.graphite.enabled"] = true;
             GeckoPreferences.User["full-screen-api.enabled"] = true;
-
-            GeckoPreferences.User["media.navigator.permission.disabled"] = true;
+            // Enable HTML5 Video, Audio: true
+            GeckoPreferences.User["media.navigator.permission.disabled"] = false;
 
             //////var settings = new Settings();
             ////////settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36";
@@ -77,7 +77,7 @@ namespace elbro
             //////    ////////}
             //////}
 
-            //jobs = new JobStore();
+            jobs = new JobStore();
             Application.EnableVisualStyles();
 
 
@@ -85,12 +85,25 @@ namespace elbro
             //Application.Run(new fMain());
             //Application.Run(new fEdit());
             //Application.Run(new fBrowser());
-            Application.Run(new fGeckFX());
+            //Application.Run(new fGeckFX());
+            Application.Run(new fApp(jobs));
+            f_Exit();
         }
 
         //public static IFORM get_Main() {
         //    return null;
         //}
+
+        static void f_Exit() { 
+            if(Xpcom.IsInitialized)
+                Xpcom.Shutdown();
+            Application.ExitThread();
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            Application.Exit();
+        }
     }
 
     class Program
@@ -115,7 +128,7 @@ namespace elbro
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 
                     | SecurityProtocolType.Tls; 
             }
-            app.RUN();
+            app.f_RUN();
 
             //test.f_MediaMP3Stream_Demo();
             //test.f_jobTest();

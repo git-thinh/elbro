@@ -27,3 +27,6 @@ elbro/obj/Debug/NAudio.Gui.Pot.resources
 elbro/obj/Debug/NAudio.Gui.PanSlider.resources
 elbro/obj/Debug/NAudio.Gui.Fader.resources
 elbro/obj/Debug/elbro.fMediaMP3Stream_Demo.resources
+.vs/elbro/v14/.suo
+x86/elbro.vshost.exe
+x86/elbro.vshost.exe.manifest

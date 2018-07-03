@@ -55,7 +55,7 @@ namespace elbro
         private void f_form_Shown(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Maximized;
-            f_brow_Go(brow_URL);
+            //f_brow_Go(brow_URL);
         }
 
         #endregion
@@ -68,9 +68,9 @@ namespace elbro
         const int TOOLBAR_HEIGHT = 28;
         const int SHORTCUTBAR_HEIGHT = 17;
 
-        string brow_URL = "https://www.google.com.vn";
+        //string brow_URL = "https://www.google.com.vn";
         //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/do-or-make";
-        //string brow_URL = "https://dictionary.cambridge.org";
+        string brow_URL = "https://dictionary.cambridge.org";
         //string brow_URL = "https://www.bing.com";
         //string brow_URL = "https://www.bing.com/search?go=Submit&qs=ds&form=QBLH&q=hello";
         //string brow_URL = "https://developers.google.com/web/tools/chrome-devtools/network-performance/";
@@ -100,16 +100,21 @@ namespace elbro
             brow_Domain = brow_URL.Split('/')[2];
             browser = new GeckoWebBrowser();
             browser.Dock = DockStyle.Fill;
-            browser.NavigationError += (s, e) =>
-            {
-                Debug.WriteLine("StartDebugServer error: 0x" + e.ErrorCode.ToString("X"));
-                browser.Dispose();
-            };
-            browser.DocumentCompleted += (s, e) =>
-            {
-                Debug.WriteLine("StartDebugServer completed");
-                browser.Dispose();
-            };
+            //browser.NavigationError += (s, e) =>
+            //{
+            //    Debug.WriteLine("StartDebugServer error: 0x" + e.ErrorCode.ToString("X"));
+            //    browser.Dispose();
+            //};
+            //browser.DocumentCompleted += (s, e) =>
+            //{
+            //    Debug.WriteLine("StartDebugServer completed");
+            //    //browser.Dispose();
+            //};
+
+            browser.UseHttpActivityObserver = true;
+            //browser.ObserveHttpModifyRequest += (sender, e) => e.Channel.SetRequestHeader(name, value, merge: true);
+            //browser.ObserveHttpModifyRequest += f_brow_ObserveHttpModifyRequest;
+
 
             brow_Transparent = new ControlTransparent() { Location = new Point(0, 0), Size = new Size(999, 999) };
 
@@ -137,7 +142,9 @@ namespace elbro
                 btn_ToggleTab
             });
             this.Controls.AddRange(new Control[] { brow_Transparent, browser, brow_ShortCutBar, toolbar, });
+            f_brow_Go(brow_URL);
         }
+        
 
         //private void f_brow_onLoadCompleted(object sender, LoadCompletedEventArgs url)
         //{

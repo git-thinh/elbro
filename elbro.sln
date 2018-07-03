@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2003
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "elbro", "elbro\elbro.csproj", "{EC0FD3E4-741F-48F7-A56F-D5D13810C991}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "appie", "..\_CS\appie\appie\appie.csproj", "{5A2BD67F-769F-485A-96A6-84B757729911}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "appie", "..\appie\appie\appie.csproj", "{5A2BD67F-769F-485A-96A6-84B757729911}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
