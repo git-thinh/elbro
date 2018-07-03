@@ -111,7 +111,7 @@ namespace elbro
             //    Debug.WriteLine("StartDebugServer completed");
             //    //browser.Dispose();
             //};
-            browser.UseHttpActivityObserver = true;
+            browser.UseHttpActivityObserver = false;
             //browser.ObserveHttpModifyRequest += (sender, e) => e.Channel.SetRequestHeader(name, value, merge: true);
             //browser.ObserveHttpModifyRequest += f_brow_ObserveHttpModifyRequest;
             browser.DOMContentLoaded += (se, ev) => { GeckoWebBrowser w = (GeckoWebBrowser)se; if (w != null) f_brow_onDOMContentLoaded(w.DocumentTitle, w.Url); };
@@ -183,6 +183,7 @@ namespace elbro
 
             brow_URL = uri.ToString();
             brow_Domain = brow_URL.Split('/')[2];
+            browser.Host = brow_Domain;
 
             brow_Transparent.BringToFront();
             brow_UrlTextBox.Text = brow_URL;

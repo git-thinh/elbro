@@ -2098,15 +2098,24 @@ namespace Gecko
 		}
 
         #endregion
-        
-        
-        void nsIWebProgressListener.OnStateChange(nsIWebProgress aWebProgress, nsIRequest aRequest, uint aStateFlags, int aStatus) {
-			const int NS_BINDING_ABORTED = unchecked((int)0x804B0002);
-			
+
+        public string Host { set; get; }
+
+        bool f_requestCancel(string url) {
+            if (url.Contains(".js") || url.Contains("/js/")
+                //|| url.Contains(this.Host) == false
+                || url.Contains("about:")
+                || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
+                || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+                return true;
+            return false;
+        }
+
+        //const int NS_BINDING_ABORTED = unchecked((int)0x804B0002);
+        void nsIWebProgressListener.OnStateChange(nsIWebProgress aWebProgress, nsIRequest aRequest, uint aStateFlags, int aStatus) {			
 			#region validity checks
 			// The request parametere may be null
-			if (aRequest == null)
-				return;
+			if (aRequest == null) return;
 
 			// Ignore ViewSource requests, they don't provide the URL
 			// see: http://mxr.mozilla.org/mozilla-central/source/netwerk/protocol/viewsource/nsViewSourceChannel.cpp#114
@@ -2120,27 +2129,21 @@ namespace Gecko
 			}
 	
 			#endregion validity checks
-
 			using (var request = Gecko.Net.Request.CreateRequest(aRequest))
 			{
-				#region request parameters
 				Uri destUri = null;
 				Uri.TryCreate(request.Name, UriKind.Absolute, out destUri);
 
                 ////////////////////////////////////////////////////////////////////
                 string url = destUri.ToString();
-
-                ////////if (url.Contains(".js") || url.Contains("/js/")
-                ////////    //|| url.Contains(brow_Domain) == false
-                ////////    || url.Contains("about:")
-                ////////    || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
-                ////////    || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
-                ////////{
-                ////////    Debug.WriteLine("----> " + url);
-                ////////    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
-                ////////    return;
-                ////////}
-                ////////Debug.WriteLine(url);
+                bool cancel = f_requestCancel(url);
+                if (cancel)
+                {
+                    System.Tracer.WriteLine("----> OnStateChange CANCEL: " + url);
+                    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
+                    return;
+                }
+                System.Tracer.WriteLine("---->[1] OnStateChange OK: " + url);
 
                 // maybe we'll add another event here to allow users to cancel certain content types
                 //if ((aStateFlags & nsIWebProgressListenerConstants.STATE_TRANSFERRING) != 0)
@@ -2160,7 +2163,7 @@ namespace Gecko
                 //    GeckoResponse res = new GeckoResponse(aRequest);
                 //    if (res.ContentType == "text/javascript; charset=utf-8")
                 //    {
-                       
+
                 //    }
 
                 //    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
@@ -2168,6 +2171,10 @@ namespace Gecko
                 //}
 
                 ////////////////////////////////////////////////////////////////////
+
+                #region
+
+                #region request parameters
 
                 var domWindow = aWebProgress.GetDOMWindowAttribute().Wrap(x => new GeckoWindow(x));
 
@@ -2223,7 +2230,7 @@ namespace Gecko
 
 						if (ea.Cancel)
 						{
-							aRequest.Cancel(NS_BINDING_ABORTED);
+							aRequest.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
 							//TODO: change the following handling of cancelled request
 
 							// clear busy state
@@ -2245,7 +2252,7 @@ namespace Gecko
 						{
 							// TODO: test it on Linux
 							if (!Xpcom.IsLinux)
-								aRequest.Cancel(NS_BINDING_ABORTED);
+								aRequest.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
 						}
 					}
 				}
@@ -2266,7 +2273,7 @@ namespace Gecko
 
 					if (ea.Cancel)
 					{
-						aRequest.Cancel(NS_BINDING_ABORTED);
+						aRequest.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
 					}
 				}
 				#endregion STATE_REDIRECTING
@@ -2370,37 +2377,37 @@ namespace Gecko
 					}
 				}
 				#endregion STATE_STOP
+
 				if (domWindow!=null)
 				{
 					domWindow.Dispose();
 				}
-			}
-		}
+
+                #endregion
+            }
+        }
+
 
 		public void Observe(nsISupports aSubject, string aTopic, string aData) {
 			if (aTopic.Equals(ObserverNotifications.HttpRequests.HttpOnModifyRequest)) {
 				using (var httpChannel = HttpChannel.Create(aSubject)) {
 
+                    var uri = httpChannel.Uri;
 					var origUri = httpChannel.OriginalUri;
 
                     ////////////////////////////////////////////////////////////
                     string url = origUri.ToString();
-
-                    if (url.Contains(".js") || url.Contains("/js/")
-                        || url.Contains(this.Url.Host) == false
-                        || url.Contains("about:")
-                        || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
-                        || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
-                    {
-                        System.Tracer.WriteLine("----> REQUEST CANCEL: ", url);
-                        httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
-                        return;
-                    }
-                    System.Tracer.WriteLine("----> REQUEST OK: ", url);
+                    //bool cancel = f_requestCancel(url);
+                    //if (cancel)
+                    //{
+                    //    System.Tracer.WriteLine("----> Observe REQUEST CANCEL: " + url);
+                    //    httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
+                    //    return;
+                    //} 
+                    System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url);
 
                     ////////////////////////////////////////////////////////////
 
-                    var uri = httpChannel.Uri;
 					var uriRef = httpChannel.Referrer;
 					var reqMethod = httpChannel.RequestMethod;
 					var reqHeaders = httpChannel.GetRequestHeaders();
@@ -2441,12 +2448,11 @@ namespace Gecko
 						}
 					}
 
-					#endregion POST data
+                    #endregion POST data
+                                         
 
 					var evt = new GeckoObserveHttpModifyRequestEventArgs(uri, uriRef, reqMethod, reqBody, reqHeaders, httpChannel, reqBodyContainsHeaders);
-
 					OnObserveHttpModifyRequest(evt);
-
 					if (evt.Cancel) {
 						httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
 					}
