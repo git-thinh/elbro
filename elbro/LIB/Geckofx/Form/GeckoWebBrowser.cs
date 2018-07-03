@@ -2266,16 +2266,16 @@ namespace Gecko
                     ////////////////////////////////////////////////////////////
                     string url = origUri.ToString();
 
-                    //if (url.Contains(".js") || url.Contains("/js/")
-                    //    //|| url.Contains(brow_Domain) == false
-                    //    || url.Contains("about:")
-                    //    || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
-                    //    || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
-                    //{
-                    //    Debug.WriteLine("----> " + url);
-                    //    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
-                    //    return;
-                    //}
+                    if (url.Contains(".js") || url.Contains("/js/")
+                        //|| url.Contains(brow_Domain) == false
+                        || url.Contains("about:")
+                        || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
+                        || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+                    {
+                        Debug.WriteLine("----> " + url);
+                        httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
+                        return;
+                    }
                     Debug.WriteLine(url);
 
                     ////////////////////////////////////////////////////////////
