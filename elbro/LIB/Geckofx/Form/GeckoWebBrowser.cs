@@ -71,11 +71,13 @@ namespace Gecko
 		nsISupportsWeakReference
 		//nsIWindowProvider,
 	{
-		#region Fields
-		/// <summary>
-		/// Additional DOM message listeners
-		/// </summary>
-		Dictionary<string, Action<string>> _messageEventListeners = new Dictionary<string, Action<string>>();
+        #region [ MEMBER ]
+
+        #region Fields
+        /// <summary>
+        /// Additional DOM message listeners
+        /// </summary>
+        Dictionary<string, Action<string>> _messageEventListeners = new Dictionary<string, Action<string>>();
 		/// <summary>
 		/// nsIWebBrowser instance
 		/// </summary>
@@ -111,13 +113,6 @@ namespace Gecko
 		/// </summary>
 		public GeckoWebBrowser()
 		{
-#if GTK
-			if (Xpcom.IsMono)
-			{
-				GtkDotNet.GtkOnceOnly.Init();
-				m_wrapper = new GtkDotNet.GtkReparentingWrapperNoThread(new Gtk.Window(Gtk.WindowType.Popup), this);
-			}
-#endif
 			NavigateFinishedNotifier = new NavigateFinishedNotifier(this);
 		}
 
@@ -1018,27 +1013,15 @@ namespace Gecko
 		
 		
 		public void SetInputFocus()
-		{
-#if GTK
-			if (m_wrapper != null)
-				m_wrapper.SetInputFocus();
-#endif
+		{ 
 		}
 		
 		public void RemoveInputFocus()
-		{
-#if GTK
-			if (m_wrapper != null)
-				m_wrapper.RemoveInputFocus();
-#endif
+		{ 
 		}
 		
 		public bool HasInputFocus()
-		{
-#if GTK
-			if (m_wrapper != null)
-				return m_wrapper.HasInputFocus();
-#endif
+		{ 
 			return false;
 		}
 
@@ -1558,284 +1541,6 @@ namespace Gecko
 
 		#endregion		
 		
-        ////??????????????????????????????????????????????????????
-		void nsIWebProgressListener.OnStateChange(nsIWebProgress aWebProgress, nsIRequest aRequest, uint aStateFlags, int aStatus) {
-			const int NS_BINDING_ABORTED = unchecked((int)0x804B0002);
-			
-			#region validity checks
-			// The request parametere may be null
-			if (aRequest == null)
-				return;
-
-			// Ignore ViewSource requests, they don't provide the URL
-			// see: http://mxr.mozilla.org/mozilla-central/source/netwerk/protocol/viewsource/nsViewSourceChannel.cpp#114
-			{
-				var viewSource = Xpcom.QueryInterface<nsIViewSourceChannel>( aRequest );
-				if ( viewSource != null )
-				{
-					Marshal.ReleaseComObject( viewSource );
-					return;
-				}
-			}
-	
-			#endregion validity checks
-
-			using (var request = Gecko.Net.Request.CreateRequest(aRequest))
-			{
-				#region request parameters
-				Uri destUri = null;
-				Uri.TryCreate(request.Name, UriKind.Absolute, out destUri);
-
-                ////////////////////////////////////////////////////////////////////
-                string url = destUri.ToString();
-
-                ////////if (url.Contains(".js") || url.Contains("/js/")
-                ////////    //|| url.Contains(brow_Domain) == false
-                ////////    || url.Contains("about:")
-                ////////    || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
-                ////////    || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
-                ////////{
-                ////////    Debug.WriteLine("----> " + url);
-                ////////    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
-                ////////    return;
-                ////////}
-                ////////Debug.WriteLine(url);
-
-                // maybe we'll add another event here to allow users to cancel certain content types
-                //if ((aStateFlags & nsIWebProgressListenerConstants.STATE_TRANSFERRING) != 0)
-                //{
-                //      GeckoResponse rsp = new GeckoResponse(aRequest);
-                //      if (rsp.ContentType == "application/x-executable")
-                //      {
-                //            // do something
-                //      }
-                //}
-
-                //if (url.Contains(".js") || url.Contains("/js/"))
-                //{
-                //    Debug.WriteLine("----> " + url);
-
-
-                //    GeckoResponse res = new GeckoResponse(aRequest);
-                //    if (res.ContentType == "text/javascript; charset=utf-8")
-                //    {
-                       
-                //    }
-
-                //    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
-                //    return;
-                //}
-
-                ////////////////////////////////////////////////////////////////////
-
-                var domWindow = aWebProgress.GetDOMWindowAttribute().Wrap(x => new GeckoWindow(x));
-
-				/* This flag indicates that the state transition is for a request, which includes but is not limited to document requests.
-				 * Other types of requests, such as requests for inline content (for example images and stylesheets) are considered normal requests.
-				 */
-				bool stateIsRequest = ((aStateFlags & nsIWebProgressListenerConstants.STATE_IS_REQUEST) != 0);
-
-				/* This flag indicates that the state transition is for a document request. This flag is set in addition to STATE_IS_REQUEST.
-				 * A document request supports the nsIChannel interface and its loadFlags attribute includes the nsIChannel ::LOAD_DOCUMENT_URI flag.
-				 * A document request does not complete until all requests associated with the loading of its corresponding document have completed.
-				 * This includes other document requests (for example corresponding to HTML <iframe> elements).
-				 * The document corresponding to a document request is available via the DOMWindow attribute of onStateChange()'s aWebProgress parameter.
-				 */
-				bool stateIsDocument = ((aStateFlags & nsIWebProgressListenerConstants.STATE_IS_DOCUMENT) != 0);
-
-				/* This flag indicates that the state transition corresponds to the start or stop of activity in the indicated nsIWebProgress instance.
-				 * This flag is accompanied by either STATE_START or STATE_STOP, and it may be combined with other State Type Flags.
-				 * 
-				 * Unlike STATE_IS_WINDOW, this flag is only set when activity within the nsIWebProgress instance being observed starts or stops.
-				 * If activity only occurs in a child nsIWebProgress instance, then this flag will be set to indicate the start and stop of that activity.
-				 * For example, in the case of navigation within a single frame of a HTML frameset, a nsIWebProgressListener instance attached to the
-				 * nsIWebProgress of the frameset window will receive onStateChange() calls with the STATE_IS_NETWORK flag set to indicate the start and
-				 * stop of said navigation. In other words, an observer of an outer window can determine when activity, that may be constrained to a
-				 * child window or set of child windows, starts and stops.
-				 */
-				bool stateIsNetwork = ((aStateFlags & nsIWebProgressListenerConstants.STATE_IS_NETWORK) != 0);
-
-				/* This flag indicates that the state transition corresponds to the start or stop of activity in the indicated nsIWebProgress instance.
-				 * This flag is accompanied by either STATE_START or STATE_STOP, and it may be combined with other State Type Flags.
-				 * This flag is similar to STATE_IS_DOCUMENT. However, when a document request completes, two onStateChange() calls with STATE_STOP are generated.
-				 * The document request is passed as aRequest to both calls. The first has STATE_IS_REQUEST and STATE_IS_DOCUMENT set, and the second has
-				 * the STATE_IS_WINDOW flag set (and possibly the STATE_IS_NETWORK flag set as well -- see above for a description of when the STATE_IS_NETWORK
-				 * flag may be set). This second STATE_STOP event may be useful as a way to partition the work that occurs when a document request completes.
-				 */
-				bool stateIsWindow = ((aStateFlags & nsIWebProgressListenerConstants.STATE_IS_WINDOW) != 0);
-				#endregion request parameters
-
-				#region STATE_START
-				/* This flag indicates the start of a request.
-				 * This flag is set when a request is initiated.
-				 * The request is complete when onStateChange() is called for the same request with the STATE_STOP flag set.
-				 */
-				if ((aStateFlags & nsIWebProgressListenerConstants.STATE_START) != 0)
-				{
-					// TODO: replace to aWebProgress.GetIsTopLevelAttribute() // Gecko 24+
-					if (stateIsNetwork && domWindow.IsTopWindow())
-					{
-						IsBusy = true;
-
-						GeckoNavigatingEventArgs ea = new GeckoNavigatingEventArgs(destUri, domWindow);
-						OnNavigating(ea);
-
-						if (ea.Cancel)
-						{
-							aRequest.Cancel(NS_BINDING_ABORTED);
-							//TODO: change the following handling of cancelled request
-
-							// clear busy state
-							IsBusy = false;
-
-							// clear progress bar
-							OnProgressChanged(new GeckoProgressEventArgs(100, 100));
-
-							// clear status bar
-							StatusText = "";
-						}
-					}
-					else if (stateIsDocument)
-					{
-						GeckoNavigatingEventArgs ea = new GeckoNavigatingEventArgs(destUri, domWindow);
-						OnFrameNavigating(ea);
-
-						if (ea.Cancel)
-						{
-							// TODO: test it on Linux
-							if (!Xpcom.IsLinux)
-								aRequest.Cancel(NS_BINDING_ABORTED);
-						}
-					}
-				}
-				#endregion STATE_START
-
-				#region STATE_REDIRECTING
-				/* This flag indicates that a request is being redirected.
-				 * The request passed to onStateChange() is the request that is being redirected.
-				 * When a redirect occurs, a new request is generated automatically to process the new request.
-				 * Expect a corresponding STATE_START event for the new request, and a STATE_STOP for the redirected request.
-				 */
-				else if ((aStateFlags & nsIWebProgressListenerConstants.STATE_REDIRECTING) != 0)
-				{
-
-					// make sure we're loading the top-level window
-					GeckoRedirectingEventArgs ea = new GeckoRedirectingEventArgs(destUri, domWindow);
-					OnRedirecting(ea);
-
-					if (ea.Cancel)
-					{
-						aRequest.Cancel(NS_BINDING_ABORTED);
-					}
-				}
-				#endregion STATE_REDIRECTING
-
-				#region STATE_TRANSFERRING
-				/* This flag indicates that data for a request is being transferred to an end consumer.
-				 * This flag indicates that the request has been targeted, and that the user may start seeing content corresponding to the request.
-				 */
-				else if ((aStateFlags & nsIWebProgressListenerConstants.STATE_TRANSFERRING) != 0)
-				{
-				}
-				#endregion STATE_TRANSFERRING
-
-				#region STATE_STOP
-				/* This flag indicates the completion of a request.
-				 * The aStatus parameter to onStateChange() indicates the final status of the request.
-				 */
-				else if ((aStateFlags & nsIWebProgressListenerConstants.STATE_STOP) != 0)
-				{
-					/* aStatus
-					 * Error status code associated with the state change.
-					 * This parameter should be ignored unless aStateFlags includes the STATE_STOP bit.
-					 * The status code indicates success or failure of the request associated with the state change.
-					 * 
-					 * Note: aStatus may be a success code even for server generated errors, such as the HTTP 404 File Not Found error.
-					 * In such cases, the request itself should be queried for extended error information (for example for HTTP requests see nsIHttpChannel).
-					 */
-
-					if (stateIsNetwork)
-					{
-						// clear busy state
-						IsBusy = false;
-						if (aStatus == 0)
-						{
-                            BaseWindow.SetVisibilityAttribute(true);
-
-							// navigating to a unrenderable file (.zip, .exe, etc.) causes the request pending;
-							// also an OnStateChange call with aStatus:804B0004(NS_BINDING_RETARGETED) has been generated previously.
-							if (!request.IsPending)
-							{
-								// kill any cached document and raise DocumentCompleted event
-								OnDocumentCompleted(new GeckoDocumentCompletedEventArgs(destUri, domWindow));
-
-								// clear progress bar
-								OnProgressChanged(new GeckoProgressEventArgs(100, 100));
-							}
-						}
-						else
-						{
-							OnNavigationError(new GeckoNavigationErrorEventArgs(request.Name, domWindow, aStatus));
-						}
-						// clear status bar
-						StatusText = "";
-					}
-
-					if (stateIsRequest)
-					{
-
-						if ((aStatus & 0xff0000) == ((GeckoError.NS_ERROR_MODULE_SECURITY + GeckoError.NS_ERROR_MODULE_BASE_OFFSET) << 16))
-						{
-							SSLStatus sslStatus = null;
-							nsIChannel aChannel = null;
-							nsISupports aSecInfo = null;
-							nsISSLStatusProvider aSslStatusProv = null;
-							try
-							{
-								aChannel = Xpcom.QueryInterface<nsIChannel>(aRequest);
-								if (aChannel != null)
-								{
-									aSecInfo = aChannel.GetSecurityInfoAttribute();
-									if (aSecInfo != null)
-									{
-										aSslStatusProv = Xpcom.QueryInterface<nsISSLStatusProvider>(aSecInfo);
-										if (aSslStatusProv != null)
-										{
-											sslStatus = aSslStatusProv.GetSSLStatusAttribute().Wrap(SSLStatus.Create);
-										}
-									}
-								}
-							}
-							finally
-							{
-								Xpcom.FreeComObject(ref aChannel);
-								Xpcom.FreeComObject(ref aSecInfo);
-								Xpcom.FreeComObject(ref aSslStatusProv);
-							}
-
-							var ea = new GeckoNSSErrorEventArgs(destUri, aStatus, sslStatus);
-							OnNSSError(ea);
-							if (ea.Handled)
-							{
-								aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
-							}
-						}
-
-						if (aStatus == GeckoError.NS_BINDING_RETARGETED)
-						{
-							GeckoRetargetedEventArgs ea = new GeckoRetargetedEventArgs(destUri, domWindow, request);
-							OnRetargeted(ea);
-						}
-					}
-				}
-				#endregion STATE_STOP
-				if (domWindow!=null)
-				{
-					domWindow.Dispose();
-				}
-			}
-		}
-
 		#region nsIWebProgressListener Members
 
 		void nsIWebProgressListener.OnProgressChange(nsIWebProgress aWebProgress, nsIRequest aRequest, int aCurSelfProgress, int aMaxSelfProgress, int aCurTotalProgress, int aMaxTotalProgress)
@@ -2257,83 +1962,6 @@ namespace Gecko
 		}
 
 
-		public void Observe(nsISupports aSubject, string aTopic, string aData) {
-			if (aTopic.Equals(ObserverNotifications.HttpRequests.HttpOnModifyRequest)) {
-				using (var httpChannel = HttpChannel.Create(aSubject)) {
-
-					var origUri = httpChannel.OriginalUri;
-
-                    ////////////////////////////////////////////////////////////
-                    string url = origUri.ToString();
-
-                    if (url.Contains(".js") || url.Contains("/js/")
-                        //|| url.Contains(brow_Domain) == false
-                        || url.Contains("about:")
-                        || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
-                        || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
-                    {
-                        Debug.WriteLine("----> " + url);
-                        httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
-                        return;
-                    }
-                    Debug.WriteLine(url);
-
-                    ////////////////////////////////////////////////////////////
-
-                    var uri = httpChannel.Uri;
-					var uriRef = httpChannel.Referrer;
-					var reqMethod = httpChannel.RequestMethod;
-					var reqHeaders = httpChannel.GetRequestHeaders();
-					byte[] reqBody = null;
-					bool? reqBodyContainsHeaders = null;
-
-					#region POST data
-
-					var uploadChannel = Xpcom.QueryInterface<nsIUploadChannel>(aSubject);
-					var uploadChannel2 = Xpcom.QueryInterface<nsIUploadChannel2>(aSubject);
-
-					if (uploadChannel != null) {
-						var uc = new UploadChannel(uploadChannel);
-						var uploadStream = uc.UploadStream;
-
-						if (uploadStream != null) {
-							if (uploadStream.CanSeek) {
-								var rdr = new BinaryReader(uploadStream);
-								var reqBodyStream = new MemoryStream();
-								try {
-									reqBody = new byte[] { };
-									int avl = 0;
-									while ((avl = ((int)uploadStream.Available)) > 0) {
-										reqBodyStream.Write(rdr.ReadBytes(avl), 0, avl);
-									}
-									reqBody = reqBodyStream.ToArray();
-
-									if (uploadChannel2 != null)
-										reqBodyContainsHeaders = uploadChannel2.GetUploadStreamHasHeadersAttribute();
-								}
-								catch (IOException ex) {
-									// failed to read body, ignore
-								}
-
-								// rewind stream, so browser can read it as usual
-								uploadStream.Seek(0, 0);
-							}
-						}
-					}
-
-					#endregion POST data
-
-					var evt = new GeckoObserveHttpModifyRequestEventArgs(uri, uriRef, reqMethod, reqBody, reqHeaders, httpChannel, reqBodyContainsHeaders);
-
-					OnObserveHttpModifyRequest(evt);
-
-					if (evt.Cancel) {
-						httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
-					}
-				}
-			}
-		}
-
 		#region nsIHttpActivityObserver members
 
 		public Dictionary<nsIHttpChannel, GeckoJavaScriptHttpChannelWrapper> origJavaScriptHttpChannels = new Dictionary<nsIHttpChannel, GeckoJavaScriptHttpChannelWrapper>();
@@ -2468,10 +2096,551 @@ namespace Gecko
                 return _weakRef = new GeckoWebBrowserWeakRef(this);
             return _weakRef;
 		}
-	}
+
+        #endregion
+        
+        
+        void nsIWebProgressListener.OnStateChange(nsIWebProgress aWebProgress, nsIRequest aRequest, uint aStateFlags, int aStatus) {
+			const int NS_BINDING_ABORTED = unchecked((int)0x804B0002);
+			
+			#region validity checks
+			// The request parametere may be null
+			if (aRequest == null)
+				return;
+
+			// Ignore ViewSource requests, they don't provide the URL
+			// see: http://mxr.mozilla.org/mozilla-central/source/netwerk/protocol/viewsource/nsViewSourceChannel.cpp#114
+			{
+				var viewSource = Xpcom.QueryInterface<nsIViewSourceChannel>( aRequest );
+				if ( viewSource != null )
+				{
+					Marshal.ReleaseComObject( viewSource );
+					return;
+				}
+			}
 	
-	#region public enum GeckoSecurityState
-	public enum GeckoSecurityState
+			#endregion validity checks
+
+			using (var request = Gecko.Net.Request.CreateRequest(aRequest))
+			{
+				#region request parameters
+				Uri destUri = null;
+				Uri.TryCreate(request.Name, UriKind.Absolute, out destUri);
+
+                ////////////////////////////////////////////////////////////////////
+                string url = destUri.ToString();
+
+                ////////if (url.Contains(".js") || url.Contains("/js/")
+                ////////    //|| url.Contains(brow_Domain) == false
+                ////////    || url.Contains("about:")
+                ////////    || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
+                ////////    || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+                ////////{
+                ////////    Debug.WriteLine("----> " + url);
+                ////////    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
+                ////////    return;
+                ////////}
+                ////////Debug.WriteLine(url);
+
+                // maybe we'll add another event here to allow users to cancel certain content types
+                //if ((aStateFlags & nsIWebProgressListenerConstants.STATE_TRANSFERRING) != 0)
+                //{
+                //      GeckoResponse rsp = new GeckoResponse(aRequest);
+                //      if (rsp.ContentType == "application/x-executable")
+                //      {
+                //            // do something
+                //      }
+                //}
+
+                //if (url.Contains(".js") || url.Contains("/js/"))
+                //{
+                //    Debug.WriteLine("----> " + url);
+
+
+                //    GeckoResponse res = new GeckoResponse(aRequest);
+                //    if (res.ContentType == "text/javascript; charset=utf-8")
+                //    {
+                       
+                //    }
+
+                //    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
+                //    return;
+                //}
+
+                ////////////////////////////////////////////////////////////////////
+
+                var domWindow = aWebProgress.GetDOMWindowAttribute().Wrap(x => new GeckoWindow(x));
+
+				/* This flag indicates that the state transition is for a request, which includes but is not limited to document requests.
+				 * Other types of requests, such as requests for inline content (for example images and stylesheets) are considered normal requests.
+				 */
+				bool stateIsRequest = ((aStateFlags & nsIWebProgressListenerConstants.STATE_IS_REQUEST) != 0);
+
+				/* This flag indicates that the state transition is for a document request. This flag is set in addition to STATE_IS_REQUEST.
+				 * A document request supports the nsIChannel interface and its loadFlags attribute includes the nsIChannel ::LOAD_DOCUMENT_URI flag.
+				 * A document request does not complete until all requests associated with the loading of its corresponding document have completed.
+				 * This includes other document requests (for example corresponding to HTML <iframe> elements).
+				 * The document corresponding to a document request is available via the DOMWindow attribute of onStateChange()'s aWebProgress parameter.
+				 */
+				bool stateIsDocument = ((aStateFlags & nsIWebProgressListenerConstants.STATE_IS_DOCUMENT) != 0);
+
+				/* This flag indicates that the state transition corresponds to the start or stop of activity in the indicated nsIWebProgress instance.
+				 * This flag is accompanied by either STATE_START or STATE_STOP, and it may be combined with other State Type Flags.
+				 * 
+				 * Unlike STATE_IS_WINDOW, this flag is only set when activity within the nsIWebProgress instance being observed starts or stops.
+				 * If activity only occurs in a child nsIWebProgress instance, then this flag will be set to indicate the start and stop of that activity.
+				 * For example, in the case of navigation within a single frame of a HTML frameset, a nsIWebProgressListener instance attached to the
+				 * nsIWebProgress of the frameset window will receive onStateChange() calls with the STATE_IS_NETWORK flag set to indicate the start and
+				 * stop of said navigation. In other words, an observer of an outer window can determine when activity, that may be constrained to a
+				 * child window or set of child windows, starts and stops.
+				 */
+				bool stateIsNetwork = ((aStateFlags & nsIWebProgressListenerConstants.STATE_IS_NETWORK) != 0);
+
+				/* This flag indicates that the state transition corresponds to the start or stop of activity in the indicated nsIWebProgress instance.
+				 * This flag is accompanied by either STATE_START or STATE_STOP, and it may be combined with other State Type Flags.
+				 * This flag is similar to STATE_IS_DOCUMENT. However, when a document request completes, two onStateChange() calls with STATE_STOP are generated.
+				 * The document request is passed as aRequest to both calls. The first has STATE_IS_REQUEST and STATE_IS_DOCUMENT set, and the second has
+				 * the STATE_IS_WINDOW flag set (and possibly the STATE_IS_NETWORK flag set as well -- see above for a description of when the STATE_IS_NETWORK
+				 * flag may be set). This second STATE_STOP event may be useful as a way to partition the work that occurs when a document request completes.
+				 */
+				bool stateIsWindow = ((aStateFlags & nsIWebProgressListenerConstants.STATE_IS_WINDOW) != 0);
+				#endregion request parameters
+
+				#region STATE_START
+				/* This flag indicates the start of a request.
+				 * This flag is set when a request is initiated.
+				 * The request is complete when onStateChange() is called for the same request with the STATE_STOP flag set.
+				 */
+				if ((aStateFlags & nsIWebProgressListenerConstants.STATE_START) != 0)
+				{
+					// TODO: replace to aWebProgress.GetIsTopLevelAttribute() // Gecko 24+
+					if (stateIsNetwork && domWindow.IsTopWindow())
+					{
+						IsBusy = true;
+
+						GeckoNavigatingEventArgs ea = new GeckoNavigatingEventArgs(destUri, domWindow);
+						OnNavigating(ea);
+
+						if (ea.Cancel)
+						{
+							aRequest.Cancel(NS_BINDING_ABORTED);
+							//TODO: change the following handling of cancelled request
+
+							// clear busy state
+							IsBusy = false;
+
+							// clear progress bar
+							OnProgressChanged(new GeckoProgressEventArgs(100, 100));
+
+							// clear status bar
+							StatusText = "";
+						}
+					}
+					else if (stateIsDocument)
+					{
+						GeckoNavigatingEventArgs ea = new GeckoNavigatingEventArgs(destUri, domWindow);
+						OnFrameNavigating(ea);
+
+						if (ea.Cancel)
+						{
+							// TODO: test it on Linux
+							if (!Xpcom.IsLinux)
+								aRequest.Cancel(NS_BINDING_ABORTED);
+						}
+					}
+				}
+				#endregion STATE_START
+
+				#region STATE_REDIRECTING
+				/* This flag indicates that a request is being redirected.
+				 * The request passed to onStateChange() is the request that is being redirected.
+				 * When a redirect occurs, a new request is generated automatically to process the new request.
+				 * Expect a corresponding STATE_START event for the new request, and a STATE_STOP for the redirected request.
+				 */
+				else if ((aStateFlags & nsIWebProgressListenerConstants.STATE_REDIRECTING) != 0)
+				{
+
+					// make sure we're loading the top-level window
+					GeckoRedirectingEventArgs ea = new GeckoRedirectingEventArgs(destUri, domWindow);
+					OnRedirecting(ea);
+
+					if (ea.Cancel)
+					{
+						aRequest.Cancel(NS_BINDING_ABORTED);
+					}
+				}
+				#endregion STATE_REDIRECTING
+
+				#region STATE_TRANSFERRING
+				/* This flag indicates that data for a request is being transferred to an end consumer.
+				 * This flag indicates that the request has been targeted, and that the user may start seeing content corresponding to the request.
+				 */
+				else if ((aStateFlags & nsIWebProgressListenerConstants.STATE_TRANSFERRING) != 0)
+				{
+				}
+				#endregion STATE_TRANSFERRING
+
+				#region STATE_STOP
+				/* This flag indicates the completion of a request.
+				 * The aStatus parameter to onStateChange() indicates the final status of the request.
+				 */
+				else if ((aStateFlags & nsIWebProgressListenerConstants.STATE_STOP) != 0)
+				{
+					/* aStatus
+					 * Error status code associated with the state change.
+					 * This parameter should be ignored unless aStateFlags includes the STATE_STOP bit.
+					 * The status code indicates success or failure of the request associated with the state change.
+					 * 
+					 * Note: aStatus may be a success code even for server generated errors, such as the HTTP 404 File Not Found error.
+					 * In such cases, the request itself should be queried for extended error information (for example for HTTP requests see nsIHttpChannel).
+					 */
+
+					if (stateIsNetwork)
+					{
+						// clear busy state
+						IsBusy = false;
+						if (aStatus == 0)
+						{
+                            BaseWindow.SetVisibilityAttribute(true);
+
+							// navigating to a unrenderable file (.zip, .exe, etc.) causes the request pending;
+							// also an OnStateChange call with aStatus:804B0004(NS_BINDING_RETARGETED) has been generated previously.
+							if (!request.IsPending)
+							{
+								// kill any cached document and raise DocumentCompleted event
+								OnDocumentCompleted(new GeckoDocumentCompletedEventArgs(destUri, domWindow));
+
+								// clear progress bar
+								OnProgressChanged(new GeckoProgressEventArgs(100, 100));
+							}
+						}
+						else
+						{
+							OnNavigationError(new GeckoNavigationErrorEventArgs(request.Name, domWindow, aStatus));
+						}
+						// clear status bar
+						StatusText = "";
+					}
+
+					if (stateIsRequest)
+					{
+
+						if ((aStatus & 0xff0000) == ((GeckoError.NS_ERROR_MODULE_SECURITY + GeckoError.NS_ERROR_MODULE_BASE_OFFSET) << 16))
+						{
+							SSLStatus sslStatus = null;
+							nsIChannel aChannel = null;
+							nsISupports aSecInfo = null;
+							nsISSLStatusProvider aSslStatusProv = null;
+							try
+							{
+								aChannel = Xpcom.QueryInterface<nsIChannel>(aRequest);
+								if (aChannel != null)
+								{
+									aSecInfo = aChannel.GetSecurityInfoAttribute();
+									if (aSecInfo != null)
+									{
+										aSslStatusProv = Xpcom.QueryInterface<nsISSLStatusProvider>(aSecInfo);
+										if (aSslStatusProv != null)
+										{
+											sslStatus = aSslStatusProv.GetSSLStatusAttribute().Wrap(SSLStatus.Create);
+										}
+									}
+								}
+							}
+							finally
+							{
+								Xpcom.FreeComObject(ref aChannel);
+								Xpcom.FreeComObject(ref aSecInfo);
+								Xpcom.FreeComObject(ref aSslStatusProv);
+							}
+
+							var ea = new GeckoNSSErrorEventArgs(destUri, aStatus, sslStatus);
+							OnNSSError(ea);
+							if (ea.Handled)
+							{
+								aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
+							}
+						}
+
+						if (aStatus == GeckoError.NS_BINDING_RETARGETED)
+						{
+							GeckoRetargetedEventArgs ea = new GeckoRetargetedEventArgs(destUri, domWindow, request);
+							OnRetargeted(ea);
+						}
+					}
+				}
+				#endregion STATE_STOP
+				if (domWindow!=null)
+				{
+					domWindow.Dispose();
+				}
+			}
+		}
+
+		public void Observe(nsISupports aSubject, string aTopic, string aData) {
+			if (aTopic.Equals(ObserverNotifications.HttpRequests.HttpOnModifyRequest)) {
+				using (var httpChannel = HttpChannel.Create(aSubject)) {
+
+					var origUri = httpChannel.OriginalUri;
+
+                    ////////////////////////////////////////////////////////////
+                    string url = origUri.ToString();
+
+                    if (url.Contains(".js") || url.Contains("/js/")
+                        || url.Contains(this.Url.Host) == false
+                        || url.Contains("about:")
+                        || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
+                        || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+                    {
+                        System.Tracer.WriteLine("----> REQUEST CANCEL: ", url);
+                        httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
+                        return;
+                    }
+                    System.Tracer.WriteLine("----> REQUEST OK: ", url);
+
+                    ////////////////////////////////////////////////////////////
+
+                    var uri = httpChannel.Uri;
+					var uriRef = httpChannel.Referrer;
+					var reqMethod = httpChannel.RequestMethod;
+					var reqHeaders = httpChannel.GetRequestHeaders();
+					byte[] reqBody = null;
+					bool? reqBodyContainsHeaders = null;
+
+					#region POST data
+
+					var uploadChannel = Xpcom.QueryInterface<nsIUploadChannel>(aSubject);
+					var uploadChannel2 = Xpcom.QueryInterface<nsIUploadChannel2>(aSubject);
+
+					if (uploadChannel != null) {
+						var uc = new UploadChannel(uploadChannel);
+						var uploadStream = uc.UploadStream;
+
+						if (uploadStream != null) {
+							if (uploadStream.CanSeek) {
+								var rdr = new BinaryReader(uploadStream);
+								var reqBodyStream = new MemoryStream();
+								try {
+									reqBody = new byte[] { };
+									int avl = 0;
+									while ((avl = ((int)uploadStream.Available)) > 0) {
+										reqBodyStream.Write(rdr.ReadBytes(avl), 0, avl);
+									}
+									reqBody = reqBodyStream.ToArray();
+
+									if (uploadChannel2 != null)
+										reqBodyContainsHeaders = uploadChannel2.GetUploadStreamHasHeadersAttribute();
+								}
+								catch (IOException ex) {
+									// failed to read body, ignore
+								}
+
+								// rewind stream, so browser can read it as usual
+								uploadStream.Seek(0, 0);
+							}
+						}
+					}
+
+					#endregion POST data
+
+					var evt = new GeckoObserveHttpModifyRequestEventArgs(uri, uriRef, reqMethod, reqBody, reqHeaders, httpChannel, reqBodyContainsHeaders);
+
+					OnObserveHttpModifyRequest(evt);
+
+					if (evt.Cancel) {
+						httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
+					}
+				}
+			}
+		}
+        
+        #region [ IRequestHandler Members ]
+
+        //bool IRequestHandler.OnBeforeResourceLoad(IWebBrowser browser, IRequestResponse requestResponse)
+        //{
+        //    return false;
+
+        //    //System.Diagnostics.Debug.WriteLine("OnBeforeResourceLoad");
+        //    //var headers = request.GetHeaders();
+        //    string url = requestResponse.Request.Url;
+        //    if (url.StartsWith("chrome-devtools://") == false)
+        //    {
+        //        if (brow_ImportPlugin == false && (url.Contains(".js") || url.Contains("/js/")))
+        //        {
+        //            MemoryStream stream;
+        //            byte[] bytes;
+        //            switch (brow_Domain)
+        //            {
+        //                case DOMAIN_GOOGLE:
+        //                case DOMAIN_BING:
+        //                    stream = new System.IO.MemoryStream();
+        //                    bytes = ASCIIEncoding.ASCII.GetBytes(@"document.addEventListener('DOMContentLoaded', function (event) { var a = document.querySelectorAll('img'); for (var i = 0; i < a.length; i++) { a[i].remove(); }; console.log('DOM_CONTENT_LOADED'); }); ");
+        //                    stream.Write(bytes, 0, bytes.Length);
+        //                    requestResponse.RespondWith(stream, "text/javascript; charset=utf-8");
+        //                    break;
+        //                default:
+        //                    stream = new System.IO.MemoryStream();
+        //                    FileStream file = new FileStream(@"plugin.js", FileMode.Open, FileAccess.Read, FileShare.Read);
+        //                    bytes = new byte[file.Length];
+        //                    file.Read(bytes, 0, (int)file.Length);
+        //                    stream.Write(bytes, 0, (int)file.Length);
+        //                    file.Close();
+        //                    requestResponse.RespondWith(stream, "text/javascript; charset=utf-8");
+        //                    break;
+        //            }
+        //            Debug.WriteLine("----> JS === " + url);
+        //            brow_ImportPlugin = true;
+        //            return false;
+        //        }
+
+        //        if (url.Contains(".js") || url.Contains("/js/")
+        //            || url.Contains(brow_Domain) == false
+        //            || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
+        //            || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+        //        {
+        //            Debug.WriteLine("----> " + url);
+        //            return true;
+        //        }
+        //        Debug.WriteLine(url);
+        //    }
+
+        #region
+
+        ////IRequest request = requestResponse.Request;
+        ////string url = request.Url, s = string.Empty;
+        //            MemoryStream stream;
+        //            byte[] bytes;
+        //            if (url.EndsWith(".mp4"))
+        //            {
+        //                string id = Path.GetFileName(url);
+        //                id = id.Substring(0, id.Length - 4);
+        //                string desUrl = string.Format("https://drive.google.com/uc?export=download&id={0}", id);
+
+        //                //stream = new System.IO.MemoryStream();
+        //                ////bytes = System.Text.ASCIIEncoding.UTF8.GetBytes("");
+
+        //                //FileStream file = new FileStream(@"E:\_cs\cef\cef_119_youtube\bin\x86\Debug\player\files\1.mp4", FileMode.Open, FileAccess.Read, FileShare.Read);
+        //                //bytes = new byte[file.Length];
+        //                //file.Read(bytes, 0, (int)file.Length);
+        //                //file.Close();
+
+        //                //stream.Write(bytes, 0, bytes.Length);
+
+        //                //requestResponse.RespondWith(stream, "video/mp4");
+
+        //                desUrl = "https://r6---sn-8qj-i5oed.googlevideo.com/videoplayback?source=youtube&ms=au%2Crdu&mt=1526202288&mv=m&mm=31%2C29&mn=sn-8qj-i5oed%2Csn-i3b7kn7d&requiressl=yes&key=yt6&itag=22&mime=video%2Fmp4&ipbits=0&signature=CFA4FBAB6DAF7D4E1E6F8643865E06BD13C9B2C9.4AE8093B9CC164EE634F1465807AE309CB9EC5C3&dur=234.289&expire=1526223993&pl=20&ratebypass=yes&pcm2cms=yes&fvip=2&lmt=1510741625396835&id=o-APLwY1H9955dAWnARW0t1FTqsoCs-_OffF4spks0P2AQ&ei=GQD4WtupH4mngQOysI3oCw&c=WEB&initcwndbps=960000&sparams=dur%2Cei%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpcm2cms%2Cpl%2Cratebypass%2Crequiressl%2Csource%2Cexpire&ip=14.177.123.70";
+
+        //                requestResponse.Redirect(desUrl);
+        //            }
+        //            else
+        //            {
+        //                url = url.ToLower();
+        //                #region
+        //                switch (url)
+        //                {
+        //                    case "http://i.ytimg.com/crossdomain.xml":
+        //                    case "https://drive.google.com/crossdomain.xml":
+        //                        #region
+        //                        stream = new MemoryStream();
+        //                        s = @"<?xml version=""1.0""?>
+        //<!DOCTYPE cross-domain-policy SYSTEM
+        //""http://www.adobe.com/xml/dtds/cross-domain-policy.dtd"">
+        //<cross-domain-policy>
+        //   <site-control permitted-cross-domain-policies=""all""/>
+        //   <allow-access-from domain=""*"" secure=""false""/>
+        //   <allow-http-request-headers-from domain=""*"" headers=""*"" secure=""false""/>
+        //</cross-domain-policy>";
+        //                        s = @"<cross-domain-policy><allow-access-from domain=""*"" /></cross-domain-policy>";
+
+        //                        bytes = ASCIIEncoding.UTF8.GetBytes("");
+        //                        stream.Write(bytes, 0, bytes.Length);
+        //                        requestResponse.RespondWith(stream, "text/xml");
+        //                        #endregion
+        //                        break;
+        //                    case "http://l.longtailvideo.com/5/10/logo.png":
+        //                        stream = new MemoryStream();
+        //                        bytes = new byte[] { 0 };
+        //                        stream.Write(bytes, 0, bytes.Length);
+        //                        requestResponse.RespondWith(stream, "image/png");
+        //                        break;
+        //                    case "http://www.youtube.com/apiplayer":
+        //                        stream = new System.IO.MemoryStream();
+        //                        bytes = System.Text.ASCIIEncoding.UTF8.GetBytes("");
+        //                        stream.Write(bytes, 0, bytes.Length);
+        //                        requestResponse.RespondWith(stream, "text/html; charset=utf-8");
+        //                        break;
+        //                }
+
+
+
+        //                ////if (request.Url.EndsWith("header.png"))
+        //                ////{
+        //                ////    MemoryStream stream = new System.IO.MemoryStream();
+
+        //                ////    FileStream file = new FileStream(@"C:\tmp\header.png", FileMode.Open, FileAccess.Read, FileShare.Read);
+        //                ////    byte[] bytes = new byte[file.Length];
+        //                ////    file.Read(bytes, 0, (int)file.Length);
+        //                ////    stream.Write(bytes, 0, (int)file.Length);
+        //                ////    file.Close();
+
+        //                ////    requestResponse.RespondWith(stream, "image/png");
+        //                ////}
+        //                #endregion
+        //            }
+
+        #endregion
+
+        //    return false;
+        //}
+
+        //bool IRequestHandler.OnBeforeBrowse(IWebBrowser browser, IRequest request, NavigationType naigationvType, bool isRedirect)
+        //{
+        //    string url = request.Url;
+        //    if (url == "about:blank"
+        //        || url.Contains("youtube.com/embed/")
+        //        || url.Contains("facebook.com/plugins/"))
+        //        return true;
+
+        //    if (url.StartsWith("chrome-devtools://")) return false;
+
+        //    Debug.WriteLine("GO ====> " + request.Url);
+
+        //    brow_URL = request.Url;
+        //    brow_Domain = brow_URL.Split('/')[2];
+        //    brow_UrlTextBox.crossThreadPerformSafely(() => brow_UrlTextBox.Text = brow_URL);
+
+        //    brow_ImportPlugin = false;
+
+        //    f_brow_onBeforeBrowse();
+
+        //    return false;
+        //}
+
+        //void IRequestHandler.OnResourceResponse(IWebBrowser browser, string url, int status, string statusText, string mimeType, WebHeaderCollection headers)
+        //{
+        //    //string content_type = headers.Get("Content-Type");
+        //    ////if (url.EndsWith(".mp4")) { }
+        //    ////System.Diagnostics.Debug.WriteLine("OnResourceResponse");
+        //    //Debug.WriteLine(content_type + " === " + url);
+        //}
+
+        //public bool GetDownloadHandler(IWebBrowser browser, string mimeType, string fileName, long contentLength, ref IDownloadHandler handler)
+        //{
+        //    return false;
+        //}
+
+        //public bool GetAuthCredentials(IWebBrowser browser, bool isProxy, string host, int port, string realm, string scheme, ref string username, ref string password)
+        //{
+        //    return false;
+        //}
+
+        #endregion
+    }
+    
+    #region
+
+    #region public enum GeckoSecurityState
+    public enum GeckoSecurityState
 	{
 		/// <summary>
 		/// This flag indicates that the data corresponding to the request was received over an insecure channel.
@@ -2519,5 +2688,7 @@ namespace Gecko
 			}
 		}
 	}
-	#endregion GeckoJavaScriptHttpChannelWrapper
+    #endregion GeckoJavaScriptHttpChannelWrapper
+
+    #endregion
 }

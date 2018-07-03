@@ -62,5 +62,34 @@ namespace elbro
         {
             return this.Handle.ToInt32();
         }
+
+        #region [ LOG ]
+
+        public void f_log(string message)
+        {
+            System.Tracer.WriteLine(message);
+        }
+
+        public void f_log(string format, object arg0)
+        {
+            System.Tracer.WriteLine(format, arg0);
+        }
+
+        public void f_log(string format, object arg0, object arg1)
+        {
+            System.Tracer.WriteLine(format, arg0, arg1);
+        }
+
+        public void f_log(string format, object arg0, object arg1, object arg2)
+        {
+            System.Tracer.WriteLine(format, arg0, arg1, arg2);
+        }
+
+        public void f_log(string format, object arg0, object arg1, object arg2, object arg3)
+        {
+            System.Tracer.WriteLine(format, arg0, arg1, arg2, arg3);
+        }
+
+        #endregion
     }
 }
