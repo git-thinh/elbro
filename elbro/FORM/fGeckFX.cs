@@ -87,12 +87,14 @@ namespace elbro
 			tabPage.Show();
 			m_tabControl.SelectedTab = tabPage;
 
-			// Uncomment this to stop links from navigating.
-			// browser.DomClick += StopLinksNavigating;
+            browser.Navigate("https://dictionary.cambridge.org/");
 
-			// Demo use of ReadyStateChange.
-			// For some special page, e.g. about:config browser.Document is null.
-			browser.ReadyStateChange += (s, e) => this.Text = browser.Document != null ? browser.Document.ReadyState : "";
+            // Uncomment this to stop links from navigating.
+            // browser.DomClick += StopLinksNavigating;
+
+            // Demo use of ReadyStateChange.
+            // For some special page, e.g. about:config browser.Document is null.
+            browser.ReadyStateChange += (s, e) => this.Text = browser.Document != null ? browser.Document.ReadyState : "";
 
 			browser.DocumentTitleChanged += (s, e) => tabPage.Text = browser.DocumentTitle;
 
