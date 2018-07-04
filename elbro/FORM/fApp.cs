@@ -39,6 +39,7 @@ namespace elbro
 
         public fApp(IJobStore store) : base(store)
         {
+            this.WindowState = FormWindowState.Maximized;
             this.Text = "English";
             this.OnReceiveMessage += f_event_OnReceiveMessage;
             this.Shown += f_form_Shown;
@@ -55,7 +56,6 @@ namespace elbro
 
         private void f_form_Shown(object sender, EventArgs e)
         {
-            this.WindowState = FormWindowState.Maximized;
             //f_brow_Go(brow_URL);
         }
 
