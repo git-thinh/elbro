@@ -101,13 +101,43 @@ namespace elbro
             // Enable HTML5 Video, Audio: true
             GeckoPreferences.User["media.navigator.permission.disabled"] = false;
 
-            //// disable caching of http documents
-            GeckoPreferences.User["network.http.use-cache"] = false;
-            //// disalbe memory caching
-            GeckoPreferences.User["browser.cache.memory.enable"] = false;
+            //Also, if you want to disable cache, you can do that:
+            //GeckoPreferences.User["browser.cache.disk.enable"] = false;
+            GeckoPreferences.User["places.history.enabled"] = false;
 
+            // disable caching of http documents
+            GeckoPreferences.User["network.http.use-cache"] = false;
+            // disalbe memory caching
+            GeckoPreferences.User["browser.cache.memory.enable"] = false;
             // maximum amount of memory for the browser cache (probably redundant with browser.cache.memory.enable above, but doesn't hurt)
             GeckoPreferences.User["browser.cache.memory.capacity"] = 0;             // 0 disables feature
+
+            string gecko_cache_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cache");
+            if (!Directory.Exists(gecko_cache_path)) Directory.CreateDirectory(gecko_cache_path);
+
+            // At first I suspected this was due to the profile not having a place to be created, 
+            // since the screensaver runs as LOCAL SERVICE. So I added the following to my code:
+            // Initialize Gecko, disable caches, point profile at common folder.
+            Xpcom.ProfileDirectory = gecko_cache_path;
+            GeckoPreferences.Default["browser.cache.disk.parent_directory"] = gecko_cache_path;
+            GeckoPreferences.Default["browser.cache.disk.enable"] = false;
+            GeckoPreferences.Default["Accessibility.disablecache"] = true;
+            GeckoPreferences.Default["browser.cache.offline.enable"] = false;
+
+            // So the profile is being created in the appropriate spot on disk, now.
+            // However, I'm still getting the privilege error. 
+            // I've granted Everyone full access to the gecko_cache_path and xulrunner_path. 
+            // I'm having a hard time determining what additional permissions dependencies this thing needs to work. 
+            // It occurred to me that it might have to do with Direct3D being unavailable, so I also added:
+
+            GeckoPreferences.Default["layers.accelerate-all"] = false;
+            GeckoPreferences.Default["layers.accelerate-none"] = true;
+            GeckoPreferences.Default["layers.acceleration.disabled"] = true;
+            GeckoPreferences.Default["gfx.direct2d.disabled"] = true;
+            GeckoPreferences.Default["gfx.direct3d.disabled"] = true;
+            GeckoPreferences.Default["gfx.content.azure.enable"] = false;
+            GeckoPreferences.Default["gfx.direct2d.force-enabled"] = false;
+            GeckoPreferences.Default["webgl.disabled"] = true;
         }
 
         static void f_geckoSetting_bak2()

@@ -570,7 +570,7 @@ namespace elbro
             {
                 browser.IsReadCache = true;
                 //ev.Cancel = true;
-                browser.Stop();
+                //browser.Stop();
                 return;
             }
 
@@ -586,6 +586,7 @@ namespace elbro
                 htm = htm + @"<style>\r\n html *::before,html *::after,i::before,i::after,a::before,a::after,li::before,li::after,p::before,p::after,div::before,div::after { content:"""" !important; } " + 
                     css + "\r\n</style>";
 
+                browser.Stop();
                 browser.LoadHtml(htm);
                 browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
 
@@ -596,7 +597,7 @@ namespace elbro
         }
 
         void f_brow_onDOMContentLoaded(string title, Uri uri){
-            this.f_log("DOMContentLoaded: ", uri);
+            this.f_log("DOMContentLoaded: " + uri);
             brow_Transparent.SendToBack();
             this.Text = title;
         }
