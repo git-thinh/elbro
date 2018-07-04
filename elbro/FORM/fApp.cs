@@ -124,7 +124,7 @@ namespace elbro
             browser.DOMContentLoaded += (se, ev) => { GeckoWebBrowser w = (GeckoWebBrowser)se; if (w != null) f_brow_onDOMContentLoaded(w.DocumentTitle, w.Url); };
             browser.Navigating += (se, ev) => { f_brow_onBeforeNavigating(ev.Uri); };
             //browser.ConsoleMessage += (se, ev) => { f_brow_onConsoleMessage(ev.Message); };
-            browser.DocumentCompleted += (se, ev) => { f_brow_onDocumentCompleted();};
+            //browser.DocumentCompleted += (se, ev) => { f_brow_onDocumentCompleted();};
             browser.DomDoubleClick += f_brow_onDomDoubleClick;
             //browser.DomClick += f_brow_onDomClick;
 
@@ -239,11 +239,8 @@ namespace elbro
             this.f_log("DOMContentLoaded: ", uri);
             brow_Transparent.SendToBack();
             this.Text = title;
-
         }
-
-        static string brow_JS = File.ReadAllText("Bin/api.js");
-
+        
         void f_brow_onDocumentCompleted() {
         }
 
