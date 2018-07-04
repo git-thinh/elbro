@@ -57,6 +57,9 @@ namespace System.Windows.Forms
 
             //Eventhandlers which contains function calls. 
             //Either to draw or to remove the watermark
+
+            
+
             this.Enter += new EventHandler(ThisHasFocus);
             this.Leave += new EventHandler(ThisWasLeaved);
             this.TextChanged += new EventHandler(ThisTextChanged);
@@ -236,6 +239,20 @@ namespace System.Windows.Forms
             set
             {
                 this._waterMarkColor = value;
+                this.Invalidate();
+            }
+        }
+
+        private ContentAlignment _waterMarkTextAlign = ContentAlignment.MiddleLeft;
+        [Category("Watermark attribtues")]
+        [Description("When the control looses focus, this color will be used as the watermark's forecolor")]
+        public ContentAlignment WaterMarkTextAlign
+        {
+            get { return this._waterMarkTextAlign; }
+
+            set
+            { 
+                this._waterMarkTextAlign = value;
                 this.Invalidate();
             }
         }
