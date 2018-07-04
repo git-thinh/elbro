@@ -2135,14 +2135,14 @@ namespace Gecko
 				Uri.TryCreate(request.Name, UriKind.Absolute, out destUri);
 
                 ////////////////////////////////////////////////////////////////////
-                string url = destUri.ToString();
-                bool cancel = f_requestCancel(url);
-                if (cancel)
-                {
-                    //System.Tracer.WriteLine("----> OnStateChange CANCEL: " + url);
-                    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
-                    return;
-                }
+                //string url = destUri.ToString();
+                //bool cancel = f_requestCancel(url);
+                //if (cancel)
+                //{
+                //    //System.Tracer.WriteLine("----> OnStateChange CANCEL: " + url);
+                //    aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
+                //    return;
+                //}
                 //System.Tracer.WriteLine("---->[1] OnStateChange OK: " + url);
 
                 // maybe we'll add another event here to allow users to cancel certain content types
@@ -2396,13 +2396,24 @@ namespace Gecko
 
                     ////////////////////////////////////////////////////////////
                     string url = origUri.ToString();
-                    //bool cancel = f_requestCancel(url);
-                    //if (cancel)
-                    //{
-                    //    System.Tracer.WriteLine("----> Observe REQUEST CANCEL: " + url);
-                    //    httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
-                    //    return;
-                    //} 
+                    if (url == "https://dictionary.cambridge.org/required.js?version=3.1.128")
+                    {
+                        //var headers = httpChannel.GetRequestHeaders();
+                        
+                        //// adds "X-Hello: World" header to the request
+                        //httpChannel.SetRequestHeader("X-Hello", "World", false);
+
+                        System.Tracer.WriteLine("---->[2] PROXY: " + url);
+                        return;
+                    }
+
+                    bool cancel = f_requestCancel(url);
+                    if (cancel)
+                    {
+                        System.Tracer.WriteLine("---->[2] Observe REQUEST CANCEL: " + url);
+                        httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
+                        return;
+                    }
                     System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url);
 
                     ////////////////////////////////////////////////////////////

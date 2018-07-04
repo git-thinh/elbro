@@ -63,6 +63,13 @@ namespace elbro
             // Enable HTML5 Video, Audio: true
             GeckoPreferences.User["media.navigator.permission.disabled"] = false;
 
+            ////'TEST EDIT USER AGENT
+            ////Dim sUserAgent As String = "Mozilla/5.0 (Windows; U; Windows NT 6.1; pl; rv:1.9.1) Gecko/20090624 Firefox/3.5 (.NET CLR 3.5.30729)"
+            ////Gecko.GeckoPreferences.User("general.useragent.override") = sUserAgent
+
+            ////'THIS DISABLE THE PDF PLUGIN THAT OPEN THE PDF ON BROWSER
+            ////Gecko.GeckoPreferences.User("plugin.disable_full_page_plugin_for_types") = "application/pdf"
+
             //////var settings = new Settings();
             ////////settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36";
             //////if (!CEF.Initialize(new Settings()))

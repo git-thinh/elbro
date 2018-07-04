@@ -118,7 +118,7 @@ namespace elbro
             //    ;
             //}));
             //browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
-            browser.UseHttpActivityObserver = false;
+            browser.UseHttpActivityObserver = true;
             //browser.ObserveHttpModifyRequest += (sender, e) => e.Channel.SetRequestHeader(name, value, merge: true);
             //browser.ObserveHttpModifyRequest += f_brow_ObserveHttpModifyRequest;
             browser.DOMContentLoaded += (se, ev) => { GeckoWebBrowser w = (GeckoWebBrowser)se; if (w != null) f_brow_onDOMContentLoaded(w.DocumentTitle, w.Url); };
