@@ -1407,6 +1407,7 @@
     </Compile>
     <Compile Include="LIB\Geckofx\Form\Utils\SaveImageElement.cs" />
     <Compile Include="LIB\Geckofx\Form\Utils\WindowsImageCreator.cs" />
+    <Compile Include="LIB\Geckofx\MyObserver.cs" />
     <Compile Include="LIB\Google\GooTranslateService_v1.cs" />
     <Compile Include="LIB\Google\GooTranslateService_v2.cs" />
     <Compile Include="LIB\HtmlAgilityPack\CssSelectors\CssSelector.cs" />

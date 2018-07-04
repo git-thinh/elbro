@@ -2102,9 +2102,11 @@ namespace Gecko
         #endregion
 
         public string Host { set; get; }
-        
+        public bool IsReadCache { set; get; }
+
         bool f_requestCancel(string url) {
             if (url.Contains(".js") || url.Contains("/js/")
+                || this.IsReadCache
                 //|| url.Contains(this.Host) == false
                 || url.Contains("about:")
                 || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
@@ -2390,88 +2392,219 @@ namespace Gecko
         }
         
 		public void Observe(nsISupports aSubject, string aTopic, string aData) {
-			if (aTopic.Equals(ObserverNotifications.HttpRequests.HttpOnModifyRequest)) {
-				using (var httpChannel = HttpChannel.Create(aSubject)) {
 
-                    var uri = httpChannel.Uri;
-					var origUri = httpChannel.OriginalUri;
 
-                    ////////////////////////////////////////////////////////////
-                    string url = origUri.ToString();
-                    if (url == "https://dictionary.cambridge.org/required.js?version=3.1.128")
+            switch (aTopic)
+            {
+                case ObserverNotifications.HttpRequests.HttpOnModifyRequest: // "http-on-modify-request";
+                    #region
+
+                    using (var httpChannel = HttpChannel.Create(aSubject))
                     {
-                        //var headers = httpChannel.GetRequestHeaders();
-                        
-                        //// adds "X-Hello: World" header to the request
-                        //httpChannel.SetRequestHeader("X-Hello", "World", false);
 
-                        System.Tracer.WriteLine("---->[2] PROXY: " + url);
-                        return;
+                        var uri = httpChannel.Uri;
+                        var origUri = httpChannel.OriginalUri;
+
+                        ////////////////////////////////////////////////////////////
+                        string url = origUri.ToString();
+                        //if (url == "https://dictionary.cambridge.org/required.js?version=3.1.128")
+                        //{
+                        //    //var headers = httpChannel.GetRequestHeaders();
+
+                        //    //// adds "X-Hello: World" header to the request
+                        //    //httpChannel.SetRequestHeader("X-Hello", "World", false);
+
+                        //    System.Tracer.WriteLine("---->[2] PROXY: " + url);
+                        //    return;
+                        //}
+
+                        bool cancel = f_requestCancel(url);
+                        if (cancel)
+                        {
+                            System.Tracer.WriteLine("---->[2] Observe REQUEST CANCEL: " + url);
+                            httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
+                            return;
+                        }
+                        System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url);
+
+                        ////////////////////////////////////////////////////////////
+
+                        var uriRef = httpChannel.Referrer;
+                        var reqMethod = httpChannel.RequestMethod;
+                        var reqHeaders = httpChannel.GetRequestHeaders();
+                        byte[] reqBody = null;
+                        bool? reqBodyContainsHeaders = null;
+
+                        #region POST data
+
+                        var uploadChannel = Xpcom.QueryInterface<nsIUploadChannel>(aSubject);
+                        var uploadChannel2 = Xpcom.QueryInterface<nsIUploadChannel2>(aSubject);
+
+                        if (uploadChannel != null)
+                        {
+                            var uc = new UploadChannel(uploadChannel);
+                            var uploadStream = uc.UploadStream;
+
+                            if (uploadStream != null)
+                            {
+                                if (uploadStream.CanSeek)
+                                {
+                                    var rdr = new BinaryReader(uploadStream);
+                                    var reqBodyStream = new MemoryStream();
+                                    try
+                                    {
+                                        reqBody = new byte[] { };
+                                        int avl = 0;
+                                        while ((avl = ((int)uploadStream.Available)) > 0)
+                                        {
+                                            reqBodyStream.Write(rdr.ReadBytes(avl), 0, avl);
+                                        }
+                                        reqBody = reqBodyStream.ToArray();
+
+                                        if (uploadChannel2 != null)
+                                            reqBodyContainsHeaders = uploadChannel2.GetUploadStreamHasHeadersAttribute();
+                                    }
+                                    catch (IOException ex)
+                                    {
+                                        // failed to read body, ignore
+                                    }
+
+                                    // rewind stream, so browser can read it as usual
+                                    uploadStream.Seek(0, 0);
+                                }
+                            }
+                        }
+
+                        #endregion POST data
+
+
+                        var evt = new GeckoObserveHttpModifyRequestEventArgs(uri, uriRef, reqMethod, reqBody, reqHeaders, httpChannel, reqBodyContainsHeaders);
+                        OnObserveHttpModifyRequest(evt);
+                        if (evt.Cancel)
+                        {
+                            httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
+                        }
                     }
 
-                    bool cancel = f_requestCancel(url);
-                    if (cancel)
-                    {
-                        System.Tracer.WriteLine("---->[2] Observe REQUEST CANCEL: " + url);
-                        httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
-                        return;
+                    #endregion
+                    break;
+                case ObserverNotifications.HttpRequests.HttpOnOpeningRequest: // "http-on-opening-request";
+                    break;
+                case ObserverNotifications.HttpRequests.HttpOnExamineResponse: // "http-on-examine-response";
+                    using (var res = HttpChannel.Create(aSubject))
+                    { 
+                        try
+                        {
+                            var rs = new GeckoResponse(res.NativeRequest);
+                        }
+                        catch (Exception e)
+                        {
+                            string mm = e.Message;
+                        } 
                     }
-                    System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url);
 
-                    ////////////////////////////////////////////////////////////
+                    break;
+                case ObserverNotifications.HttpRequests.HttpOnExamineCachedResponse: // "http-on-examine-cached-response";
+                    break;
+                case ObserverNotifications.HttpRequests.HttpOnExamineMergedResponse: // "http-on-examine-merged-response"; 
+                    break;
+            }
 
-					var uriRef = httpChannel.Referrer;
-					var reqMethod = httpChannel.RequestMethod;
-					var reqHeaders = httpChannel.GetRequestHeaders();
-					byte[] reqBody = null;
-					bool? reqBodyContainsHeaders = null;
+            #region
 
-					#region POST data
+            //if (aTopic.Equals(ObserverNotifications.HttpRequests.HttpOnModifyRequest)) {
 
-					var uploadChannel = Xpcom.QueryInterface<nsIUploadChannel>(aSubject);
-					var uploadChannel2 = Xpcom.QueryInterface<nsIUploadChannel2>(aSubject);
+            //////////using (var httpChannel = HttpChannel.Create(aSubject))
+            //////////{
 
-					if (uploadChannel != null) {
-						var uc = new UploadChannel(uploadChannel);
-						var uploadStream = uc.UploadStream;
+            //////////    var uri = httpChannel.Uri;
+            //////////    var origUri = httpChannel.OriginalUri;
 
-						if (uploadStream != null) {
-							if (uploadStream.CanSeek) {
-								var rdr = new BinaryReader(uploadStream);
-								var reqBodyStream = new MemoryStream();
-								try {
-									reqBody = new byte[] { };
-									int avl = 0;
-									while ((avl = ((int)uploadStream.Available)) > 0) {
-										reqBodyStream.Write(rdr.ReadBytes(avl), 0, avl);
-									}
-									reqBody = reqBodyStream.ToArray();
+            //////////    ////////////////////////////////////////////////////////////
+            //////////    string url = origUri.ToString();
+            //////////    if (url == "https://dictionary.cambridge.org/required.js?version=3.1.128")
+            //////////    {
+            //////////        //var headers = httpChannel.GetRequestHeaders();
 
-									if (uploadChannel2 != null)
-										reqBodyContainsHeaders = uploadChannel2.GetUploadStreamHasHeadersAttribute();
-								}
-								catch (IOException ex) {
-									// failed to read body, ignore
-								}
+            //////////        //// adds "X-Hello: World" header to the request
+            //////////        //httpChannel.SetRequestHeader("X-Hello", "World", false);
 
-								// rewind stream, so browser can read it as usual
-								uploadStream.Seek(0, 0);
-							}
-						}
-					}
+            //////////        System.Tracer.WriteLine("---->[2] PROXY: " + url);
+            //////////        return;
+            //////////    }
 
-                    #endregion POST data
-                                         
+            //////////    bool cancel = f_requestCancel(url);
+            //////////    if (cancel)
+            //////////    {
+            //////////        System.Tracer.WriteLine("---->[2] Observe REQUEST CANCEL: " + url);
+            //////////        httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
+            //////////        return;
+            //////////    }
+            //////////    System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url);
 
-					var evt = new GeckoObserveHttpModifyRequestEventArgs(uri, uriRef, reqMethod, reqBody, reqHeaders, httpChannel, reqBodyContainsHeaders);
-					OnObserveHttpModifyRequest(evt);
-					if (evt.Cancel) {
-						httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
-					}
-				}
-			}
-		}
-        
+            //////////    ////////////////////////////////////////////////////////////
+
+            //////////    var uriRef = httpChannel.Referrer;
+            //////////    var reqMethod = httpChannel.RequestMethod;
+            //////////    var reqHeaders = httpChannel.GetRequestHeaders();
+            //////////    byte[] reqBody = null;
+            //////////    bool? reqBodyContainsHeaders = null;
+
+            //////////    #region POST data
+
+            //////////    var uploadChannel = Xpcom.QueryInterface<nsIUploadChannel>(aSubject);
+            //////////    var uploadChannel2 = Xpcom.QueryInterface<nsIUploadChannel2>(aSubject);
+
+            //////////    if (uploadChannel != null)
+            //////////    {
+            //////////        var uc = new UploadChannel(uploadChannel);
+            //////////        var uploadStream = uc.UploadStream;
+
+            //////////        if (uploadStream != null)
+            //////////        {
+            //////////            if (uploadStream.CanSeek)
+            //////////            {
+            //////////                var rdr = new BinaryReader(uploadStream);
+            //////////                var reqBodyStream = new MemoryStream();
+            //////////                try
+            //////////                {
+            //////////                    reqBody = new byte[] { };
+            //////////                    int avl = 0;
+            //////////                    while ((avl = ((int)uploadStream.Available)) > 0)
+            //////////                    {
+            //////////                        reqBodyStream.Write(rdr.ReadBytes(avl), 0, avl);
+            //////////                    }
+            //////////                    reqBody = reqBodyStream.ToArray();
+
+            //////////                    if (uploadChannel2 != null)
+            //////////                        reqBodyContainsHeaders = uploadChannel2.GetUploadStreamHasHeadersAttribute();
+            //////////                }
+            //////////                catch (IOException ex)
+            //////////                {
+            //////////                    // failed to read body, ignore
+            //////////                }
+
+            //////////                // rewind stream, so browser can read it as usual
+            //////////                uploadStream.Seek(0, 0);
+            //////////            }
+            //////////        }
+            //////////    }
+
+            //////////    #endregion POST data
+
+
+            //////////    var evt = new GeckoObserveHttpModifyRequestEventArgs(uri, uriRef, reqMethod, reqBody, reqHeaders, httpChannel, reqBodyContainsHeaders);
+            //////////    OnObserveHttpModifyRequest(evt);
+            //////////    if (evt.Cancel)
+            //////////    {
+            //////////        httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
+            //////////    }
+            //////////}
+            //}
+
+            #endregion
+        }
+
         #region [ IRequestHandler Members ]
 
         //bool IRequestHandler.OnBeforeResourceLoad(IWebBrowser browser, IRequestResponse requestResponse)

@@ -70,6 +70,7 @@ namespace elbro
             f_Exit();
         }
 
+
         //public static IFORM get_Main() {
         //    return null;
         //}
@@ -89,23 +90,101 @@ namespace elbro
         static void f_geckoSetting()
         {
             Xpcom.Initialize("Bin");
+
             GeckoPreferences.User["extensions.blocklist.enabled"] = false;
+
             // Uncomment the follow line to enable error page
             GeckoPreferences.User["browser.xul.error_pages.enabled"] = true;
             GeckoPreferences.User["gfx.font_rendering.graphite.enabled"] = true;
             GeckoPreferences.User["full-screen-api.enabled"] = true;
+
             // Enable HTML5 Video, Audio: true
             GeckoPreferences.User["media.navigator.permission.disabled"] = false;
+
+            //// disable caching of http documents
+            GeckoPreferences.User["network.http.use-cache"] = false;
+            //// disalbe memory caching
+            GeckoPreferences.User["browser.cache.memory.enable"] = false;
+
+            // maximum amount of memory for the browser cache (probably redundant with browser.cache.memory.enable above, but doesn't hurt)
+            GeckoPreferences.User["browser.cache.memory.capacity"] = 0;             // 0 disables feature
+        }
+
+        static void f_geckoSetting_bak2()
+        {
+            //Xpcom.Initialize();
+
+            //// Set some preferences
+            //nsIPrefBranch pref = Xpcom.GetService<nsIPrefBranch>("@mozilla.org/preferences-service;1");
+
+            //// Show same page as firefox does for unsecure SSL/TLS connections ...
+            //pref.SetIntPref("browser.ssl_override_behavior", 1);
+            //pref.SetIntPref("security.OCSP.enabled", 0);
+            //pref.SetBoolPref("security.OCSP.require", false);
+            //pref.SetBoolPref("extensions.hotfix.cert.checkAttributes", true);
+            //pref.SetBoolPref("security.remember_cert_checkbox_default_setting", true);
+            //pref.SetBoolPref("services.sync.prefs.sync.security.default_personal_cert", true);
+            //pref.SetBoolPref("browser.xul.error_pages.enabled", true);
+            //pref.SetBoolPref("browser.xul.error_pages.expert_bad_cert", false);
+
+            //// disable caching of http documents
+            //pref.SetBoolPref("network.http.use-cache", false);
+
+            //// disalbe memory caching
+            //pref.SetBoolPref("browser.cache.memory.enable", false);
+
+            //// Desktop Notification
+            //pref.SetBoolPref("notification.feature.enabled", true);
+
+            //// WebSMS
+            //pref.SetBoolPref("dom.sms.enabled", true);
+            //pref.SetCharPref("dom.sms.whitelist", "");
+
+            //// WebContacts
+            //pref.SetBoolPref("dom.mozContacts.enabled", true);
+            //pref.SetCharPref("dom.mozContacts.whitelist", "");
+
+            //pref.SetBoolPref("social.enabled", false);
+
+            //// WebAlarms
+            //pref.SetBoolPref("dom.mozAlarms.enabled", true);
+
+            //// WebSettings
+            //pref.SetBoolPref("dom.mozSettings.enabled", true);
+
+            //pref.SetBoolPref("network.jar.open-unsafe-types", true);
+            //pref.SetBoolPref("security.warn_entering_secure", false);
+            //pref.SetBoolPref("security.warn_entering_weak", false);
+            //pref.SetBoolPref("security.warn_leaving_secure", false);
+            //pref.SetBoolPref("security.warn_viewing_mixed", false);
+            //pref.SetBoolPref("security.warn_submit_insecure", false);
+            //pref.SetIntPref("security.ssl.warn_missing_rfc5746", 1);
+            //pref.SetBoolPref("security.ssl.enable_false_start", false);
+            //pref.SetBoolPref("security.enable_ssl3", true);
+            //pref.SetBoolPref("security.enable_tls", true);
+            //pref.SetBoolPref("security.enable_tls_session_tickets", true);
+            //pref.SetIntPref("privacy.popups.disable_from_plugins", 2);
+
+            //// don't store passwords
+            //pref.SetIntPref("security.ask_for_password", 1);
+            //pref.SetIntPref("security.password_lifetime", 0);
+            //pref.SetBoolPref("signon.prefillForms", false);
+            //pref.SetBoolPref("signon.rememberSignons", false);
+            //pref.SetBoolPref("browser.fixup.hide_user_pass", false);
+            //pref.SetBoolPref("privacy.item.passwords", true);
+
         }
 
         static void f_geckoSetting_bak()
         {
             Xpcom.Initialize("Bin");
             GeckoPreferences.User["extensions.blocklist.enabled"] = false;
+
             // Uncomment the follow line to enable error page
             GeckoPreferences.User["browser.xul.error_pages.enabled"] = true;
             GeckoPreferences.User["gfx.font_rendering.graphite.enabled"] = true;
             GeckoPreferences.User["full-screen-api.enabled"] = true;
+
             // Enable HTML5 Video, Audio: true
             GeckoPreferences.User["media.navigator.permission.disabled"] = false;
 

@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using Gecko.Events;
 using System.Linq;
 using Gecko.DOM;
+using System.Threading;
 
 namespace elbro
 {
@@ -123,7 +124,7 @@ namespace elbro
             //browser.ObserveHttpModifyRequest += (sender, e) => e.Channel.SetRequestHeader(name, value, merge: true);
             //browser.ObserveHttpModifyRequest += f_brow_ObserveHttpModifyRequest;
             browser.DOMContentLoaded += (se, ev) => { GeckoWebBrowser w = (GeckoWebBrowser)se; if (w != null) f_brow_onDOMContentLoaded(w.DocumentTitle, w.Url); };
-            browser.Navigating += (se, ev) => { f_brow_onBeforeNavigating(ev.Uri); };
+            browser.Navigating += (se, ev) => { f_brow_onBeforeNavigating(ev); };
             //browser.ConsoleMessage += (se, ev) => { f_brow_onConsoleMessage(ev.Message); };
             //browser.DocumentCompleted += (se, ev) => { f_brow_onDocumentCompleted();};
             //browser.DomDoubleClick += f_brow_onDomDoubleClick;
@@ -137,6 +138,11 @@ namespace elbro
             //browser.JavascriptError += f_brow_onJavascriptError;
 
             browser.CreateControl();
+
+            MyObserver oObs = new MyObserver();
+            oObs.TicketLoadedEvent += f_brow_TicketLoadedEvent_Handling;
+            ObserverService.AddObserver(oObs);
+
 
             brow_Transparent = new ControlTransparent()
             {
@@ -182,9 +188,26 @@ namespace elbro
             this.Controls.AddRange(new Control[] { brow_Transparent, browser, brow_ShortCutBar, toolbar, });
             f_brow_Go(brow_URL);
         }
-        
+
+        static DictionaryThreadSafe<string, string> cacheResponse = new DictionaryThreadSafe<string, string>();
+        private void f_brow_TicketLoadedEvent_Handling(object sender, TicketLoadedEventArgs e)
+        {
+            string url = e.Url;
+            if (url.Contains(brow_Domain))
+            {
+                string data = e.Data;
+                if (!string.IsNullOrEmpty(data))
+                {
+                    if (cacheResponse.ContainsKey(url))
+                        cacheResponse.Add(url, data);
+                    else
+                        cacheResponse[url] = data;
+                }
+            }
+        }
+
         #region [ MENU_CONTEXT ]
-        
+
         //browser.NoDefaultContextMenu = true;
         //browser.ShowContextMenu += f_brow_onShowContextMenu;
 
@@ -533,16 +556,43 @@ namespace elbro
             } 
         }
 
-        void f_brow_onBeforeNavigating(Uri uri)
+        void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
         {
-            this.f_log("BeforeNavigating: ", uri);
+            string uri = ev.Uri.ToString();
+            this.f_log("BeforeNavigating: " + uri);
 
             brow_URL = uri.ToString();
             brow_Domain = brow_URL.Split('/')[2];
             browser.Host = brow_Domain;
-
-            brow_Transparent.BringToFront();
             brow_UrlTextBox.Text = brow_URL;
+
+            if (f_brow_loadCache(uri))
+            {
+                browser.IsReadCache = true;
+                //ev.Cancel = true;
+                browser.Stop();
+                return;
+            }
+
+            browser.IsReadCache = false;
+            brow_Transparent.BringToFront();
+        }
+
+        bool f_brow_loadCache(string uri) {
+            if (cacheResponse.ContainsKey(uri))
+            {
+                string htm = cacheResponse[uri];
+                string css = string.Join(Environment.NewLine, cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray());
+                htm = htm + @"<style>\r\n html *::before,html *::after,i::before,i::after,a::before,a::after,li::before,li::after,p::before,p::after,div::before,div::after { content:"""" !important; } " + 
+                    css + "\r\n</style>";
+
+                browser.LoadHtml(htm);
+                browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+
+                this.f_log("BeforeNavigating ===> CACHE: " + uri);
+                return true;
+            }
+            return false;
         }
 
         void f_brow_onDOMContentLoaded(string title, Uri uri){
@@ -575,6 +625,7 @@ namespace elbro
 
         void f_brow_Close()
         {
+            cacheResponse.Clear();
             browser.Dispose();
             Xpcom.Shutdown();
         }
