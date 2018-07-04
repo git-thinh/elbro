@@ -11,6 +11,7 @@ using System.Web;
 using System.Windows.Forms;
 using Gecko.Events;
 using System.Linq;
+using Gecko.DOM;
 
 namespace elbro
 {
@@ -125,8 +126,17 @@ namespace elbro
             browser.Navigating += (se, ev) => { f_brow_onBeforeNavigating(ev.Uri); };
             //browser.ConsoleMessage += (se, ev) => { f_brow_onConsoleMessage(ev.Message); };
             //browser.DocumentCompleted += (se, ev) => { f_brow_onDocumentCompleted();};
-            browser.DomDoubleClick += f_brow_onDomDoubleClick;
+            //browser.DomDoubleClick += f_brow_onDomDoubleClick;
             //browser.DomClick += f_brow_onDomClick;
+            //browser.DomClick += f_brow_onDomClick2;
+
+            browser.NoDefaultContextMenu = true;
+            browser.ShowContextMenu += f_brow_onShowContextMenu;
+
+            browser.DomKeyPress += f_brow_onDomKeyPress;
+            //browser.JavascriptError += f_brow_onJavascriptError;
+
+            browser.CreateControl();
 
             brow_Transparent = new ControlTransparent()
             {
@@ -173,6 +183,320 @@ namespace elbro
             f_brow_Go(brow_URL);
         }
         
+        #region [ MENU_CONTEXT ]
+        
+        //browser.NoDefaultContextMenu = true;
+        //browser.ShowContextMenu += f_brow_onShowContextMenu;
+
+        void f_brow_onShowContextMenu(object sender, GeckoContextMenuEventArgs e)
+        {
+            MenuItem FFMenuItem = null;
+            Debug.Assert(!InvokeRequired);
+            if (ContextMenuProvider != null)
+            {
+                var replacesStdMenu = ContextMenuProvider(e);
+#if DEBUG
+                FFMenuItem = AddOpenPageInFFItem(e);
+#endif
+
+                if (replacesStdMenu)
+                    return; // only the provider's items
+            }
+            var m = e.ContextMenu.MenuItems.Add("Menu test ...");
+            m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
+
+            if (FFMenuItem == null)
+                AddOpenPageInFFItem(e);
+#if DEBUG
+            AddOtherMenuItemsForDebugging(e);
+#endif
+
+            //e.ContextMenu.MenuItems.Add(LocalizationManager.GetString("Browser.CopyTroubleshootingInfo", "Copy Troubleshooting Information"), OnGetTroubleShootingInformation);
+        }
+
+        /// <summary>
+        /// This Function will be passed a GeckoContextMenuEventArgs to which appropriate menu items
+        /// can be added. If it returns true these are in place of our standard extensions; if false, the
+        /// standard ones will follow whatever it adds.
+        /// </summary>
+        public Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider
+        {
+            get; set;
+        }
+
+        private void AddOtherMenuItemsForDebugging(GeckoContextMenuEventArgs e)
+        {
+            //e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
+            //e.ContextMenu.MenuItems.Add("Open about:config window", OnOpenAboutConfig);
+            //e.ContextMenu.MenuItems.Add("Open about:cache window", OnOpenAboutCache);
+        }
+        private MenuItem AddOpenPageInFFItem(GeckoContextMenuEventArgs e)
+        {
+            //return e.ContextMenu.MenuItems.Add(
+            //    LocalizationManager.GetString("Browser.OpenPageInFirefox", "Open Page in Firefox (which must be in the PATH environment variable)"),
+            //    OnOpenPageInSystemBrowser);
+            return e.ContextMenu.MenuItems.Add("Menu test 1");
+        }
+        public static string GetPathToStylizer()
+        {
+            return "";// FileLocator.LocateInProgramFiles("Stylizer.exe", false, new string[] { "Skybound Stylizer 5" });
+        }
+
+        #endregion
+
+        #region [ DOM_CLICK ]
+
+        public event EventHandler OnBrowserClick;
+
+        void f_brow_onDomClick2(object sender, DomEventArgs e)
+        {
+            Debug.Assert(!InvokeRequired);
+            //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
+            //it loses its focus.
+            browser.WebBrowserFocus.Activate();//trying to help the disappearing cursor problem
+
+            EventHandler handler = OnBrowserClick;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>
+        /// When you receive a OnBrowserClick and have determined that nothing was clicked on that the c# needs to pay attention to,
+        /// pass it on to this method. It will either let the browser handle it normally, or redirect it to the operating system
+        /// so that it can open the file or external website itself.
+        /// </summary>
+        public void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
+        {
+            Debug.Assert(!InvokeRequired);
+            if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
+            {
+                Process.Start(anchor.Href);
+                eventArgs.Handled = true;
+                return;
+            }
+            if (anchor.Href.ToLowerInvariant().StartsWith("file"))
+            //links to files are handled externally if we can tell they aren't html/javascript related
+            {
+                // TODO: at this point spaces in the file name will cause the link to fail.
+                // That seems to be a problem in the DomEventArgs.Target.CastToGeckoElement() method.
+                var href = anchor.Href;
+
+                var path = href.Replace("file:///", "");
+
+                if (new List<string>(new[] { ".pdf", ".odt", ".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLowerInvariant()))
+                {
+                    eventArgs.Handled = true;
+                    Process.Start(new ProcessStartInfo()
+                    {
+                        FileName = path,
+                        WorkingDirectory = workingDirectoryForFileLinks
+                    });
+                    return;
+                }
+                eventArgs.Handled = false; //let gecko handle it
+                return;
+            }
+            else if (anchor.Href.ToLowerInvariant().StartsWith("mailto"))
+            {
+                eventArgs.Handled = true;
+                Process.Start(anchor.Href); //let the system open the email program
+                Debug.WriteLine("Opening email program " + anchor.Href);
+            }
+            else
+            {
+                //ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
+                eventArgs.Handled = true;
+            }
+        }
+
+        #endregion
+
+        public string f_brow_javaScript_Run(string script)
+        {
+            Debug.Assert(!InvokeRequired);
+            // Review JohnT: does this require integration with the NavigationIsolator?
+            if (browser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
+            {
+                using (var context = new AutoJSContext(browser.Window.JSContext))
+                {
+                    string result;
+                    context.EvaluateScript(script, (nsISupports)browser.Document.DomObject, out result);
+                    return result;
+                }
+            }
+            return null;
+        }
+
+        public void f_brow_saveHTML(string path)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<string>(f_brow_saveHTML), path);
+                return;
+            }
+            browser.SaveDocument(path, "text/html");
+        }
+
+        public void f_brow_javaScript_InsertDOM(string script_text)
+        {
+            //Debug.Assert(!InvokeRequired);
+            GeckoDocument doc = browser.Document;
+            var head = doc.GetElementsByTagName("head").First();
+            GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
+            script.Type = "text/javascript";
+            script.Text = script_text;
+            head.AppendChild(script);
+        }
+
+        /// <summary>
+        /// Workaround suggested by Tom Hindle, since GeckoFx-45's CanXSelection properties aren't working.
+        /// </summary>
+        /// <returns></returns>
+        public bool f_brow_IsThereACurrentTextSelection()
+        {
+            using (var win = new GeckoWindow(browser.WebBrowserFocus.GetFocusedWindowAttribute()))
+            {
+                var sel = win.Selection;
+                if (sel.IsCollapsed || sel.FocusNode is GeckoImageElement)
+                    return false;
+            }
+            return true;
+        }
+
+        public void f_brow_Copy()
+        {
+            Debug.Assert(!InvokeRequired);
+            browser.CopySelection();
+        }
+
+        private void f_brow_Paste()
+        {
+            // Saved as an example of how to do a special paste. But since we introduced modules,
+            // if we want this we have to get the ts code into the FrameExports system.
+            //if (Control.ModifierKeys == Keys.Control)
+            //{
+            //  var text = PortableClipboard.GetText(TextDataFormat.UnicodeText);
+            //  text = System.Web.HttpUtility.JavaScriptStringEncode(text);
+            //  RunJavaScript("BloomField.CalledByCSharp_SpecialPaste('" + text + "')");
+            //}
+            //else
+            //{
+            //just let ckeditor do the MSWord filtering
+            browser.Paste();
+            //}
+        }
+
+        void f_brow_getCss()
+        {
+            GeckoDocument contentDocument = browser.Document;
+            var userModifiedStyleSheet = contentDocument.StyleSheets.FirstOrDefault(s =>
+            {
+                // workaround for bug #40 (https://bitbucket.org/geckofx/geckofx-29.0/issue/40/xpath-error-hresult-0x805b0034)
+                // var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
+                var titleNode = s.OwnerNode.EvaluateXPath("@title").GetNodes().FirstOrDefault();
+                if (titleNode == null)
+                    return false;
+                return titleNode.NodeValue == "userModifiedStyles";
+            });
+
+            if (userModifiedStyleSheet != null)
+            {
+                f_brow_SaveCustomizedCssRules(userModifiedStyleSheet);
+            }
+
+            //enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
+            //              foreach (XmlElement j in _editDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
+            //              {
+            //                  j.ParentNode.RemoveChild(j);
+            //              }
+            //              foreach (XmlAttribute j in _editDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
+            //              {
+            //                  j.OwnerElement.RemoveAttributeNode(j);
+            //              }
+        }
+
+        private void f_brow_SaveCustomizedCssRules(GeckoStyleSheet userModifiedStyleSheet)
+        {
+            try
+            {
+                /* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
+                 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
+                 * rules don't show up inside of it. So
+                 * this won't work: _editDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
+                 */
+                var styles = new StringBuilder();
+                styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
+                foreach (var cssRule in userModifiedStyleSheet.CssRules)
+                {
+                    styles.AppendLine(cssRule.CssText);
+                }
+                styles.AppendLine("</style>");
+                //////Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);
+                ////_pageEditDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
+            }
+            catch (GeckoJavaScriptException jsex)
+            {
+                /* We are attempting to catch and ignore all JavaScript errors encountered here,
+                 * specifically addEventListener errors and JSError (BL-279, BL-355, et al.).
+                 */
+                //Logger.WriteEvent("GeckoJavaScriptException (" + jsex.Message + "). We're swallowing it but listing it here in the log.");
+                //Debug.Fail("GeckoJavaScriptException(" + jsex.Message + "). In Release version, this would not show.");
+            }
+        }
+
+        /// <summary>
+        /// Prevent a CTRL+V pasting when we have the Paste button disabled, e.g. when pictures are on the clipboard.
+        /// Also handle CTRL+N creating a new page on Linux/Mono.
+        /// </summary>
+        void f_brow_onDomKeyPress(object sender, DomKeyEventArgs e)
+        {
+            //Debug.Assert(!InvokeRequired);
+            //const uint DOM_VK_INSERT = 0x2D;
+
+            ////enhance: it's possible that, with the introduction of ckeditor, we don't need to pay any attention
+            ////to ctrl+v. I'm doing a hotfix to a beta here so I don't want to change more than necessary.
+            //if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
+            //{
+            //    if (_pasteCommand == null /*happened in calendar config*/ || !_pasteCommand.Enabled)
+            //    {
+            //        Debug.WriteLine("Paste not enabled, so ignoring.");
+            //        e.PreventDefault();
+            //    }
+            //    //otherwise, ckeditor will handle the paste
+            //}
+            //// On Windows, Form.ProcessCmdKey (intercepted in Shell) seems to get ctrl messages even when the browser
+            //// has focus.  But on Mono, it doesn't.  So we just do the same thing as that Shell.ProcessCmdKey function
+            //// does, which is to raise this event.
+            //if (SIL.PlatformUtilities.Platform.IsMono && ControlKeyEvent != null && e.CtrlKey && e.KeyChar == 'n')
+            //{
+            //    Keys keyData = Keys.Control | Keys.N;
+            //    ControlKeyEvent.Raise(keyData);
+            //}
+        }
+
+        private void f_brow_onJavascriptError(object sender, JavascriptErrorEventArgs e)
+        {
+            if (e.Message.Contains("sourceMapping"))
+                return;
+            //var file = e.Filename.Split(new char[] { '/' }).Last();
+            //var line = (int)e.Line;
+            //var dir = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
+            //var mapPath = Path.Combine(dir, file + ".map");
+            //if (RobustFile.Exists(mapPath))
+            //{
+            //    var consumer = new SourceMapDotNet.SourceMapConsumer(RobustFile.ReadAllText(mapPath));
+            //    foreach (var match in consumer.OriginalPositionsFor(line))
+            //    {
+            //        file = match.File;
+            //        line = match.LineNumber;
+            //        break;
+            //    }
+            //}
+            //Debug.WriteLine("{0} in {1}:{2}", e.Message, file, line);
+            //NonFatalProblem.Report(ModalIf.None, PassiveIf.All, e.Message,
+            //    string.Format("{0} in {1}:{2}", e.Message, file, line));
+        }
+
         //private void f_brow_onDomClick(object sender, DomMouseEventArgs e)
         //{ 
         //    GeckoRange range = browser.Window.Selection.GetRangeAt(0);
@@ -209,20 +533,6 @@ namespace elbro
             } 
         }
 
-        void f_brow_Go(string url)
-        {
-            url = url.Trim();
-            if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
-            {
-                browser.Navigate(url);
-            }
-            else
-            {
-                f_brow_Go("https://www.google.com.vn/search?q=" + HttpUtility.UrlEncode(url));
-                //f_brow_Go("https://www.bing.com/search?q=" + HttpUtility.UrlEncode(url));
-            }
-        }
-
         void f_brow_onBeforeNavigating(Uri uri)
         {
             this.f_log("BeforeNavigating: ", uri);
@@ -248,7 +558,20 @@ namespace elbro
             if (message != null && message.Length > 0 && message.IndexOf('$') != -1)
                 this.f_log(message);
         }
-
+        
+        void f_brow_Go(string url)
+        {
+            url = url.Trim();
+            if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            {
+                browser.Navigate(url);
+            }
+            else
+            {
+                f_brow_Go("https://www.google.com.vn/search?q=" + HttpUtility.UrlEncode(url));
+                //f_brow_Go("https://www.bing.com/search?q=" + HttpUtility.UrlEncode(url));
+            }
+        }
 
         void f_brow_Close()
         {

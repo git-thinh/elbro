@@ -48,6 +48,8 @@ using Gecko.Events;
 using Gecko.Interop;
 using Gecko.Net;
 using Gecko.IO;
+using System.Linq;
+using Gecko.DOM;
 
 namespace Gecko
 {
@@ -2100,7 +2102,7 @@ namespace Gecko
         #endregion
 
         public string Host { set; get; }
-
+        
         bool f_requestCancel(string url) {
             if (url.Contains(".js") || url.Contains("/js/")
                 //|| url.Contains(this.Host) == false
