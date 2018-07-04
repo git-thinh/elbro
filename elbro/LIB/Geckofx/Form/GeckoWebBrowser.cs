@@ -2101,19 +2101,19 @@ namespace Gecko
 
         #endregion
 
-        public string Host { set; get; }
-        public bool IsReadCache { set; get; }
+        //public string Host { set; get; }
+        //public bool IsReadCache { set; get; }
 
-        bool f_requestCancel(string url) {
-            if (url.Contains(".js") || url.Contains("/js/")
-                || this.IsReadCache
-                //|| url.Contains(this.Host) == false
-                || url.Contains("about:")
-                || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
-                || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
-                return true;
-            return false;
-        }
+        //bool f_requestCancel(string url) {
+        //    if (url.Contains(".js") || url.Contains("/js/")
+        //        || this.IsReadCache
+        //        //|| url.Contains(this.Host) == false
+        //        || url.Contains("about:")
+        //        || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
+        //        || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+        //        return true;
+        //    return false;
+        //}
 
         void nsIWebProgressListener.OnStateChange(nsIWebProgress aWebProgress, nsIRequest aRequest, uint aStateFlags, int aStatus) {
             //const int NS_BINDING_ABORTED = unchecked((int)0x804B0002);			
@@ -2406,7 +2406,7 @@ namespace Gecko
                         var origUri = httpChannel.OriginalUri;
 
                         ////////////////////////////////////////////////////////////
-                        string url = origUri.ToString();
+                        //string url = origUri.ToString();
                         //if (url == "https://dictionary.cambridge.org/required.js?version=3.1.128")
                         //{
                         //    //var headers = httpChannel.GetRequestHeaders();
@@ -2418,14 +2418,14 @@ namespace Gecko
                         //    return;
                         //}
 
-                        bool cancel = f_requestCancel(url);
-                        if (cancel)
-                        {
-                            System.Tracer.WriteLine("---->[2] Observe REQUEST CANCEL: " + url);
-                            httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
-                            return;
-                        }
-                        System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url);
+                        //bool cancel = f_requestCancel(url);
+                        //if (cancel)
+                        //{
+                        //    System.Tracer.WriteLine("---->[2] Observe REQUEST CANCEL: " + url);
+                        //    httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
+                        //    return;
+                        //}
+                        //System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url);
 
                         ////////////////////////////////////////////////////////////
 

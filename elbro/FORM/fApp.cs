@@ -89,8 +89,7 @@ namespace elbro
         //string brow_URL = "https://drive.google.com/file/d/1TG-FDU0cZ48vaJCMcAO33iNOuNqgL9BH/view";
 
         string brow_Domain;
-        bool brow_ImportPlugin = false,
-            brow_EnabelJS = true,
+        bool brow_EnabelJS = true,
             brow_EnableCSS = false,
             brow_EnableImg = false,
             brow_AutRequest = false;
@@ -121,8 +120,8 @@ namespace elbro
             //}));
             //browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
             browser.UseHttpActivityObserver = true;
+            browser.ObserveHttpModifyRequest += f_brow_ObserveHttpModifyRequest;
             //browser.ObserveHttpModifyRequest += (sender, e) => e.Channel.SetRequestHeader(name, value, merge: true);
-            //browser.ObserveHttpModifyRequest += f_brow_ObserveHttpModifyRequest;
             browser.DOMContentLoaded += (se, ev) => { GeckoWebBrowser w = (GeckoWebBrowser)se; if (w != null) f_brow_onDOMContentLoaded(w.DocumentTitle, w.Url); };
             browser.Navigating += (se, ev) => { f_brow_onBeforeNavigating(ev); };
             //browser.ConsoleMessage += (se, ev) => { f_brow_onConsoleMessage(ev.Message); };
@@ -140,7 +139,7 @@ namespace elbro
             browser.CreateControl();
 
             MyObserver oObs = new MyObserver();
-            oObs.TicketLoadedEvent += f_brow_TicketLoadedEvent_Handling;
+            oObs.TicketLoadedEvent += (se, ev) => f_brow_cacheUpdate(ev.Url, ev.Data);
             ObserverService.AddObserver(oObs);
 
 
@@ -189,13 +188,45 @@ namespace elbro
             f_brow_Go(brow_URL);
         }
 
-        static DictionaryThreadSafe<string, string> cacheResponse = new DictionaryThreadSafe<string, string>();
-        private void f_brow_TicketLoadedEvent_Handling(object sender, TicketLoadedEventArgs e)
+        bool f_requestCancel(string url)
         {
-            string url = e.Url;
+            if ( 
+                   brow_IsReadCache
+                || cacheResponse.ContainsKey(url)
+                || url.Contains(".js") || url.Contains("/js/")
+                || url.Contains(brow_Domain) == false
+                || url.Contains("about:")
+                || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
+                || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+                return true;
+            return false;
+        }
+
+        private void f_brow_ObserveHttpModifyRequest(object sender, GeckoObserveHttpModifyRequestEventArgs e)
+        {
+            string url = e.Channel.Uri.ToString();
+
+            bool cancel = f_requestCancel(url);
+            if (cancel)
+            {
+                System.Tracer.WriteLine("---->[2] Observe REQUEST CANCEL: " + url);
+                //httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
+                e.Cancel = true;
+                return;
+            }
+            System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url);
+
+        }
+
+        #region [ GO - NAVIGATE - DOM_LOADED - CACHE ]
+
+        bool brow_IsReadCache = false;
+        static DictionaryThreadSafe<string, string> cacheResponse = new DictionaryThreadSafe<string, string>();
+
+        private void f_brow_cacheUpdate(string url, string data)
+        {
             if (url.Contains(brow_Domain))
             {
-                string data = e.Data;
                 if (!string.IsNullOrEmpty(data))
                 {
                     if (cacheResponse.ContainsKey(url))
@@ -205,6 +236,84 @@ namespace elbro
                 }
             }
         }
+
+        bool f_brow_cacheLoadPageHTML(string uri) {
+            if (cacheResponse.ContainsKey(uri))
+            {
+                string htm = cacheResponse[uri];
+
+                browser.Stop();
+                browser.LoadHtml(htm);
+                browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+
+                f_brow_cssBinding();
+
+                this.f_log("BeforeNavigating ===> CACHE: " + uri);
+                return true;
+            }
+            return false;
+        }
+        
+        void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
+        {
+            string uri = ev.Uri.ToString();
+            this.f_log("BeforeNavigating: " + uri);
+
+            brow_URL = uri.ToString();
+            brow_Domain = brow_URL.Split('/')[2];
+            brow_UrlTextBox.Text = brow_URL;
+
+            if (f_brow_cacheLoadPageHTML(uri))
+            {
+                brow_IsReadCache = true;
+                ev.Cancel = true;
+                return;
+            }
+
+            brow_IsReadCache = false;
+            brow_Transparent.BringToFront();
+        }
+
+        void f_brow_cssBinding()
+        {
+            const string brow_CSS = @"\r\n html *::before,html *::after,i::before,i::after,a::before,a::after,li::before,li::after,p::before,p::after,div::before,div::after { content:"""" !important; } \r\n";
+
+            string css_text = string.Join(Environment.NewLine, cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray());
+            css_text = "\r\n " + brow_CSS + css_text + " \r\n";
+
+            GeckoDocument doc = browser.Document;
+            var head = doc.GetElementsByTagName("head").First();
+            GeckoStyleElement css = doc.CreateElement("style") as GeckoStyleElement;
+            css.Type = "text/css";
+            css.TextContent = css_text;
+            head.AppendChild(css);
+        }
+
+        void f_brow_onDOMContentLoaded(string title, Uri uri){
+            this.f_log("DOMContentLoaded: " + brow_URL);
+            brow_Transparent.SendToBack();
+            this.Text = title;
+            f_brow_cssBinding();
+        }
+        
+        void f_brow_onDocumentCompleted() {
+        }
+        
+        void f_brow_Go(string url)
+        {
+            url = url.Trim();
+            if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            {
+                browser.Navigate(url);
+            }
+            else
+            {
+                f_brow_Go("https://www.google.com.vn/search?q=" + HttpUtility.UrlEncode(url));
+                //f_brow_Go("https://www.bing.com/search?q=" + HttpUtility.UrlEncode(url));
+            }
+        }
+
+        #endregion
 
         #region [ MENU_CONTEXT ]
 
@@ -333,6 +442,8 @@ namespace elbro
         }
 
         #endregion
+
+        #region [ ... ]
 
         public string f_brow_javaScript_Run(string script)
         {
@@ -556,73 +667,12 @@ namespace elbro
             } 
         }
 
-        void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
-        {
-            string uri = ev.Uri.ToString();
-            this.f_log("BeforeNavigating: " + uri);
-
-            brow_URL = uri.ToString();
-            brow_Domain = brow_URL.Split('/')[2];
-            browser.Host = brow_Domain;
-            brow_UrlTextBox.Text = brow_URL;
-
-            if (f_brow_loadCache(uri))
-            {
-                browser.IsReadCache = true;
-                //ev.Cancel = true;
-                //browser.Stop();
-                return;
-            }
-
-            browser.IsReadCache = false;
-            brow_Transparent.BringToFront();
-        }
-
-        bool f_brow_loadCache(string uri) {
-            if (cacheResponse.ContainsKey(uri))
-            {
-                string htm = cacheResponse[uri];
-                string css = string.Join(Environment.NewLine, cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray());
-                htm = htm + @"<style>\r\n html *::before,html *::after,i::before,i::after,a::before,a::after,li::before,li::after,p::before,p::after,div::before,div::after { content:"""" !important; } " + 
-                    css + "\r\n</style>";
-
-                browser.Stop();
-                browser.LoadHtml(htm);
-                browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
-
-                this.f_log("BeforeNavigating ===> CACHE: " + uri);
-                return true;
-            }
-            return false;
-        }
-
-        void f_brow_onDOMContentLoaded(string title, Uri uri){
-            this.f_log("DOMContentLoaded: " + uri);
-            brow_Transparent.SendToBack();
-            this.Text = title;
-        }
-        
-        void f_brow_onDocumentCompleted() {
-        }
-
         void f_brow_onConsoleMessage(string message) {
             if (message != null && message.Length > 0 && message.IndexOf('$') != -1)
                 this.f_log(message);
         }
-        
-        void f_brow_Go(string url)
-        {
-            url = url.Trim();
-            if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
-            {
-                browser.Navigate(url);
-            }
-            else
-            {
-                f_brow_Go("https://www.google.com.vn/search?q=" + HttpUtility.UrlEncode(url));
-                //f_brow_Go("https://www.bing.com/search?q=" + HttpUtility.UrlEncode(url));
-            }
-        }
+
+        #endregion
 
         void f_brow_Close()
         {
