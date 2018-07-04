@@ -2111,8 +2111,8 @@ namespace Gecko
             return false;
         }
 
-        //const int NS_BINDING_ABORTED = unchecked((int)0x804B0002);
-        void nsIWebProgressListener.OnStateChange(nsIWebProgress aWebProgress, nsIRequest aRequest, uint aStateFlags, int aStatus) {			
+        void nsIWebProgressListener.OnStateChange(nsIWebProgress aWebProgress, nsIRequest aRequest, uint aStateFlags, int aStatus) {
+            //const int NS_BINDING_ABORTED = unchecked((int)0x804B0002);			
 			#region validity checks
 			// The request parametere may be null
 			if (aRequest == null) return;
@@ -2139,11 +2139,11 @@ namespace Gecko
                 bool cancel = f_requestCancel(url);
                 if (cancel)
                 {
-                    System.Tracer.WriteLine("----> OnStateChange CANCEL: " + url);
+                    //System.Tracer.WriteLine("----> OnStateChange CANCEL: " + url);
                     aRequest.Cancel(GeckoError.NS_BINDING_ABORTED);
                     return;
                 }
-                System.Tracer.WriteLine("---->[1] OnStateChange OK: " + url);
+                //System.Tracer.WriteLine("---->[1] OnStateChange OK: " + url);
 
                 // maybe we'll add another event here to allow users to cancel certain content types
                 //if ((aStateFlags & nsIWebProgressListenerConstants.STATE_TRANSFERRING) != 0)
@@ -2386,8 +2386,7 @@ namespace Gecko
                 #endregion
             }
         }
-
-
+        
 		public void Observe(nsISupports aSubject, string aTopic, string aData) {
 			if (aTopic.Equals(ObserverNotifications.HttpRequests.HttpOnModifyRequest)) {
 				using (var httpChannel = HttpChannel.Create(aSubject)) {

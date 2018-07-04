@@ -10,6 +10,7 @@ using System.Text;
 using System.Web;
 using System.Windows.Forms;
 using Gecko.Events;
+using System.Linq;
 
 namespace elbro
 {
@@ -70,8 +71,9 @@ namespace elbro
         const int SHORTCUTBAR_HEIGHT = 17;
 
         //string brow_URL = "https://www.google.com.vn";
+        //string brow_URL = "https://dictionary.cambridge.org";
+        string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/present-perfect-simple-i-have-worked";
         //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/do-or-make";
-        string brow_URL = "https://dictionary.cambridge.org";
         //string brow_URL = "https://www.bing.com";
         //string brow_URL = "https://www.bing.com/search?go=Submit&qs=ds&form=QBLH&q=hello";
         //string brow_URL = "https://developers.google.com/web/tools/chrome-devtools/network-performance/";
@@ -111,12 +113,20 @@ namespace elbro
             //    Debug.WriteLine("StartDebugServer completed");
             //    //browser.Dispose();
             //};
+
+            //browser.AddMessageEventListener("myFunction", ((string msg) => {
+            //    ;
+            //}));
+            //browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
             browser.UseHttpActivityObserver = false;
             //browser.ObserveHttpModifyRequest += (sender, e) => e.Channel.SetRequestHeader(name, value, merge: true);
             //browser.ObserveHttpModifyRequest += f_brow_ObserveHttpModifyRequest;
             browser.DOMContentLoaded += (se, ev) => { GeckoWebBrowser w = (GeckoWebBrowser)se; if (w != null) f_brow_onDOMContentLoaded(w.DocumentTitle, w.Url); };
             browser.Navigating += (se, ev) => { f_brow_onBeforeNavigating(ev.Uri); };
-            browser.ConsoleMessage += (se, ev) => { f_brow_onConsoleMessage(ev.Message); };
+            //browser.ConsoleMessage += (se, ev) => { f_brow_onConsoleMessage(ev.Message); };
+            browser.DocumentCompleted += (se, ev) => { f_brow_onDocumentCompleted();};
+            browser.DomDoubleClick += f_brow_onDomDoubleClick;
+            //browser.DomClick += f_brow_onDomClick;
 
             brow_Transparent = new ControlTransparent()
             {
@@ -163,6 +173,42 @@ namespace elbro
             f_brow_Go(brow_URL);
         }
         
+        //private void f_brow_onDomClick(object sender, DomMouseEventArgs e)
+        //{ 
+        //    GeckoRange range = browser.Window.Selection.GetRangeAt(0);
+        //    if (range.StartOffset != range.EndOffset)
+        //    {
+        //        string selectedText = range.CloneContents().TextContent.Trim();
+        //        MessageBox.Show(selectedText);
+        //    } 
+        //}
+
+        private void f_brow_onDomDoubleClick(object sender, DomMouseEventArgs e)
+        {
+            ////GeckoElement scriptEl = browser.Document.CreateElement("script");
+            ////scriptEl.TextContent = brow_JS;
+            ////GeckoNode res = browser.Document.Head.AppendChild(scriptEl);
+            ////using (var java = new AutoJSContext(browser.Window.JSContext))
+            ////{
+            ////    JsVal result = java.EvaluateScript("fireEvent()", browser.Window.DomWindow);
+            ////    MessageBox.Show(result.ToString());
+            ////}
+
+            //// case 01
+            //string JSresult = "";
+            //bool bExec;
+            //using (AutoJSContext JScontext = new AutoJSContext(browser.Window.JSContext))
+            //    bExec = JScontext.EvaluateScript("window.getSelection().toString();", (nsISupports)browser.Window.DomWindow, out JSresult);
+
+            // case 02
+            GeckoRange range = browser.Window.Selection.GetRangeAt(0);
+            if (range.StartOffset != range.EndOffset)
+            {
+                string selectedText = range.CloneContents().TextContent.Trim();
+                MessageBox.Show(selectedText);
+            } 
+        }
+
         void f_brow_Go(string url)
         {
             url = url.Trim();
@@ -189,15 +235,21 @@ namespace elbro
             brow_UrlTextBox.Text = brow_URL;
         }
 
-        void f_brow_onDOMContentLoaded(string title, Uri uri)
-        {
+        void f_brow_onDOMContentLoaded(string title, Uri uri){
             this.f_log("DOMContentLoaded: ", uri);
             brow_Transparent.SendToBack();
             this.Text = title;
+
+        }
+
+        static string brow_JS = File.ReadAllText("Bin/api.js");
+
+        void f_brow_onDocumentCompleted() {
         }
 
         void f_brow_onConsoleMessage(string message) {
-            //this.f_log("ConsoleMessage: ", message);
+            if (message != null && message.Length > 0 && message.IndexOf('$') != -1)
+                this.f_log(message);
         }
 
 
