@@ -412,6 +412,24 @@ namespace elbro
             url = url.Trim();
             this.Text = url;
 
+            // online
+            if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            {
+                brow_Transparent.BringToFront();
+                browser.Navigate(url);
+            }
+            else
+            {
+                f_brow_Go("https://www.google.com.vn/search?q=" + HttpUtility.UrlEncode(url));
+                //f_brow_Go("https://www.bing.com/search?q=" + HttpUtility.UrlEncode(url));
+            }
+        }
+
+        void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
+        {
+            string url = ev.Uri.ToString();
+            this.f_log("[1] BeforeNavigating: " + url);
+
             if (brow_cacheResponse.ContainsKey(url))
             {
                 // cache
@@ -427,53 +445,38 @@ namespace elbro
 
                     var mtit = Regex.Match(raw, @"(?<=<title[^>]*>)[\s\S]*?(?=</title>)");
                     if (mtit.Success) title = mtit.Value;
-                    //s = f_brow_htmlFormat(s);
 
+                    this.Text = title;
+                    brow_UrlTextBox.Text = url;
+
+                    //s = f_brow_htmlFormat(s);
                     htm = @"<!DOCTYPE html><html xmlns=""http://www.w3.org/1999/xhtml"" xml:lang=""en"" lang=""en""><head><meta http-equiv=""Content-Type"" content =""text /html; charset=UTF-8"" /><meta name=""viewport"" content=""width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"" />" +
                     "<title>" + title + "</title>" + f_brow_cssPublish(true) + "</head><body>" + s + "</body></html>";
 
                     brow_URL = url;
                     browser.Stop();
-                    browser.LoadHtml(htm);                    
-                    browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+                    browser.LoadHtml(htm);
+                    //browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+                    browser.Refresh();
 
-                    this.Text = title;
-                    brow_UrlTextBox.Text = url;
+                    this.f_log("[END] LOAD_CACHE: " + url);
                     brow_Transparent.SendToBack();
                 }
             }
             else
             {
-                // online
                 brow_IsReadCache = false;
-                if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
-                {
-                    browser.Navigate(url);
-                }
-                else
-                {
-                    f_brow_Go("https://www.google.com.vn/search?q=" + HttpUtility.UrlEncode(url));
-                    //f_brow_Go("https://www.bing.com/search?q=" + HttpUtility.UrlEncode(url));
-                }
+
+                brow_URL = url.ToString();
+                brow_Domain = brow_URL.Split('/')[2];
+                brow_UrlTextBox.Text = brow_URL;
             }
-        }
-
-        void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
-        {
-            if (brow_IsReadCache) return;
-            brow_Transparent.BringToFront();
-
-            string url = ev.Uri.ToString();
-            brow_URL = url.ToString();
-            brow_Domain = brow_URL.Split('/')[2];
-            brow_UrlTextBox.Text = brow_URL;
-
-            this.f_log("[1] BeforeNavigating: " + url);
         }
 
         void f_brow_onDOMContentLoaded(string title, Uri uri)
         {
             if (brow_IsReadCache) return;
+            this.f_log("[2] DOMContentLoaded: " + uri.ToString());
 
             bool exist = brow_linkHistoryList.Where(x => x.EndsWith(brow_URL)).Count() > 0;
             if (exist == false)
@@ -485,9 +488,8 @@ namespace elbro
 
             browser.Document.Body.ScrollTop = 0;
             this.Text = title;
-            this.f_log("[2] DOMContentLoaded: " + brow_URL);
 
-            //if (!brow_IsReadCache) f_brow_cssBinding();
+            f_brow_cssBinding();
 
             //GeckoElementCollection h1s = browser.Document.GetElementsByTagName("h1");
             //if (h1s.Length > 0)
@@ -561,7 +563,8 @@ form, input, textarea, select, button { display:none !important; }
 
         string f_brow_cssPublish(bool hasTagStyle)
         {
-            string css = string.Join(Environment.NewLine, brow_cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray()) + brow_CSS_FIX;
+            string css = string.Join(Environment.NewLine, brow_cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray());
+            css += brow_CSS_FIX;
             if (hasTagStyle)
                 css = @"<style type=""text/css"">\r\n " + css + " \r\n</style>";
             return css;
@@ -813,6 +816,8 @@ form, input, textarea, select, button { display:none !important; }
 
         void f_brow_onDomClick(object sender, DomMouseEventArgs eventArgs)
         {
+            this.f_log("DOM___CLICK ... ... ...");
+
             GeckoAnchorElement anchor;
             GeckoElement el = new GeckoElement(eventArgs.Target.NativeObject);
             if (el.TagName == "A" || el.ParentNode.NodeName == "A")
