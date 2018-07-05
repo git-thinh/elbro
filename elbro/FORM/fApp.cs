@@ -13,6 +13,7 @@ using Gecko.Events;
 using System.Linq;
 using Gecko.DOM;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace elbro
 {
@@ -77,8 +78,8 @@ namespace elbro
         const int SHORTCUTBAR_HEIGHT = 17;
 
         //string brow_URL = "https://www.google.com.vn";
-        string brow_URL = "https://dictionary.cambridge.org";
-        //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/present-perfect-simple-i-have-worked";
+        //string brow_URL = "https://dictionary.cambridge.org";
+        string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/present-perfect-simple-i-have-worked";
         //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/do-or-make";
         //string brow_URL = "https://en.oxforddictionaries.com/grammar/";
         //string brow_URL = "https://vietjack.com/";
@@ -365,10 +366,13 @@ namespace elbro
             if (brow_cacheResponse.ContainsKey(uri))
             {
                 string htm = brow_cacheResponse[uri];
+                htm = f_brow_htmlFormat(htm);
 
                 browser.Stop();
                 browser.LoadHtml(htm);
                 browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+
+                brow_Transparent.SendToBack();
 
                 this.f_log("BeforeNavigating ===> CACHE: " + uri);
                 return true;
@@ -379,8 +383,8 @@ namespace elbro
 
         #endregion
 
-        #region [ CSS ]
-
+        #region [ CSS, HTML ]
+        
         const string brow_CSS =
         #region
 @"\r\n 
@@ -494,6 +498,38 @@ form, input, textarea, select, button { display:none !important; }
 
 \r\n";
         #endregion
+
+        string f_brow_htmlFormat(string s)
+        {
+            string title = string.Empty;
+            var mtit = Regex.Match(s, @"(?<=<title[^>]*>)[\s\S]*?(?=</title>)");
+            if (mtit.Success) title = mtit.Value;
+
+            var mbody = Regex.Match(s, @"(?<=<body[^>]*>)[\s\S]*?(?=</body>)");
+            if (mbody.Success) s = mbody.Value;
+
+            s = Regex.Replace(s, @"<script[^>]*>[\s\S]*?</script>", string.Empty);
+            //s = Regex.Replace(s, @"<style[^>]*>[\s\S]*?</style>", string.Empty);
+            s = Regex.Replace(s, @"<noscript[^>]*>[\s\S]*?</noscript>", string.Empty);
+            s = Regex.Replace(s, @"(?s)(?<=<!--).+?(?=-->)", string.Empty).Replace("<!---->", string.Empty);
+            s = Regex.Replace(s, @"<form[^>]*>[\s\S]*?</form>", string.Empty);
+            s = Regex.Replace(s, @"<select[^>]*>[\s\S]*?</select>", string.Empty);
+            s = Regex.Replace(s, @"<script[^>]*>[\s\S]*?</script>", string.Empty);
+            s = Regex.Replace(s, @"</?(?i:base|header|footer|nav|form|input|select|option|fieldset|button|iframe|link|symbol|path|canvas|use|ins|svg|embed|object|frameset|frame|meta)(.|\n|\s)*?>", string.Empty, RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+            //// Remove attribute style="padding:10px;..."
+            //s = Regex.Replace(s, @"<([^>]*)(\sstyle="".+?""(\s|))(.*?)>", string.Empty);
+            //s = s.Replace(@">"">", ">");
+
+            string[] lines = s.Split(new char[] { '\r', '\n' }, StringSplitOptions.None).Select(x => x.Trim()).Where(x => x.Length > 0).ToArray();
+            s = string.Join(string.Empty, lines);
+
+            string css_text = string.Join(Environment.NewLine, brow_cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray());
+            css_text = @"<style type=""text/css"">\r\n " + brow_CSS + css_text + " \r\n</style>";
+
+            return @"<!DOCTYPE html><html xmlns=""http://www.w3.org/1999/xhtml"" xml:lang=""en"" lang=""en""><head><meta http-equiv=""Content-Type"" content =""text /html; charset=UTF-8"" /><meta name=""viewport"" content=""width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"" />" +
+            "<title>" + title + "</title>" + css_text + "</head><body>" + s + "</body></html>";
+        }
 
         void f_brow_cssBinding()
         {
@@ -742,7 +778,7 @@ form, input, textarea, select, button { display:none !important; }
             browser.Document.Body.ScrollTop = 0;
             this.f_log("[2] DOMContentLoaded: " + brow_URL);
             this.Text = title;
-            f_brow_cssBinding();
+            //f_brow_cssBinding();
 
             //GeckoElementCollection h1s = browser.Document.GetElementsByTagName("h1");
             //if (h1s.Length > 0)

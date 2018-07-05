@@ -3019,6 +3019,7 @@
     <Content Include="..\x86\Bin\api.js">
       <Link>api.js</Link>
     </Content>
+    <Content Include="HTMLPage1.html" />
     <Content Include="LIB\Geckofx\v45\Core\Firefox\AccessibleMarshal.dll" />
     <Content Include="LIB\Geckofx\v45\Core\Firefox\breakpadinjector.dll" />
     <Content Include="LIB\Geckofx\v45\Core\Firefox\d3dcompiler_47.dll" />
