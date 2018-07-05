@@ -99,7 +99,7 @@ namespace elbro
         //string brow_URL = "https://drive.google.com/file/d/1TG-FDU0cZ48vaJCMcAO33iNOuNqgL9BH/view";
 
         string brow_Domain;
-        bool 
+        bool
             brow_IsReadCache = false,
             brow_EnabelJS = true,
             brow_EnableCSS = false,
@@ -382,14 +382,150 @@ namespace elbro
             return false;
         }
 
+        string f_brow_cachePublishHTML(string url)
+        {
+            if (brow_cacheResponse.ContainsKey(url))
+            {
+                string s = brow_cacheResponse[url];
+                string title = string.Empty;
+                var mtit = Regex.Match(s, @"(?<=<title[^>]*>)[\s\S]*?(?=</title>)");
+                if (mtit.Success) title = mtit.Value;
+                s = f_brow_htmlFormat(s);
+
+                string htm = @"<!DOCTYPE html><html xmlns=""http://www.w3.org/1999/xhtml"" xml:lang=""en"" lang=""en""><head><meta http-equiv=""Content-Type"" content =""text /html; charset=UTF-8"" /><meta name=""viewport"" content=""width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"" />" +
+                "<title>" + title + "</title>" + f_brow_cssPublish(true) + "</head><body>" + s + "</body></html>";
+                return htm;
+            }
+            return null;
+        }
+
+
+        #endregion
+
+        #region [ GO, DOM_LOADED]
+
+        void f_brow_Go(string url)
+        {
+            brow_Transparent.Width = browser.Width;
+            url = url.Trim();
+            this.Text = url;
+
+            //if (brow_cacheResponse.ContainsKey(url))
+            if (true)
+            {
+                // cache
+                brow_IsReadCache = true;
+                //string htm = f_brow_cachePublishHTML(url);
+                string htm = File.ReadAllText(@"C:\elbro\elbro\HTMLPage1.html");
+                if (htm != null)
+                {
+                    brow_URL = url;
+                    browser.Stop();
+                    browser.LoadHtml(htm);
+                    browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+                }
+            }
+            else
+            {
+                // online
+                brow_IsReadCache = false;
+                if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                {
+                    browser.Navigate(url);
+                }
+                else
+                {
+                    f_brow_Go("https://www.google.com.vn/search?q=" + HttpUtility.UrlEncode(url));
+                    //f_brow_Go("https://www.bing.com/search?q=" + HttpUtility.UrlEncode(url));
+                }
+            }
+        }
+
+        void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
+        {
+            if (brow_IsReadCache)
+            {
+                this.Text = browser.DocumentTitle;
+                brow_Transparent.SendToBack();
+                //f_brow_onDOMContentLoaded(browser.DocumentTitle, ev.Uri);
+            }
+            else
+            {
+                string url = ev.Uri.ToString();
+                brow_URL = url.ToString();
+                //this.f_log("[1] BeforeNavigating: " + url);
+                brow_Transparent.BringToFront();
+            }
+
+            brow_Domain = brow_URL.Split('/')[2];
+            brow_UrlTextBox.Text = brow_URL;
+        }
+
+        void f_brow_onDOMContentLoaded(string title, Uri uri)
+        {
+            browser.Document.Body.ScrollTop = 0;
+            this.f_log("[2] DOMContentLoaded: " + brow_URL);
+            this.Text = title;
+
+            if (!brow_IsReadCache) f_brow_cssBinding();
+
+            //GeckoElementCollection h1s = browser.Document.GetElementsByTagName("h1");
+            //if (h1s.Length > 0)
+            //{
+            //    GeckoDivElement h1 = new GeckoHeadingElement(h1s[h1s.Length - 1].DomObject);
+            //    h1.ScrollIntoView(true);
+            //    //h1.ScrollTop += 10;
+            //    int h1w = h1.OffsetLeft + h1.ClientWidth;
+            //}
+
+            f_brow_BrowserVisiable();
+
+            /////////////////////////////////////////////////
+
+            string li, href;
+            GeckoElementCollection links = browser.Document.GetElementsByTagName("a");
+            if (links.Length > 0)
+            {
+                for (int i = 0; i < links.Length; i++)
+                {
+                    href = links[i].OuterHtml.ToLower();
+                    if (href.IndexOf("href") != -1)
+                    {
+                        href = href.Split(new string[] { "href" }, StringSplitOptions.None)[1].Trim();
+                        if (href[0] == '=') href = href.Substring(1).Trim();
+                        if (href[0] == '"') href = href.Substring(1).Trim();
+                        href = href.Split('"')[0].Trim();
+                        if (href.Contains("facebook") || href.Contains("google")) href = string.Empty;
+                    }
+
+                    if (href.Contains(brow_Domain) &&
+                        !string.IsNullOrEmpty(links[i].TextContent) && links[i].TextContent.Trim().Length > 0
+                        && !string.IsNullOrEmpty(href) && href.Length > 0 && href[0] != '#')
+                    {
+                        li = links[i].TextContent.Trim().ToUpper() + " | " + href;
+                        if (brow_linkReferentList.IndexOf(li) == -1)
+                            brow_linkReferentList.Add(li);
+                    }
+                }
+            }
+
+            bool exist = brow_linkHistoryList.Where(x => x.EndsWith(brow_URL)).Count() > 0;
+            if (exist == false)
+            {
+                brow_linkBackIndexHistory = 0;
+                li = browser.DocumentTitle.Trim().ToUpper() + " | " + brow_URL;
+                brow_linkHistoryList.Insert(0, li);
+            }
+        }
+
 
         #endregion
 
         #region [ CSS, HTML ]
-        
+
         const string brow_CSS_FIX =
         #region
-@"\r\n 
+@"
 html *::before,html *::after,
 i::before,i::after,
 a::before,a::after,
@@ -404,22 +540,19 @@ img, iframe, header, footer, nav,
 form, input, textarea, select, button { display:none !important; }
 
 .adsbygoogle { display:none !important; }
-\r\n";
+";
         #endregion
 
-        string f_brow_cssPublish(bool hasTagStyle) {
+        string f_brow_cssPublish(bool hasTagStyle)
+        {
             string css = string.Join(Environment.NewLine, brow_cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray()) + brow_CSS_FIX;
-            if(hasTagStyle)
+            if (hasTagStyle)
                 css = @"<style type=""text/css"">\r\n " + css + " \r\n</style>";
             return css;
         }
 
         string f_brow_htmlFormat(string s)
         {
-            string title = string.Empty;
-            var mtit = Regex.Match(s, @"(?<=<title[^>]*>)[\s\S]*?(?=</title>)");
-            if (mtit.Success) title = mtit.Value;
-
             var mbody = Regex.Match(s, @"(?<=<body[^>]*>)[\s\S]*?(?=</body>)");
             if (mbody.Success) s = mbody.Value;
 
@@ -438,9 +571,7 @@ form, input, textarea, select, button { display:none !important; }
 
             string[] lines = s.Split(new char[] { '\r', '\n' }, StringSplitOptions.None).Select(x => x.Trim()).Where(x => x.Length > 0).ToArray();
             s = string.Join(string.Empty, lines);
-            
-            return @"<!DOCTYPE html><html xmlns=""http://www.w3.org/1999/xhtml"" xml:lang=""en"" lang=""en""><head><meta http-equiv=""Content-Type"" content =""text /html; charset=UTF-8"" /><meta name=""viewport"" content=""width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"" />" +
-            "<title>" + title + "</title>" + f_brow_cssPublish(true) + "</head><body>" + s + "</body></html>";
+            return s;
         }
 
         void f_brow_cssBinding()
@@ -661,115 +792,25 @@ form, input, textarea, select, button { display:none !important; }
 
         #endregion
 
-        #region [ GO, NAVIGATE, DOM_LOADED]
-
-        void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
-        {
-            brow_Transparent.Width = browser.Width;
-            brow_Transparent.BringToFront();
-
-            string url = ev.Uri.ToString();
-            this.f_log("[1] BeforeNavigating: " + url);
-
-            brow_URL = url.ToString();
-            brow_Domain = brow_URL.Split('/')[2];
-            brow_UrlTextBox.Text = brow_URL;
-
-            brow_IsReadCache = f_brow_cacheLoadPageHTML(url);
-
-            if(brow_IsReadCache)
-            {
-                ev.Cancel = true;
-                f_brow_onDOMContentLoaded(browser.DocumentTitle, ev.Uri);
-            }
-        }
-
-        void f_brow_onDOMContentLoaded(string title, Uri uri)
-        {
-            browser.Document.Body.ScrollTop = 0;
-            this.f_log("[2] DOMContentLoaded: " + brow_URL);
-            this.Text = title;
-
-            if(!brow_IsReadCache) f_brow_cssBinding();
-
-            //GeckoElementCollection h1s = browser.Document.GetElementsByTagName("h1");
-            //if (h1s.Length > 0)
-            //{
-            //    GeckoDivElement h1 = new GeckoHeadingElement(h1s[h1s.Length - 1].DomObject);
-            //    h1.ScrollIntoView(true);
-            //    //h1.ScrollTop += 10;
-            //    int h1w = h1.OffsetLeft + h1.ClientWidth;
-            //}
-
-            f_brow_BrowserVisiable();
-
-            /////////////////////////////////////////////////
-
-            string li, href;
-            GeckoElementCollection links = browser.Document.GetElementsByTagName("a");
-            if (links.Length > 0)
-            {
-                for (int i = 0; i < links.Length; i++)
-                {
-                    href = links[i].OuterHtml.ToLower();
-                    if (href.IndexOf("href") != -1)
-                    {
-                        href = href.Split(new string[] { "href" }, StringSplitOptions.None)[1].Trim();
-                        if (href[0] == '=') href = href.Substring(1).Trim();
-                        if (href[0] == '"') href = href.Substring(1).Trim();
-                        href = href.Split('"')[0].Trim();
-                        if (href.Contains("facebook") || href.Contains("google")) href = string.Empty;
-                    }
-
-                    if (href.Contains(brow_Domain) &&
-                        !string.IsNullOrEmpty(links[i].TextContent) && links[i].TextContent.Trim().Length > 0
-                        && !string.IsNullOrEmpty(href) && href.Length > 0 && href[0] != '#')
-                    {
-                        li = links[i].TextContent.Trim().ToUpper() + " | " + href;
-                        if (brow_linkReferentList.IndexOf(li) == -1)
-                            brow_linkReferentList.Add(li);
-                    }
-                }
-            }
-
-            bool exist = brow_linkHistoryList.Where(x => x.EndsWith(brow_URL)).Count() > 0;
-            if (exist == false)
-            {
-                brow_linkBackIndexHistory = 0;
-                li = browser.DocumentTitle.Trim().ToUpper() + " | " + brow_URL;
-                brow_linkHistoryList.Insert(0, li);
-            }
-        }
-
-        void f_brow_Go(string url)
-        {
-            this.Text = url;
-
-            url = url.Trim();
-            if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
-            {
-                browser.Navigate(url);
-            }
-            else
-            {
-                f_brow_Go("https://www.google.com.vn/search?q=" + HttpUtility.UrlEncode(url));
-                //f_brow_Go("https://www.bing.com/search?q=" + HttpUtility.UrlEncode(url));
-            }
-        }
-
-        #endregion
 
         #region [ DOM_CLICK ]
 
         void f_brow_onDomClick(object sender, DomMouseEventArgs eventArgs)
         {
+            GeckoAnchorElement anchor;
             GeckoElement el = new GeckoElement(eventArgs.Target.NativeObject);
-            if(el.TagName == "A")
+            if (el.TagName == "A" || el.ParentNode.NodeName == "A")
             {
-                GeckoAnchorElement anchor = new GeckoAnchorElement(el.DomObject);
+                if (el.TagName == "A")
+                    anchor = new GeckoAnchorElement(el.DomObject);
+                else
+                    anchor = new GeckoAnchorElement(el.ParentElement.DomObject);
+
+                if (string.IsNullOrEmpty(anchor.Href)) return;
+
                 string url = anchor.Href.Trim();
                 if (!url.StartsWith("http"))
-                { 
+                {
                     if (url.StartsWith("../"))
                     {
                         url = url.Substring(3);
@@ -786,12 +827,14 @@ form, input, textarea, select, button { display:none !important; }
                                     // exist middle path /../
                                     url = brow_URL.Substring(0, brow_URL.Length - (a[a.Length - 2].Length + a[a.Length - 1].Length + 1)) + url;
                                 }
-                                else {
+                                else
+                                {
                                     // not exist middle path /../
                                     url = brow_URL.Substring(0, brow_URL.Length - a[a.Length - 1].Length) + url;
                                 }
                             }
-                            else {
+                            else
+                            {
                                 //[1.2] path ref not exist (.)html
                                 if (a.Length > 5)
                                 {
@@ -805,7 +848,8 @@ form, input, textarea, select, button { display:none !important; }
                                 }
                             }
                         }
-                        else {
+                        else
+                        {
                             //[2] is path-xyz/.../page-abc.html
                             url = brow_URL.Split(new string[] { split }, StringSplitOptions.None)[0] + url;
                         }
