@@ -60,8 +60,6 @@ namespace elbro
         private void f_form_Shown(object sender, EventArgs e)
         {
             //f_brow_Go(brow_URL);
-            brow_LinkOnPage.Location = new Point(this.Width - (tab_Main.Width + brow_LinkOnPage.Width), brow_UrlTextBox.Height);
-            brow_LinkOnPage.Height = this.Height - brow_UrlTextBox.Height;
         }
 
         #endregion
@@ -103,28 +101,18 @@ namespace elbro
 
         TextBoxWaterMark brow_UrlTextBox;
         GeckoWebBrowser browser;
-        Panel brow_Transparent;
+        ControlTransparent brow_Transparent;
         Panel brow_ShortCutBar;
 
-        //int brow_linkIndexHistory = 0;
-        //List<string> brow_linkHistory = new List<string>();
-        //DictionaryThreadSafe<string, string> brow_cacheResponse = new DictionaryThreadSafe<string, string>();
-
-        int brow_linkBackIndexHistory = 0;
-        List<string> brow_linkHistoryList = new List<string>();
-        List<string> brow_linkReferentList = new List<string>();
+        int brow_linkIndexHistory = 0;
+        List<string> brow_linkHistory = new List<string>();
         DictionaryThreadSafe<string, string> brow_cacheResponse = new DictionaryThreadSafe<string, string>();
-        
-        ListBox brow_LinkOnPage;
-        Button brow_linkCloseButton;
-        TextBoxWaterMark brow_linkRefSearchTextBox;
+
 
         #endregion
-        
+
         void f_brow_Init()
         {
-            #region [ browser ] 
-
             brow_Domain = brow_URL.Split('/')[2];
             browser = new GeckoWebBrowser();
             browser.Dock = DockStyle.Fill;
@@ -151,7 +139,7 @@ namespace elbro
             //browser.ConsoleMessage += (se, ev) => { f_brow_onConsoleMessage(ev.Message); };
             //browser.DocumentCompleted += (se, ev) => { f_brow_onDocumentCompleted();};
             //browser.DomDoubleClick += f_brow_onDomDoubleClick;
-            //browser.DomClick += f_brow_onDomClick;
+            browser.DomClick += f_brow_onDomClick;
             //browser.DomClick += f_brow_onDomClick2;
 
             browser.NoDefaultContextMenu = true;
@@ -166,7 +154,16 @@ namespace elbro
             oObs.TicketLoadedEvent += (se, ev) => f_brow_cacheUpdate(ev.Url, ev.Data);
             ObserverService.AddObserver(oObs);
 
-            #endregion
+
+            brow_Transparent = new ControlTransparent()
+            {
+                Location = new Point(0, 0),
+                Size = new Size(System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Width, System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Height),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom
+            };
+
+            Panel toolbar = new Panel() { Dock = DockStyle.Top, Height = TOOLBAR_HEIGHT, BackColor = SystemColors.Control, Padding = new Padding(3, 3, 0, 3) };
+            brow_ShortCutBar = new Panel() { Dock = DockStyle.Top, Height = SHORTCUTBAR_HEIGHT, BackColor = SystemColors.Control, Padding = new Padding(0) };
 
             brow_UrlTextBox = new TextBoxWaterMark()
             {
@@ -178,65 +175,6 @@ namespace elbro
                 BackColor = SystemColors.Control,
                 ForeColor = Color.DarkGray,
             };
-
-            brow_Transparent = new Panel()
-            {
-                BackColor = SystemColors.Control,
-                Location = new Point(0, brow_UrlTextBox.Height),
-                Size = new Size(System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Width, System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Height),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom
-            };
-            brow_Transparent.MouseDoubleClick += (se, ev) => { brow_Transparent.SendToBack(); };
-
-            Panel toolbar = new Panel() { Dock = DockStyle.Top, Height = TOOLBAR_HEIGHT, BackColor = SystemColors.Control, Padding = new Padding(3, 3, 0, 3) };
-            brow_ShortCutBar = new Panel() { Dock = DockStyle.Top, Height = SHORTCUTBAR_HEIGHT, BackColor = SystemColors.Control, Padding = new Padding(0) };
-
-            brow_LinkOnPage = new ListBox()
-            {
-                Font = font_Title,
-                Dock = DockStyle.Fill,
-                BorderStyle = BorderStyle.None,
-                Visible = false,
-            };
-            brow_linkRefSearchTextBox = new TextBoxWaterMark()
-            {
-                WaterMark = "Links search ...",
-                Dock = DockStyle.Right,
-                Width = 99,
-                BorderStyle = BorderStyle.None,
-                TextAlign = HorizontalAlignment.Center,
-                WaterMarkForeColor = Color.DarkGray,
-                BackColor = SystemColors.Control,
-            };
-            brow_linkCloseButton = new Button()
-            {
-                Text = "Close",
-                Dock = DockStyle.Right,
-                Width = 55,
-                Visible = false
-            };
-            //brow_linkRefSearchTextBox.GotFocus += (se, ev) => {
-            //    f_brow_linkOnPageSearch(brow_linkRefSearchTextBox.Text);
-            //};
-            brow_linkRefSearchTextBox.Click += (se, ev) =>
-            {
-                f_brow_linkOnPageSearch(brow_linkRefSearchTextBox.Text);
-            };
-            brow_linkRefSearchTextBox.DoubleClick += (se, ev) =>
-            {
-                f_brow_linkOnPageSearch(brow_linkRefSearchTextBox.Text);
-            };
-
-            brow_linkRefSearchTextBox.KeyDown += (se, ev) => {
-                if (ev.KeyCode == Keys.Enter)
-                    f_brow_linkOnPageSearch(brow_linkRefSearchTextBox.Text);
-            };
-            brow_linkCloseButton.Click += (se, ev) => { f_brow_BrowserVisiable(); };
-            brow_ShortCutBar.Controls.AddRange(new Control[] {
-                brow_linkRefSearchTextBox,
-                brow_linkCloseButton,
-            });
-
             brow_UrlTextBox.KeyDown += (se, ev) =>
             {
                 if (ev.KeyCode == Keys.Enter)
@@ -251,55 +189,17 @@ namespace elbro
 
             var btn_ToggleTab = new Button() { Text = tab_IconToggle, Width = 19, Height = 20, Dock = DockStyle.Right };
             btn_ToggleTab.MouseClick += (se, ev) => { f_tab_Toggle(); };
-
-            brow_LinkOnPage.SelectedIndexChanged += (se, ev) =>
-            {
-                string url = "http" + brow_LinkOnPage.SelectedItem.ToString().Split(new string[] { " | http" }, StringSplitOptions.None)[1];
-                
-                //brow_Transparent.BringToFront();
-                //browser.Visible = true;
-                //brow_LinkOnPage.Visible = false;
-
-                f_brow_Go(url);
-
-                f_brow_BrowserVisiable();
-            };
-
-            var btn_back = new Button() { Text = "<", Width = 32, Dock = DockStyle.Right };
-            var btn_next = new Button() { Text = ">", Width = 32, Dock = DockStyle.Right };
-            btn_back.Click += (se, ev) => {
-                brow_linkBackIndexHistory++;
-                if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory == -1) brow_linkBackIndexHistory = 0;
-                string url = "http" + brow_linkHistoryList[brow_linkBackIndexHistory].Split(new string[] { " | http" }, StringSplitOptions.None)[1];
-                f_brow_Go(url);
-            };
-            btn_next.Click += (se, ev) => {
-                if (brow_linkBackIndexHistory == 0) brow_linkBackIndexHistory = brow_linkHistoryList.Count - 1;
-                brow_linkBackIndexHistory--;
-                if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory == -1) brow_linkBackIndexHistory = 0;
-                string url = "http" + brow_linkHistoryList[brow_linkBackIndexHistory].Split(new string[] { " | http" }, StringSplitOptions.None)[1];
-                f_brow_Go(url);
-            };
-
             toolbar.Controls.AddRange(new Control[] { brow_UrlTextBox,
                 new Label() {
                     Dock = DockStyle.Right,
                     Width = 100
                 },
-                btn_back,
-                btn_next,
                 btn_ToggleTab,
             });
-            this.Controls.AddRange(new Control[] {
-                brow_Transparent,
-                browser,
-                brow_LinkOnPage,
-                brow_ShortCutBar,
-                toolbar,
-            });
+            this.Controls.AddRange(new Control[] { brow_Transparent, browser, brow_ShortCutBar, toolbar, });
             f_brow_Go(brow_URL);
         }
-
+        
         #region [ REQUEST ]
 
         bool f_requestCancel(string url)
@@ -328,41 +228,6 @@ namespace elbro
             System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url);
 
         }
-
-        #endregion
-
-        #region [ CACHE ]
-
-        private void f_brow_cacheUpdate(string url, string data)
-        {
-            if (url.Contains(brow_Domain))
-            {
-                if (!string.IsNullOrEmpty(data))
-                {
-                    if (brow_cacheResponse.ContainsKey(url))
-                        brow_cacheResponse.Add(url, data);
-                    else
-                        brow_cacheResponse[url] = data;
-                }
-            }
-        }
-
-        bool f_brow_cacheLoadPageHTML(string uri)
-        {
-            if (brow_cacheResponse.ContainsKey(uri))
-            {
-                string htm = brow_cacheResponse[uri];
-
-                browser.Stop();
-                browser.LoadHtml(htm);
-                browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
-
-                this.f_log("BeforeNavigating ===> CACHE: " + uri);
-                return true;
-            }
-            return false;
-        }
-
 
         #endregion
 
@@ -484,6 +349,7 @@ form, input, textarea, select, button { display:none !important; }
 
         void f_brow_cssBinding()
         {
+
             string css_text = string.Join(Environment.NewLine, brow_cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray());
             css_text = "\r\n " + brow_CSS + css_text + " \r\n";
 
@@ -551,6 +417,86 @@ form, input, textarea, select, button { display:none !important; }
                 //Logger.WriteEvent("GeckoJavaScriptException (" + jsex.Message + "). We're swallowing it but listing it here in the log.");
                 //Debug.Fail("GeckoJavaScriptException(" + jsex.Message + "). In Release version, this would not show.");
             }
+        }
+
+        #endregion
+
+        #region [ CACHE ]
+
+        void f_brow_cacheUpdate(string url, string data)
+        {
+            if (url.Contains(brow_Domain))
+            {
+                if (!string.IsNullOrEmpty(data))
+                {
+                    if (brow_cacheResponse.ContainsKey(url))
+                        brow_cacheResponse.Add(url, data);
+                    else
+                        brow_cacheResponse[url] = data;
+                }
+            }
+        }
+
+        bool f_brow_cacheLoadPageHTML(string uri)
+        {
+            if (brow_cacheResponse.ContainsKey(uri))
+            {
+                string htm = brow_cacheResponse[uri];
+
+                browser.Stop();
+                browser.LoadHtml(htm);
+                browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+
+                f_brow_cssBinding();
+
+                this.f_log("BeforeNavigating ===> CACHE: " + uri);
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region [ GO, NAVIGATE, DOM_LOADED ]
+
+        void f_brow_Go(string url)
+        {
+            url = url.Trim();
+            if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            {
+                browser.Navigate(url);
+            }
+            else
+            {
+                f_brow_Go("https://www.google.com.vn/search?q=" + HttpUtility.UrlEncode(url));
+                //f_brow_Go("https://www.bing.com/search?q=" + HttpUtility.UrlEncode(url));
+            }
+        }
+
+        void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
+        {
+            string uri = ev.Uri.ToString();
+            this.f_log("BeforeNavigating: " + uri);
+
+            brow_URL = uri.ToString();
+            brow_Domain = brow_URL.Split('/')[2];
+            brow_UrlTextBox.Text = brow_URL;
+
+            if (f_brow_cacheLoadPageHTML(uri))
+            {
+                ev.Cancel = true;
+                return;
+            }
+
+            brow_Transparent.BringToFront();
+        }
+
+        void f_brow_onDOMContentLoaded(string title, Uri uri)
+        {
+            this.f_log("DOMContentLoaded: " + brow_URL);
+            brow_Transparent.SendToBack();
+            this.Text = title;
+            f_brow_cssBinding();
         }
 
         #endregion
@@ -641,188 +587,51 @@ form, input, textarea, select, button { display:none !important; }
 
         #endregion
 
-        #region [ SHOW, HIDE ]
-
-        private void f_brow_linkRefVisiable()
-        {
-            brow_Transparent.SendToBack();
-
-            browser.Visible = false;
-            brow_LinkOnPage.Visible = true;
-            brow_linkCloseButton.Visible = true;
-
-            brow_LinkOnPage.Focus();
-        }
-
-        private void f_brow_BrowserVisiable()
-        {
-            brow_Transparent.SendToBack();
-
-            browser.Visible = true;
-            brow_linkCloseButton.Visible = false;
-            brow_LinkOnPage.Visible = false;
-        }
-
-        #endregion
-
-        #region [ SEARCH LINK ]
-
-        private void f_brow_linkOnPageSearch(string text)
-        {
-            text = text.ToLower().Trim();
-            brow_LinkOnPage.Items.Clear();
-
-            //string[] a1 = link_listHistory.Where(x => x.ToLower().Contains(text)).OrderBy(x => x).ToArray();
-            //for (int i = 0; i < a1.Length; i++) brow_LinkOnPage.Items.Add(a1[i]);
-
-            for (int i = 0; i < brow_linkHistoryList.Count; i++) brow_LinkOnPage.Items.Add(brow_linkHistoryList[i]);
-
-            string[] a2 = brow_linkReferentList.Where(x => x.ToLower().Contains(text)).OrderBy(x => x).ToArray();
-            for (int i = 0; i < a2.Length; i++) brow_LinkOnPage.Items.Add(a2[i]);
-
-            f_brow_linkRefVisiable();
-        }
-
-        #endregion
-
-        #region [ GO, NAVIGATE, DOM_LOADED]
-
-        void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
-        {
-            brow_Transparent.Width = browser.Width;
-            brow_Transparent.BringToFront();
-
-            string url = ev.Uri.ToString();
-            this.f_log("[1] BeforeNavigating: " + url);
-
-            brow_URL = url.ToString();
-            brow_Domain = brow_URL.Split('/')[2];
-            brow_UrlTextBox.Text = brow_URL;
-
-            if (f_brow_cacheLoadPageHTML(url))
-            {
-                ev.Cancel = true;
-                f_brow_onDOMContentLoaded(browser.DocumentTitle, ev.Uri);
-            }
-        }
-
-        void f_brow_onDOMContentLoaded(string title, Uri uri)
-        {
-            browser.Document.Body.ScrollTop = 0;
-            this.f_log("[2] DOMContentLoaded: " + brow_URL);
-            this.Text = title;
-            f_brow_cssBinding();
-
-            GeckoElementCollection h1s = browser.Document.GetElementsByTagName("h1");
-            if (h1s.Length > 0)
-            {
-                GeckoHeadingElement h1 = new GeckoHeadingElement(h1s[h1s.Length - 1].DomObject);
-                h1.ScrollIntoView(true);
-                //h1.ScrollTop += 10;
-                int h1w = h1.OffsetLeft + h1.ClientWidth;
-            }
-
-            f_brow_BrowserVisiable();
-
-            /////////////////////////////////////////////////
-
-            string li, href;
-            GeckoElementCollection links = browser.Document.GetElementsByTagName("a");
-            if (links.Length > 0)
-            {
-                for (int i = 0; i < links.Length; i++)
-                {
-                    href = links[i].OuterHtml.ToLower();
-                    if (href.IndexOf("href") != -1)
-                    {
-                        href = href.Split(new string[] { "href" }, StringSplitOptions.None)[1].Trim();
-                        if (href[0] == '=') href = href.Substring(1).Trim();
-                        if (href[0] == '"') href = href.Substring(1).Trim();
-                        href = href.Split('"')[0].Trim();
-                        if (href.Contains("facebook") || href.Contains("google")) href = string.Empty;
-                    }
-
-                    if (href.Contains(brow_Domain) &&
-                        !string.IsNullOrEmpty(links[i].TextContent) && links[i].TextContent.Trim().Length > 0
-                        && !string.IsNullOrEmpty(href) && href.Length > 0 && href[0] != '#')
-                    {
-                        li = links[i].TextContent.Trim().ToUpper() + " | " + href;
-                        if (brow_linkReferentList.IndexOf(li) == -1)
-                            brow_linkReferentList.Add(li);
-                    }
-                }
-            }
-            
-            bool exist = brow_linkHistoryList.Where(x => x.EndsWith(brow_URL)).Count() > 0;
-            if (exist == false)
-            {
-                brow_linkBackIndexHistory = 0;
-                li = browser.DocumentTitle.Trim().ToUpper() + " | " + brow_URL;
-                brow_linkHistoryList.Insert(0, li);
-            }
-        }
-        
-        void f_brow_Go(string url)
-        {
-            url = url.Trim();
-            if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
-            {
-                browser.Navigate(url);
-            }
-            else
-            {
-                f_brow_Go("https://www.google.com.vn/search?q=" + HttpUtility.UrlEncode(url));
-                //f_brow_Go("https://www.bing.com/search?q=" + HttpUtility.UrlEncode(url));
-            }
-        }
-
-        #endregion
-
         #region [ DOM_CLICK ]
 
         void f_brow_onDomClick(object sender, DomMouseEventArgs eventArgs)
         {
-            GeckoAnchorElement anchor = eventArgs.Target;
-            //Debug.Assert(!InvokeRequired);
-            //if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
-            //{
-            //    Process.Start(anchor.Href);
-            //    eventArgs.Handled = true;
-            //    return;
-            //}
-            //if (anchor.Href.ToLowerInvariant().StartsWith("file"))
-            ////links to files are handled externally if we can tell they aren't html/javascript related
-            //{
-            //    // TODO: at this point spaces in the file name will cause the link to fail.
-            //    // That seems to be a problem in the DomEventArgs.Target.CastToGeckoElement() method.
-            //    var href = anchor.Href;
+            GeckoAnchorElement anchor;
+            Debug.Assert(!InvokeRequired);
+            if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
+            {
+                Process.Start(anchor.Href);
+                eventArgs.Handled = true;
+                return;
+            }
+            if (anchor.Href.ToLowerInvariant().StartsWith("file"))
+            //links to files are handled externally if we can tell they aren't html/javascript related
+            {
+                // TODO: at this point spaces in the file name will cause the link to fail.
+                // That seems to be a problem in the DomEventArgs.Target.CastToGeckoElement() method.
+                var href = anchor.Href;
 
-            //    var path = href.Replace("file:///", "");
+                var path = href.Replace("file:///", "");
 
-            //    if (new List<string>(new[] { ".pdf", ".odt", ".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLowerInvariant()))
-            //    {
-            //        eventArgs.Handled = true;
-            //        Process.Start(new ProcessStartInfo()
-            //        {
-            //            FileName = path,
-            //            WorkingDirectory = workingDirectoryForFileLinks
-            //        });
-            //        return;
-            //    }
-            //    eventArgs.Handled = false; //let gecko handle it
-            //    return;
-            //}
-            //else if (anchor.Href.ToLowerInvariant().StartsWith("mailto"))
-            //{
-            //    eventArgs.Handled = true;
-            //    Process.Start(anchor.Href); //let the system open the email program
-            //    Debug.WriteLine("Opening email program " + anchor.Href);
-            //}
-            //else
-            //{
-            //    //ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
-            //    eventArgs.Handled = true;
-            //}
+                if (new List<string>(new[] { ".pdf", ".odt", ".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLowerInvariant()))
+                {
+                    eventArgs.Handled = true;
+                    Process.Start(new ProcessStartInfo()
+                    {
+                        FileName = path,
+                        WorkingDirectory = workingDirectoryForFileLinks
+                    });
+                    return;
+                }
+                eventArgs.Handled = false; //let gecko handle it
+                return;
+            }
+            else if (anchor.Href.ToLowerInvariant().StartsWith("mailto"))
+            {
+                eventArgs.Handled = true;
+                Process.Start(anchor.Href); //let the system open the email program
+                Debug.WriteLine("Opening email program " + anchor.Href);
+            }
+            else
+            {
+                //ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
+                eventArgs.Handled = true;
+            }
         }
 
         public event EventHandler OnBrowserClick;
@@ -1001,7 +810,7 @@ form, input, textarea, select, button { display:none !important; }
             browser.Paste();
             //}
         }
-        
+
         /// <summary>
         /// Prevent a CTRL+V pasting when we have the Paste button disabled, e.g. when pictures are on the clipboard.
         /// Also handle CTRL+N creating a new page on Linux/Mono.
@@ -1054,7 +863,7 @@ form, input, textarea, select, button { display:none !important; }
             //NonFatalProblem.Report(ModalIf.None, PassiveIf.All, e.Message,
             //    string.Format("{0} in {1}:{2}", e.Message, file, line));
         }
-        
+
         void f_brow_onConsoleMessage(string message)
         {
             if (message != null && message.Length > 0 && message.IndexOf('$') != -1)
@@ -1065,7 +874,7 @@ form, input, textarea, select, button { display:none !important; }
 
         void f_brow_Close()
         {
-            brow_linkHistoryList.Clear();
+            brow_linkHistory.Clear();
             brow_cacheResponse.Clear();
 
             browser.Dispose();
