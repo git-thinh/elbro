@@ -82,7 +82,9 @@ namespace elbro
         //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/do-or-make";
         //string brow_URL = "https://en.oxforddictionaries.com/grammar/";
         //string brow_URL = "https://vietjack.com/";
-        string brow_URL = "https://vietjack.com/ngu-phap-tieng-anh/thi-hien-tai-tiep-dien-trong-tieng-anh.jsp";
+        //string brow_URL = "https://vietjack.com/ngu-phap-tieng-anh/thi-hien-tai-tiep-dien-trong-tieng-anh.jsp";
+        //string brow_URL = "https://hocmai.vn/khoa-hoc-truc-tuyen/1009/tieng-anh-5-10-nam-2018-2019.html";
+        string brow_URL = "https://hocmai.vn/khoa-hoc-truc-tuyen/644/hoc-tieng-anh-tu-con-so-0-thay-pham-trong-hieu.html";
         //string brow_URL = "https://www.bing.com";
         //string brow_URL = "https://www.bing.com/search?go=Submit&qs=ds&form=QBLH&q=hello";
         //string brow_URL = "https://developers.google.com/web/tools/chrome-devtools/network-performance/";
@@ -114,13 +116,13 @@ namespace elbro
         List<string> brow_linkHistoryList = new List<string>();
         List<string> brow_linkReferentList = new List<string>();
         DictionaryThreadSafe<string, string> brow_cacheResponse = new DictionaryThreadSafe<string, string>();
-        
+
         ListBox brow_LinkOnPage;
         Button brow_linkCloseButton;
         TextBoxWaterMark brow_linkRefSearchTextBox;
 
         #endregion
-        
+
         void f_brow_Init()
         {
             #region [ browser ] 
@@ -151,7 +153,7 @@ namespace elbro
             //browser.ConsoleMessage += (se, ev) => { f_brow_onConsoleMessage(ev.Message); };
             //browser.DocumentCompleted += (se, ev) => { f_brow_onDocumentCompleted();};
             //browser.DomDoubleClick += f_brow_onDomDoubleClick;
-            //browser.DomClick += f_brow_onDomClick;
+            browser.DomClick += f_brow_onDomClick;
             //browser.DomClick += f_brow_onDomClick2;
 
             browser.NoDefaultContextMenu = true;
@@ -227,7 +229,8 @@ namespace elbro
                 f_brow_linkOnPageSearch(brow_linkRefSearchTextBox.Text);
             };
 
-            brow_linkRefSearchTextBox.KeyDown += (se, ev) => {
+            brow_linkRefSearchTextBox.KeyDown += (se, ev) =>
+            {
                 if (ev.KeyCode == Keys.Enter)
                     f_brow_linkOnPageSearch(brow_linkRefSearchTextBox.Text);
             };
@@ -255,7 +258,7 @@ namespace elbro
             brow_LinkOnPage.SelectedIndexChanged += (se, ev) =>
             {
                 string url = "http" + brow_LinkOnPage.SelectedItem.ToString().Split(new string[] { " | http" }, StringSplitOptions.None)[1];
-                
+
                 //brow_Transparent.BringToFront();
                 //browser.Visible = true;
                 //brow_LinkOnPage.Visible = false;
@@ -267,13 +270,15 @@ namespace elbro
 
             var btn_back = new Button() { Text = "<", Width = 32, Dock = DockStyle.Right };
             var btn_next = new Button() { Text = ">", Width = 32, Dock = DockStyle.Right };
-            btn_back.Click += (se, ev) => {
+            btn_back.Click += (se, ev) =>
+            {
                 brow_linkBackIndexHistory++;
                 if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory == -1) brow_linkBackIndexHistory = 0;
                 string url = "http" + brow_linkHistoryList[brow_linkBackIndexHistory].Split(new string[] { " | http" }, StringSplitOptions.None)[1];
                 f_brow_Go(url);
             };
-            btn_next.Click += (se, ev) => {
+            btn_next.Click += (se, ev) =>
+            {
                 if (brow_linkBackIndexHistory == 0) brow_linkBackIndexHistory = brow_linkHistoryList.Count - 1;
                 brow_linkBackIndexHistory--;
                 if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory == -1) brow_linkBackIndexHistory = 0;
@@ -304,13 +309,21 @@ namespace elbro
 
         bool f_requestCancel(string url)
         {
-            if (brow_cacheResponse.ContainsKey(url)
-                || (url.Contains(".js") && !url.EndsWith(".jsp")) || url.Contains("/js/")
-                || url.Contains(brow_Domain) == false
-                || url.Contains("about:")
-                || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
-                || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
-                return true;
+            //if (url.Contains("/chat/")) return true;
+
+            ////if (
+            ////    (url.Contains("play") && url.Contains(".js")) 
+            ////    || (url.Contains("video") && url.Contains(".js"))
+            ////    ) return false;
+
+            //if (brow_cacheResponse.ContainsKey(url)
+            //    || (url.Contains(".js") && !url.EndsWith(".jsp")) || url.Contains("/js/")
+            //    || url.Contains(brow_Domain) == false
+            //    || url.Contains("about:")
+            //    || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
+            //    || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+            //    return true;
+
             return false;
         }
 
@@ -320,7 +333,7 @@ namespace elbro
             bool cancel = f_requestCancel(url);
             if (cancel)
             {
-                System.Tracer.WriteLine("---->[2] Observe REQUEST CANCEL: " + url);
+                //System.Tracer.WriteLine("---->[2] Observe REQUEST CANCEL: " + url);
                 //httpChannel.Cancel(nsIHelperAppLauncherConstants.NS_BINDING_ABORTED);
                 e.Cancel = true;
                 return;
@@ -524,7 +537,7 @@ form, input, textarea, select, button { display:none !important; }
             //              }
         }
 
-        private void f_brow_SaveCustomizedCssRules(GeckoStyleSheet userModifiedStyleSheet)
+        void f_brow_SaveCustomizedCssRules(GeckoStyleSheet userModifiedStyleSheet)
         {
             try
             {
@@ -551,6 +564,24 @@ form, input, textarea, select, button { display:none !important; }
                 //Logger.WriteEvent("GeckoJavaScriptException (" + jsex.Message + "). We're swallowing it but listing it here in the log.");
                 //Debug.Fail("GeckoJavaScriptException(" + jsex.Message + "). In Release version, this would not show.");
             }
+        }
+
+        void f_event_CssRulesAddAfterDocumentCompleted()
+        {
+            // We want to suppress several of the buttons that the control normally shows.
+            // It's nice if we don't have to modify the html and related files, because they are unzipped from a package we install
+            // from a source I'm not sure we control, and installed into a directory we can't modify at runtime.
+            // A workaround is to tweak the stylesheet to hide them. The actual buttons (and two menu items) are easily
+            // hidden by ID.
+            // Unfortunately we're getting rid of a complete group in the pull-down menu, which leaves an ugly pair of
+            // adjacent separators. And the separators don't have IDs so we can't easily select just one to hide.
+            // Fortunately there are no other divs in the parent (besides the separator) so we just hide the second one.
+            // This is unfortunately rather fragile and may not do exactly what we want if the viewer.html file
+            // defining the pdfjs viewer changes.
+            GeckoStyleSheet stylesheet = browser.Document.StyleSheets.First();
+            stylesheet.CssRules.Add("#toolbarViewerRight, #viewOutline, #viewAttachments, #viewThumbnail, #viewFind {display: none}");
+            stylesheet.CssRules.Add("#previous, #next, #pageNumberLabel, #pageNumber, #numPages {display: none}");
+            stylesheet.CssRules.Add("#toolbarViewerLeft .splitToolbarButtonSeparator {display: none}");
         }
 
         #endregion
@@ -752,7 +783,7 @@ form, input, textarea, select, button { display:none !important; }
                     }
                 }
             }
-            
+
             bool exist = brow_linkHistoryList.Where(x => x.EndsWith(brow_URL)).Count() > 0;
             if (exist == false)
             {
@@ -761,9 +792,11 @@ form, input, textarea, select, button { display:none !important; }
                 brow_linkHistoryList.Insert(0, li);
             }
         }
-        
+
         void f_brow_Go(string url)
         {
+            this.Text = url;
+
             url = url.Trim();
             if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
             {
@@ -782,47 +815,57 @@ form, input, textarea, select, button { display:none !important; }
 
         void f_brow_onDomClick(object sender, DomMouseEventArgs eventArgs)
         {
-            GeckoAnchorElement anchor = eventArgs.Target;
-            //Debug.Assert(!InvokeRequired);
-            //if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
-            //{
-            //    Process.Start(anchor.Href);
-            //    eventArgs.Handled = true;
-            //    return;
-            //}
-            //if (anchor.Href.ToLowerInvariant().StartsWith("file"))
-            ////links to files are handled externally if we can tell they aren't html/javascript related
-            //{
-            //    // TODO: at this point spaces in the file name will cause the link to fail.
-            //    // That seems to be a problem in the DomEventArgs.Target.CastToGeckoElement() method.
-            //    var href = anchor.Href;
-
-            //    var path = href.Replace("file:///", "");
-
-            //    if (new List<string>(new[] { ".pdf", ".odt", ".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLowerInvariant()))
-            //    {
-            //        eventArgs.Handled = true;
-            //        Process.Start(new ProcessStartInfo()
-            //        {
-            //            FileName = path,
-            //            WorkingDirectory = workingDirectoryForFileLinks
-            //        });
-            //        return;
-            //    }
-            //    eventArgs.Handled = false; //let gecko handle it
-            //    return;
-            //}
-            //else if (anchor.Href.ToLowerInvariant().StartsWith("mailto"))
-            //{
-            //    eventArgs.Handled = true;
-            //    Process.Start(anchor.Href); //let the system open the email program
-            //    Debug.WriteLine("Opening email program " + anchor.Href);
-            //}
-            //else
-            //{
-            //    //ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
-            //    eventArgs.Handled = true;
-            //}
+            GeckoElement el = new GeckoElement(eventArgs.Target.NativeObject);
+            if(el.TagName == "A")
+            {
+                GeckoAnchorElement anchor = new GeckoAnchorElement(el.DomObject);
+                string url = anchor.Href.Trim();
+                if (!url.StartsWith("http"))
+                { 
+                    if (url.StartsWith("../"))
+                    {
+                        url = url.Substring(3);
+                        string split = url.Split('/')[0];
+                        if (split == url)
+                        {
+                            //[1] is page-abc.html
+                            string[] a = brow_URL.Split('/'); // 0/1/2/../..(.)html
+                            if (a[a.Length - 1].Contains("."))
+                            {
+                                //[1.1] path ref exist (.)html
+                                if (a.Length > 5)
+                                {
+                                    // exist middle path /../
+                                    url = brow_URL.Substring(0, brow_URL.Length - (a[a.Length - 2].Length + a[a.Length - 1].Length + 1)) + url;
+                                }
+                                else {
+                                    // not exist middle path /../
+                                    url = brow_URL.Substring(0, brow_URL.Length - a[a.Length - 1].Length) + url;
+                                }
+                            }
+                            else {
+                                //[1.2] path ref not exist (.)html
+                                if (a.Length > 5)
+                                {
+                                    // exist middle path /../
+                                    url = brow_URL.Substring(0, brow_URL.Length - (a[a.Length - 2].Length + a[a.Length - 1].Length + 1)) + url;
+                                }
+                                else
+                                {
+                                    // not exist middle path /../
+                                    url = brow_URL.Substring(0, brow_URL.Length - a[a.Length - 1].Length) + url;
+                                }
+                            }
+                        }
+                        else {
+                            //[2] is path-xyz/.../page-abc.html
+                            url = brow_URL.Split(new string[] { split }, StringSplitOptions.None)[0] + url;
+                        }
+                    }
+                }
+                f_brow_Go(url);
+                eventArgs.Handled = true; // cancel
+            }
         }
 
         public event EventHandler OnBrowserClick;
@@ -1001,7 +1044,7 @@ form, input, textarea, select, button { display:none !important; }
             browser.Paste();
             //}
         }
-        
+
         /// <summary>
         /// Prevent a CTRL+V pasting when we have the Paste button disabled, e.g. when pictures are on the clipboard.
         /// Also handle CTRL+N creating a new page on Linux/Mono.
@@ -1054,7 +1097,7 @@ form, input, textarea, select, button { display:none !important; }
             //NonFatalProblem.Report(ModalIf.None, PassiveIf.All, e.Message,
             //    string.Format("{0} in {1}:{2}", e.Message, file, line));
         }
-        
+
         void f_brow_onConsoleMessage(string message)
         {
             if (message != null && message.Length > 0 && message.IndexOf('$') != -1)
