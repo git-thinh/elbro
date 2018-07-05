@@ -423,6 +423,8 @@ namespace elbro
                     browser.Stop();
                     browser.LoadHtml(htm);
                     browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+
+                    brow_Transparent.SendToBack();
                 }
             }
             else
@@ -446,7 +448,6 @@ namespace elbro
             if (brow_IsReadCache)
             {
                 this.Text = browser.DocumentTitle;
-                brow_Transparent.SendToBack();
                 //f_brow_onDOMContentLoaded(browser.DocumentTitle, ev.Uri);
             }
             else
@@ -463,6 +464,11 @@ namespace elbro
 
         void f_brow_onDOMContentLoaded(string title, Uri uri)
         {
+            return;
+
+
+
+
             browser.Document.Body.ScrollTop = 0;
             this.f_log("[2] DOMContentLoaded: " + brow_URL);
             this.Text = title;
