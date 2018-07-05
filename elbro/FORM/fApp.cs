@@ -275,16 +275,18 @@ namespace elbro
             var btn_next = new Button() { Text = ">", Width = 32, Dock = DockStyle.Right };
             btn_back.Click += (se, ev) =>
             {
+                if (brow_linkHistoryList.Count == 0) return;
                 brow_linkBackIndexHistory++;
-                if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory == -1) brow_linkBackIndexHistory = 0;
+                if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory < 0) brow_linkBackIndexHistory = 0;
                 string url = "http" + brow_linkHistoryList[brow_linkBackIndexHistory].Split(new string[] { " | http" }, StringSplitOptions.None)[1];
                 f_brow_Go(url);
             };
             btn_next.Click += (se, ev) =>
             {
+                if (brow_linkHistoryList.Count == 0) return;
                 if (brow_linkBackIndexHistory == 0) brow_linkBackIndexHistory = brow_linkHistoryList.Count - 1;
                 brow_linkBackIndexHistory--;
-                if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory == -1) brow_linkBackIndexHistory = 0;
+                if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory < 0) brow_linkBackIndexHistory = 0;
                 string url = "http" + brow_linkHistoryList[brow_linkBackIndexHistory].Split(new string[] { " | http" }, StringSplitOptions.None)[1];
                 f_brow_Go(url);
             };
@@ -390,7 +392,7 @@ namespace elbro
                 string title = string.Empty;
                 var mtit = Regex.Match(s, @"(?<=<title[^>]*>)[\s\S]*?(?=</title>)");
                 if (mtit.Success) title = mtit.Value;
-                s = f_brow_htmlFormat(s);
+                //s = f_brow_htmlFormat(s);
 
                 string htm = @"<!DOCTYPE html><html xmlns=""http://www.w3.org/1999/xhtml"" xml:lang=""en"" lang=""en""><head><meta http-equiv=""Content-Type"" content =""text /html; charset=UTF-8"" /><meta name=""viewport"" content=""width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"" />" +
                 "<title>" + title + "</title>" + f_brow_cssPublish(true) + "</head><body>" + s + "</body></html>";
@@ -410,20 +412,33 @@ namespace elbro
             url = url.Trim();
             this.Text = url;
 
-            //if (brow_cacheResponse.ContainsKey(url))
-            if (true)
+            if (brow_cacheResponse.ContainsKey(url))
             {
                 // cache
                 brow_IsReadCache = true;
-                //string htm = f_brow_cachePublishHTML(url);
-                string htm = File.ReadAllText(@"C:\elbro\elbro\HTMLPage1.html");
-                if (htm != null)
+                string raw = brow_cacheResponse[url];
+                if (raw != null)
                 {
+                    string s = raw, title = string.Empty, htm = string.Empty;
+
+                    var mbody = Regex.Match(s, @"(?<=<body[^>]*>)[\s\S]*?(?=</body>)");
+                    if (mbody.Success) s = mbody.Value;
+                    s = Regex.Replace(s, @"<script[^>]*>[\s\S]*?</script>", string.Empty);
+
+                    var mtit = Regex.Match(raw, @"(?<=<title[^>]*>)[\s\S]*?(?=</title>)");
+                    if (mtit.Success) title = mtit.Value;
+                    //s = f_brow_htmlFormat(s);
+
+                    htm = @"<!DOCTYPE html><html xmlns=""http://www.w3.org/1999/xhtml"" xml:lang=""en"" lang=""en""><head><meta http-equiv=""Content-Type"" content =""text /html; charset=UTF-8"" /><meta name=""viewport"" content=""width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"" />" +
+                    "<title>" + title + "</title>" + f_brow_cssPublish(true) + "</head><body>" + s + "</body></html>";
+
                     brow_URL = url;
                     browser.Stop();
-                    browser.LoadHtml(htm);
+                    browser.LoadHtml(htm);                    
                     browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
 
+                    this.Text = title;
+                    brow_UrlTextBox.Text = url;
                     brow_Transparent.SendToBack();
                 }
             }
@@ -445,35 +460,34 @@ namespace elbro
 
         void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
         {
-            if (brow_IsReadCache)
-            {
-                this.Text = browser.DocumentTitle;
-                //f_brow_onDOMContentLoaded(browser.DocumentTitle, ev.Uri);
-            }
-            else
-            {
-                string url = ev.Uri.ToString();
-                brow_URL = url.ToString();
-                //this.f_log("[1] BeforeNavigating: " + url);
-                brow_Transparent.BringToFront();
-            }
+            if (brow_IsReadCache) return;
+            brow_Transparent.BringToFront();
 
+            string url = ev.Uri.ToString();
+            brow_URL = url.ToString();
             brow_Domain = brow_URL.Split('/')[2];
             brow_UrlTextBox.Text = brow_URL;
+
+            this.f_log("[1] BeforeNavigating: " + url);
         }
 
         void f_brow_onDOMContentLoaded(string title, Uri uri)
         {
-            return;
+            if (brow_IsReadCache) return;
 
-
-
+            bool exist = brow_linkHistoryList.Where(x => x.EndsWith(brow_URL)).Count() > 0;
+            if (exist == false)
+            {
+                brow_linkBackIndexHistory = 0;
+                string key = browser.DocumentTitle.Trim().ToUpper() + " | " + brow_URL;
+                brow_linkHistoryList.Insert(0, key);
+            }
 
             browser.Document.Body.ScrollTop = 0;
-            this.f_log("[2] DOMContentLoaded: " + brow_URL);
             this.Text = title;
+            this.f_log("[2] DOMContentLoaded: " + brow_URL);
 
-            if (!brow_IsReadCache) f_brow_cssBinding();
+            //if (!brow_IsReadCache) f_brow_cssBinding();
 
             //GeckoElementCollection h1s = browser.Document.GetElementsByTagName("h1");
             //if (h1s.Length > 0)
@@ -487,6 +501,9 @@ namespace elbro
             f_brow_BrowserVisiable();
 
             /////////////////////////////////////////////////
+            return;
+
+
 
             string li, href;
             GeckoElementCollection links = browser.Document.GetElementsByTagName("a");
@@ -515,13 +532,6 @@ namespace elbro
                 }
             }
 
-            bool exist = brow_linkHistoryList.Where(x => x.EndsWith(brow_URL)).Count() > 0;
-            if (exist == false)
-            {
-                brow_linkBackIndexHistory = 0;
-                li = browser.DocumentTitle.Trim().ToUpper() + " | " + brow_URL;
-                brow_linkHistoryList.Insert(0, li);
-            }
         }
 
 
@@ -563,12 +573,12 @@ form, input, textarea, select, button { display:none !important; }
             if (mbody.Success) s = mbody.Value;
 
             s = Regex.Replace(s, @"<script[^>]*>[\s\S]*?</script>", string.Empty);
+            s = Regex.Replace(s, @"<script[^>]*>[\s\S]*?</script>", string.Empty);
             //s = Regex.Replace(s, @"<style[^>]*>[\s\S]*?</style>", string.Empty);
             s = Regex.Replace(s, @"<noscript[^>]*>[\s\S]*?</noscript>", string.Empty);
             s = Regex.Replace(s, @"(?s)(?<=<!--).+?(?=-->)", string.Empty).Replace("<!---->", string.Empty);
             s = Regex.Replace(s, @"<form[^>]*>[\s\S]*?</form>", string.Empty);
             s = Regex.Replace(s, @"<select[^>]*>[\s\S]*?</select>", string.Empty);
-            s = Regex.Replace(s, @"<script[^>]*>[\s\S]*?</script>", string.Empty);
             s = Regex.Replace(s, @"</?(?i:base|header|footer|nav|form|input|select|option|fieldset|button|iframe|link|symbol|path|canvas|use|ins|svg|embed|object|frameset|frame|meta)(.|\n|\s)*?>", string.Empty, RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
             //// Remove attribute style="padding:10px;..."
