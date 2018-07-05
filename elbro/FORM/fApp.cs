@@ -99,7 +99,9 @@ namespace elbro
         //string brow_URL = "https://drive.google.com/file/d/1TG-FDU0cZ48vaJCMcAO33iNOuNqgL9BH/view";
 
         string brow_Domain;
-        bool brow_EnabelJS = true,
+        bool 
+            brow_IsReadCache = false,
+            brow_EnabelJS = true,
             brow_EnableCSS = false,
             brow_EnableImg = false,
             brow_AutRequest = false;
@@ -385,102 +387,9 @@ namespace elbro
 
         #region [ CSS, HTML ]
         
-        const string brow_CSS =
+        const string brow_CSS_FIX =
         #region
 @"\r\n 
-html, body, div, span, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-abbr, address, cite, code,
-del, dfn, em, img, ins, kbd, q, samp,
-small, strong, sub, sup, var,
-b, i,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, figcaption, figure, 
-footer, header, hgroup, menu, nav, section, summary,
-time, mark, audio, video {
-    margin:0;
-    padding:0;
-    border:0;
-    outline:0;
-    font-size:100%;
-    vertical-align:baseline;
-    background:transparent;
-}
-
-body {
-    line-height:1;
-}
-
-article,aside,details,figcaption,figure,
-footer,header,hgroup,menu,nav,section { 
-    display:block;
-}
-
-nav ul {
-    list-style:none;
-}
-
-blockquote, q {
-    quotes:none;
-}
-
-blockquote:before, blockquote:after,
-q:before, q:after {
-    content:'';
-    content:none;
-}
-
-a {
-    margin:0;
-    padding:0;
-    font-size:100%;
-    vertical-align:baseline;
-    background:transparent;
-}
-
-ins {
-    background-color:#ff9;
-    color:#000;
-    text-decoration:none;
-}
-
-mark {
-    background-color:#ff9;
-    color:#000; 
-    font-style:italic;
-    font-weight:bold;
-}
-
-del {
-    text-decoration: line-through;
-}
-
-abbr[title], dfn[title] {
-    border-bottom:1px dotted;
-    cursor:help;
-}
-
-table {
-    border-collapse:collapse;
-    border-spacing:0;
-}
-
-/* change border colour to suit your needs */
-hr {
-    display:block;
-    height:1px;
-    border:0;   
-    border-top:1px solid #cccccc;
-    margin:1em 0;
-    padding:0;
-}
-
-input, select {
-    vertical-align:middle;
-}
-
 html *::before,html *::after,
 i::before,i::after,
 a::before,a::after,
@@ -488,16 +397,22 @@ li::before,li::after,
 p::before,p::after,
 div::before,div::after { content:"""" !important; }
 
+li {list-style:none;}
 table td { width:auto !important; }
 
-iframe { display:none !important; }
-img { display:none !important; }
+img, iframe, header, footer, nav,
 form, input, textarea, select, button { display:none !important; }
 
 .adsbygoogle { display:none !important; }
-
 \r\n";
         #endregion
+
+        string f_brow_cssPublish(bool hasTagStyle) {
+            string css = string.Join(Environment.NewLine, brow_cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray()) + brow_CSS_FIX;
+            if(hasTagStyle)
+                css = @"<style type=""text/css"">\r\n " + css + " \r\n</style>";
+            return css;
+        }
 
         string f_brow_htmlFormat(string s)
         {
@@ -523,24 +438,18 @@ form, input, textarea, select, button { display:none !important; }
 
             string[] lines = s.Split(new char[] { '\r', '\n' }, StringSplitOptions.None).Select(x => x.Trim()).Where(x => x.Length > 0).ToArray();
             s = string.Join(string.Empty, lines);
-
-            string css_text = string.Join(Environment.NewLine, brow_cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray());
-            css_text = @"<style type=""text/css"">\r\n " + brow_CSS + css_text + " \r\n</style>";
-
+            
             return @"<!DOCTYPE html><html xmlns=""http://www.w3.org/1999/xhtml"" xml:lang=""en"" lang=""en""><head><meta http-equiv=""Content-Type"" content =""text /html; charset=UTF-8"" /><meta name=""viewport"" content=""width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"" />" +
-            "<title>" + title + "</title>" + css_text + "</head><body>" + s + "</body></html>";
+            "<title>" + title + "</title>" + f_brow_cssPublish(true) + "</head><body>" + s + "</body></html>";
         }
 
         void f_brow_cssBinding()
         {
-            string css_text = string.Join(Environment.NewLine, brow_cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray());
-            css_text = "\r\n " + brow_CSS + css_text + " \r\n";
-
             GeckoDocument doc = browser.Document;
             var head = doc.GetElementsByTagName("head").First();
             GeckoStyleElement css = doc.CreateElement("style") as GeckoStyleElement;
             css.Type = "text/css";
-            css.TextContent = css_text;
+            css.TextContent = f_brow_cssPublish(false);
             head.AppendChild(css);
         }
 
@@ -766,7 +675,9 @@ form, input, textarea, select, button { display:none !important; }
             brow_Domain = brow_URL.Split('/')[2];
             brow_UrlTextBox.Text = brow_URL;
 
-            if (f_brow_cacheLoadPageHTML(url))
+            brow_IsReadCache = f_brow_cacheLoadPageHTML(url);
+
+            if(brow_IsReadCache)
             {
                 ev.Cancel = true;
                 f_brow_onDOMContentLoaded(browser.DocumentTitle, ev.Uri);
@@ -778,7 +689,8 @@ form, input, textarea, select, button { display:none !important; }
             browser.Document.Body.ScrollTop = 0;
             this.f_log("[2] DOMContentLoaded: " + brow_URL);
             this.Text = title;
-            //f_brow_cssBinding();
+
+            if(!brow_IsReadCache) f_brow_cssBinding();
 
             //GeckoElementCollection h1s = browser.Document.GetElementsByTagName("h1");
             //if (h1s.Length > 0)

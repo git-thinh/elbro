@@ -72,7 +72,7 @@ namespace Gecko
         nsIHttpActivityObserver,
         nsISupportsWeakReference
         //nsIWindowProvider,
-    {
+    { 
         #region Fields
 
         /// <summary>
