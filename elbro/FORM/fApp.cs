@@ -77,14 +77,14 @@ namespace elbro
         const int SHORTCUTBAR_HEIGHT = 17;
 
         //string brow_URL = "https://www.google.com.vn";
-        //string brow_URL = "https://dictionary.cambridge.org";
+        string brow_URL = "https://dictionary.cambridge.org";
         //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/present-perfect-simple-i-have-worked";
         //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/do-or-make";
         //string brow_URL = "https://en.oxforddictionaries.com/grammar/";
         //string brow_URL = "https://vietjack.com/";
         //string brow_URL = "https://vietjack.com/ngu-phap-tieng-anh/thi-hien-tai-tiep-dien-trong-tieng-anh.jsp";
         //string brow_URL = "https://hocmai.vn/khoa-hoc-truc-tuyen/1009/tieng-anh-5-10-nam-2018-2019.html";
-        string brow_URL = "https://hocmai.vn/khoa-hoc-truc-tuyen/644/hoc-tieng-anh-tu-con-so-0-thay-pham-trong-hieu.html";
+        //string brow_URL = "https://hocmai.vn/khoa-hoc-truc-tuyen/644/hoc-tieng-anh-tu-con-so-0-thay-pham-trong-hieu.html";
         //string brow_URL = "https://www.bing.com";
         //string brow_URL = "https://www.bing.com/search?go=Submit&qs=ds&form=QBLH&q=hello";
         //string brow_URL = "https://developers.google.com/web/tools/chrome-devtools/network-performance/";
@@ -309,20 +309,20 @@ namespace elbro
 
         bool f_requestCancel(string url)
         {
-            //if (url.Contains("/chat/")) return true;
+            if (url.Contains("/chat/")) return true;
 
-            ////if (
-            ////    (url.Contains("play") && url.Contains(".js")) 
-            ////    || (url.Contains("video") && url.Contains(".js"))
-            ////    ) return false;
+            //if (
+            //    (url.Contains("play") && url.Contains(".js"))
+            //    || (url.Contains("video") && url.Contains(".js"))
+            //    ) return false;
 
-            //if (brow_cacheResponse.ContainsKey(url)
-            //    || (url.Contains(".js") && !url.EndsWith(".jsp")) || url.Contains("/js/")
-            //    || url.Contains(brow_Domain) == false
-            //    || url.Contains("about:")
-            //    || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
-            //    || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
-            //    return true;
+            if (brow_cacheResponse.ContainsKey(url)
+                || (url.Contains(".js") && !url.EndsWith(".jsp")) || url.Contains("/js/")
+                || url.Contains(brow_Domain) == false
+                || url.Contains("about:")
+                || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
+                || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+                return true;
 
             return false;
         }
