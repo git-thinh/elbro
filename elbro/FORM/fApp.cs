@@ -744,14 +744,14 @@ form, input, textarea, select, button { display:none !important; }
             this.Text = title;
             f_brow_cssBinding();
 
-            GeckoElementCollection h1s = browser.Document.GetElementsByTagName("h1");
-            if (h1s.Length > 0)
-            {
-                GeckoHeadingElement h1 = new GeckoHeadingElement(h1s[h1s.Length - 1].DomObject);
-                h1.ScrollIntoView(true);
-                //h1.ScrollTop += 10;
-                int h1w = h1.OffsetLeft + h1.ClientWidth;
-            }
+            //GeckoElementCollection h1s = browser.Document.GetElementsByTagName("h1");
+            //if (h1s.Length > 0)
+            //{
+            //    GeckoDivElement h1 = new GeckoHeadingElement(h1s[h1s.Length - 1].DomObject);
+            //    h1.ScrollIntoView(true);
+            //    //h1.ScrollTop += 10;
+            //    int h1w = h1.OffsetLeft + h1.ClientWidth;
+            //}
 
             f_brow_BrowserVisiable();
 
@@ -976,7 +976,7 @@ form, input, textarea, select, button { display:none !important; }
             // Review JohnT: does this require integration with the NavigationIsolator?
             if (browser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
             {
-                using (var context = new AutoJSContext(browser.Window.JSContext))
+                using (var context = new AutoJSContext(browser.Window))
                 {
                     string result;
                     context.EvaluateScript(script, (nsISupports)browser.Document.DomObject, out result);
