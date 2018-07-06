@@ -20,10 +20,12 @@ namespace elbro
             {
                 Assembly asm = null;
                 string comName = ev.Name.Split(',')[0];
-                string resourceName = @"DLL\" + comName + ".dll";
-                var assembly = Assembly.GetExecutingAssembly();
-                resourceName = typeof(app).Namespace + "." + resourceName.Replace(" ", "_").Replace("\\", ".").Replace("/", ".");
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                
+                //string resourceName = @"DLL\" + comName + ".dll";
+                //var assembly = Assembly.GetExecutingAssembly();
+                //resourceName = typeof(app).Namespace + "." + resourceName.Replace(" ", "_").Replace("\\", ".").Replace("/", ".");
+                //using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                using (Stream stream = File.OpenRead("bin/" + comName))
                 {
                     if (stream == null)
                     {

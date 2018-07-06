@@ -202,20 +202,20 @@ namespace elbro
             }
         }
 
-        void test_play_file_cache(string url, TYPE_SOURCE type = TYPE_SOURCE.FILE_LOCAL)
-        {
-            // on startup:
-            var zap = new CachedSound(url, type);
-            //var boom = new CachedSound("boom.wav");
+        //void test_play_file_cache(string url, TYPE_SOURCE type = TYPE_SOURCE.FILE_LOCAL)
+        //{
+        //    // on startup:
+        //    var zap = new CachedSound(url, type);
+        //    //var boom = new CachedSound("boom.wav");
 
-            // later in the app...
-            AudioPlaybackEngine.Instance.PlaySound(zap);
-            //AudioPlaybackEngine.Instance.PlaySound(boom);
-            //AudioPlaybackEngine.Instance.PlaySound("crash.wav");
+        //    // later in the app...
+        //    AudioPlaybackEngine.Instance.PlaySound(zap);
+        //    //AudioPlaybackEngine.Instance.PlaySound(boom);
+        //    //AudioPlaybackEngine.Instance.PlaySound("crash.wav");
 
-            // on shutdown
-            //AudioPlaybackEngine.Instance.Dispose(); 
-        }
+        //    // on shutdown
+        //    //AudioPlaybackEngine.Instance.Dispose(); 
+        //}
 
         void test_play_fileLocal_Loop(string url)
         {
