@@ -460,7 +460,12 @@ namespace elbro
                     browser.Refresh();
 
                     this.f_log("[END] LOAD_CACHE: " + url);
-                    brow_Transparent.SendToBack();
+                    
+                    ActionTimer.SetTimeout(() => {
+                        brow_Transparent.crossThreadPerformSafely(() => {
+                            brow_Transparent.SendToBack();
+                        });
+                    }, 500);
                 }
             }
             else
@@ -475,7 +480,8 @@ namespace elbro
 
         void f_brow_onDOMContentLoaded(string title, Uri uri)
         {
-            if (brow_IsReadCache) return;
+            if (brow_IsReadCache) return; 
+
             this.f_log("[2] DOMContentLoaded: " + uri.ToString());
 
             bool exist = brow_linkHistoryList.Where(x => x.EndsWith(brow_URL)).Count() > 0;

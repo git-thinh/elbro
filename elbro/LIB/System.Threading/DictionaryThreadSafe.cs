@@ -491,6 +491,24 @@ namespace System.Threading
         /// </summary>
         /// <param name="key">the key to find</param>
         /// <param name="value">the value returned if the key is found</param>
+        public bool TryRemove(TKey key, out TValue value)
+        {
+            Lock_Dictionary.EnterReadLock();
+            try
+            {
+                if (m_Dictionary.TryGetValue(key, out value))
+                {
+                    m_Dictionary.Remove(key);
+                    return true;
+                }
+            }
+            finally
+            {
+                Lock_Dictionary.ExitReadLock();
+            }
+            return false;
+        }
+
         public bool TryGetValue(TKey key, out TValue value)
         {
             Lock_Dictionary.EnterReadLock();

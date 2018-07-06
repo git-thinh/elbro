@@ -94,6 +94,7 @@
     <Compile Include="JOB\JOB_NAME.cs" />
     <Compile Include="JOB\JOB_STATE.cs" />
     <Compile Include="JOB\Message.cs" />
+    <Compile Include="API\ActionTimeout.cs" />
     <Compile Include="LIB\ControlTransparent.cs">
       <SubType>Component</SubType>
     </Compile>
