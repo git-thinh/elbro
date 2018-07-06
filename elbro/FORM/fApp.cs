@@ -69,7 +69,7 @@ namespace elbro
 
         #region [ === BROWSER === ]
 
-        #region [ VARIABLE ]
+        #region [ VAR ]
 
         //////☆★☐☑⧉✉⦿⦾⚠⚿⛑✕✓⥀✖↭☊⦧▷◻◼⟲≔☰⚒❯►❚❚❮⟳⚑⚐✎✛
         //////🕮🖎✍⦦☊🕭🔔🗣🗢🖳🎚🏷🖈🎗🏱🏲🗀🗁🕷🖒🖓👍👎♥♡♫♪♬♫🎙🎖🗝●◯⬤⚲☰⚒🕩🕪❯►❮⟳⚐🗑✎✛🗋🖫⛉ ⛊ ⛨⚏★☆
@@ -119,7 +119,7 @@ namespace elbro
         //string brow_URL = "https://drive.google.com/file/d/1TG-FDU0cZ48vaJCMcAO33iNOuNqgL9BH/view";
 
         string brow_Domain;
-        bool
+        bool            
             brow_IsReadCache = false,
             brow_EnabelJS = true,
             brow_EnableCSS = false,
@@ -139,6 +139,7 @@ namespace elbro
         List<string> brow_linkHistoryList = new List<string>();
         List<string> brow_linkReferentList = new List<string>();
         DictionaryThreadSafe<string, string> brow_cacheResponse = new DictionaryThreadSafe<string, string>();
+        ListThreadSafe<string> brow_UrlFullRequest = new ListThreadSafe<string>();
 
         ListBox brow_LinkOnPage;
         Button brow_linkCloseButton;
@@ -347,21 +348,18 @@ namespace elbro
 
         #region [ REQUEST ]
 
-        bool f_requestCancel(string url)
+        bool f_requestCancel(string url, string refer)
         {
-            if (url.Contains(DOMAIN_YOUTUBE)) return false;
+            if (refer.Length > 0 && refer != brow_URL)
+                if (brow_UrlFullRequest.IndexOf(refer) != -1) return false;
 
             if (url.Contains("/chat/")) return true;
-
-            //if (
-            //    (url.Contains("play") && url.Contains(".js"))
-            //    || (url.Contains("video") && url.Contains(".js"))
-            //    ) return false;
-
+            
             if (brow_cacheResponse.ContainsKey(url)
                 || (url.Contains(".js") && !url.EndsWith(".jsp")) || url.Contains("/js/")
                 || url.Contains(brow_Domain) == false
                 || url.Contains("about:")
+                || url.Contains("json")
                 || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
                 || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
                 return true;
@@ -372,7 +370,9 @@ namespace elbro
         private void f_brow_ObserveHttpModifyRequest(object sender, GeckoObserveHttpModifyRequestEventArgs e)
         {
             string url = e.Channel.Uri.ToString();
-            bool cancel = f_requestCancel(url);
+            string refer = e.Channel.Referrer == null ? "" : e.Channel.Referrer.ToString();
+
+            bool cancel = f_requestCancel(url, refer);
             if (cancel)
             {
                 //System.Tracer.WriteLine("---->[2] Observe REQUEST CANCEL: " + url);
@@ -380,7 +380,7 @@ namespace elbro
                 e.Cancel = true;
                 return;
             }
-            System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url);
+            System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url + Environment.NewLine + "REF: " +  refer);
         }
 
         #endregion
@@ -483,8 +483,30 @@ namespace elbro
             }
         }
 
+        void f_brow_GoYouTube(string url) {
+            if (brow_UrlFullRequest.IndexOf(url) == -1)
+                brow_UrlFullRequest.Add(url);
+
+            var w = new GeckoWebBrowser { Dock = DockStyle.Fill };
+            w.DocumentCompleted += (se, ev) => {
+                //
+            };
+            Form f = new Form();
+            f.Controls.Add(w);
+            w.Navigate(url);
+            f.FormClosing += (se, ev) => {
+                w.Stop();
+                w.Dispose();
+                if (brow_UrlFullRequest.IndexOf(url) != -1)
+                    brow_UrlFullRequest.Remove(url);
+            };
+            f.Show();
+        }
+
         void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
         {
+            if (ev.Uri == null) return;
+
             string url = ev.Uri.ToString();
             this.f_log("[1] BeforeNavigating: " + url);
             brow_UrlTextBox.Text = url;
@@ -567,14 +589,6 @@ namespace elbro
                 }
             }
 
-        }
-
-        void f_brow_GoYouTube(string url) {
-            var w = new GeckoWebBrowser { Dock = DockStyle.Fill };
-            Form f = new Form();
-            f.Controls.Add(w);
-            w.Navigate(url);
-            f.Show();
         }
 
         #endregion
@@ -1204,6 +1218,7 @@ form, input, textarea, select, button { display:none !important; }
 
         void f_brow_Close()
         {
+            brow_UrlFullRequest.Clear();
             brow_linkHistoryList.Clear();
             brow_cacheResponse.Clear();
 

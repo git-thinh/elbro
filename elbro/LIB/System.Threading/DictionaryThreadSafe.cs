@@ -170,8 +170,13 @@ namespace System.Threading
         /// <param name="value">the value to add</param>
         public void Add(TKey key, TValue value)
         {
-            Lock_Dictionary.PerformUsingWriteLock(() => m_Dictionary.Add(key, value));
+            Lock_Dictionary.PerformUsingWriteLock(() =>
+            {
+                if (!m_Dictionary.ContainsKey(key))
+                    m_Dictionary.Add(key, value);
+            });
         }
+
         public void ReadFile(string file_path)
         {
             Lock_Dictionary.PerformUsingWriteLock(() =>
