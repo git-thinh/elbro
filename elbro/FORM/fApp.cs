@@ -349,6 +349,8 @@ namespace elbro
 
         bool f_requestCancel(string url)
         {
+            if (url.Contains(DOMAIN_YOUTUBE)) return false;
+
             if (url.Contains("/chat/")) return true;
 
             //if (
@@ -379,7 +381,6 @@ namespace elbro
                 return;
             }
             System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url);
-
         }
 
         #endregion
@@ -569,7 +570,11 @@ namespace elbro
         }
 
         void f_brow_GoYouTube(string url) {
-
+            var w = new GeckoWebBrowser { Dock = DockStyle.Fill };
+            Form f = new Form();
+            f.Controls.Add(w);
+            w.Navigate(url);
+            f.Show();
         }
 
         #endregion
