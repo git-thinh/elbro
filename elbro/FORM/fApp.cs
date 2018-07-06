@@ -53,12 +53,12 @@ namespace elbro
             f_tab_Init();
         }
 
-        private void f_form_Closing(object sender, FormClosingEventArgs e)
+        void f_form_Closing(object sender, FormClosingEventArgs e)
         {
             f_brow_Close();
         }
 
-        private void f_form_Shown(object sender, EventArgs e)
+        void f_form_Shown(object sender, EventArgs e)
         {
             //f_brow_Go(brow_URL);
             brow_LinkOnPage.Location = new Point(this.Width - (tab_Main.Width + brow_LinkOnPage.Width), brow_UrlTextBox.Height);
@@ -71,15 +71,35 @@ namespace elbro
 
         #region [ VARIABLE ]
 
+        //////☆★☐☑⧉✉⦿⦾⚠⚿⛑✕✓⥀✖↭☊⦧▷◻◼⟲≔☰⚒❯►❚❚❮⟳⚑⚐✎✛
+        //////🕮🖎✍⦦☊🕭🔔🗣🗢🖳🎚🏷🖈🎗🏱🏲🗀🗁🕷🖒🖓👍👎♥♡♫♪♬♫🎙🎖🗝●◯⬤⚲☰⚒🕩🕪❯►❮⟳⚐🗑✎✛🗋🖫⛉ ⛊ ⛨⚏★☆
+        ////const string tab_caption_store = "►";
+        ////const string tab_caption_search = "⚲";
+        ////const string tab_caption_word = "W";
+        ////const string tab_caption_word_detail = "WD";
+        //////const string tab_caption_word_detail = "⛉";
+        ////const string tab_caption_listen = "?";
+        ////const string tab_caption_pronunce = "P"; //☊
+        ////const string tab_caption_writer = "✍";
+        ////const string tab_caption_grammar = "Grammar";
+        ////const string tab_caption_text = "Text";
+        ////const string tab_caption_book = "Book";
+        ////const string tab_caption_browser = "☰";
+
+        const string BROW_BUTTON_TOGGLE_TAB = "☰";
+        const string BROW_BUTTON_BACK = "❮";
+        const string BROW_BUTTON_NEXT = "❯";
+
         const string DOMAIN_GOOGLE = "www.google.com.vn";
         const string DOMAIN_BING = "www.bing.com";
-        const string DOM_CONTENT_LOADED = "DOM_CONTENT_LOADED";
+        const string DOMAIN_YOUTUBE = "www.youtube.com";
+
         const int TOOLBAR_HEIGHT = 28;
         const int SHORTCUTBAR_HEIGHT = 17;
 
         //string brow_URL = "https://www.google.com.vn";
         //string brow_URL = "https://dictionary.cambridge.org";
-        string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/present-perfect-simple-i-have-worked";
+        //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/present-perfect-simple-i-have-worked";
         //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/do-or-make";
         //string brow_URL = "https://en.oxforddictionaries.com/grammar/";
         //string brow_URL = "https://vietjack.com/";
@@ -92,7 +112,7 @@ namespace elbro
         //string brow_URL = "https://www.google.com/maps";
         //string brow_URL = "http://web20office.com/crm/demo/system/login.php?r=/crm/demo";
         //string brow_URL = "file:///G:/_EL/Document/data_el2/book/84-cau-truc-va-cau-vi-du-thong-dung-trong-tieng-anh-giao-tiep.pdf";
-        //string brow_URL = "https://www.youtube.com/";
+        string brow_URL = "https://www.youtube.com/";
         //string brow_URL = "https://drive.google.com/open?id=1TG-FDU0cZ48vaJCMcAO33iNOuNqgL9BH";
         //string brow_URL = "https://drive.google.com/open?id=1B_DuOqTAQOcZjuls6bw9Tnx_0nd8qpr8";
         //string brow_URL = "https://drive.google.com/file/d/1B_DuOqTAQOcZjuls6bw9Tnx_0nd8qpr8/view";
@@ -187,7 +207,7 @@ namespace elbro
             brow_Transparent = new Panel()
             {
                 BackColor = SystemColors.Control,
-                Location = new Point(0, brow_UrlTextBox.Height),
+                Location = new Point(0, 0),
                 Size = new Size(System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Width, System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Height),
                 Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom
             };
@@ -255,9 +275,39 @@ namespace elbro
                 brow_UrlTextBox.Text = string.Empty;
             };
 
-            var btn_ToggleTab = new Button() { Text = tab_IconToggle, Width = 19, Height = 20, Dock = DockStyle.Right };
-            btn_ToggleTab.MouseClick += (se, ev) => { f_tab_Toggle(); };
+            var btn_ToggleTab = new Button() {
+                Text = BROW_BUTTON_TOGGLE_TAB,
+                Width = 19,
+                Height = 20,
+                Dock = DockStyle.Right,
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = Color.DarkGray,
+                BackColor = SystemColors.Control                
+            };
+            var btn_back = new Button() {
+                Text = BROW_BUTTON_BACK,
+                TextAlign = ContentAlignment.MiddleRight,
+                Width = 32,
+                Font = font_Title,
+                Dock = DockStyle.Right,
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = Color.DarkGray,
+                BackColor = SystemColors.Control
+            };
+            var btn_next = new Button()
+            {
+                Text = BROW_BUTTON_NEXT,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Width = 32,
+                Font = font_Title,
+                Dock = DockStyle.Right,
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = Color.DarkGray,
+                BackColor = SystemColors.Control
+            };
 
+            btn_ToggleTab.FlatAppearance.BorderColor = SystemColors.Control;
+            btn_ToggleTab.MouseClick += (se, ev) => { f_tab_Toggle(); };
             brow_LinkOnPage.SelectedIndexChanged += (se, ev) =>
             {
                 string url = "http" + brow_LinkOnPage.SelectedItem.ToString().Split(new string[] { " | http" }, StringSplitOptions.None)[1];
@@ -271,25 +321,10 @@ namespace elbro
                 f_brow_BrowserVisiable();
             };
 
-            var btn_back = new Button() { Text = "<", Width = 32, Dock = DockStyle.Right };
-            var btn_next = new Button() { Text = ">", Width = 32, Dock = DockStyle.Right };
-            btn_back.Click += (se, ev) =>
-            {
-                if (brow_linkHistoryList.Count == 0) return;
-                brow_linkBackIndexHistory++;
-                if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory < 0) brow_linkBackIndexHistory = 0;
-                string url = "http" + brow_linkHistoryList[brow_linkBackIndexHistory].Split(new string[] { " | http" }, StringSplitOptions.None)[1];
-                f_brow_Go(url);
-            };
-            btn_next.Click += (se, ev) =>
-            {
-                if (brow_linkHistoryList.Count == 0) return;
-                if (brow_linkBackIndexHistory == 0) brow_linkBackIndexHistory = brow_linkHistoryList.Count - 1;
-                brow_linkBackIndexHistory--;
-                if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory < 0) brow_linkBackIndexHistory = 0;
-                string url = "http" + brow_linkHistoryList[brow_linkBackIndexHistory].Split(new string[] { " | http" }, StringSplitOptions.None)[1];
-                f_brow_Go(url);
-            };
+            btn_back.FlatAppearance.BorderColor = SystemColors.Control;
+            btn_next.FlatAppearance.BorderColor = SystemColors.Control;
+            btn_back.Click += (se, ev) => f_brow_goBack();
+            btn_next.Click += (se, ev) => f_brow_goNext();
 
             toolbar.Controls.AddRange(new Control[] { brow_UrlTextBox,
                 new Label() {
@@ -351,7 +386,7 @@ namespace elbro
 
         #region [ CACHE ]
 
-        private void f_brow_cacheUpdate(string url, string data)
+        void f_brow_cacheUpdate(string url, string data)
         {
             if (url.Contains(brow_Domain))
             {
@@ -384,24 +419,6 @@ namespace elbro
             return false;
         }
 
-        string f_brow_cachePublishHTML(string url)
-        {
-            if (brow_cacheResponse.ContainsKey(url))
-            {
-                string s = brow_cacheResponse[url];
-                string title = string.Empty;
-                var mtit = Regex.Match(s, @"(?<=<title[^>]*>)[\s\S]*?(?=</title>)");
-                if (mtit.Success) title = mtit.Value;
-                //s = f_brow_htmlFormat(s);
-
-                string htm = @"<!DOCTYPE html><html xmlns=""http://www.w3.org/1999/xhtml"" xml:lang=""en"" lang=""en""><head><meta http-equiv=""Content-Type"" content =""text /html; charset=UTF-8"" /><meta name=""viewport"" content=""width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"" />" +
-                "<title>" + title + "</title>" + f_brow_cssPublish(true) + "</head><body>" + s + "</body></html>";
-                return htm;
-            }
-            return null;
-        }
-
-
         #endregion
 
         #region [ GO, DOM_LOADED]
@@ -409,13 +426,14 @@ namespace elbro
         void f_brow_Go(string url)
         {
             brow_Transparent.Width = browser.Width;
+            brow_Transparent.BringToFront();
+
             url = url.Trim();
             this.Text = url;
 
             // online
             if ((url.IndexOf(' ') == -1 && url.IndexOf('.') != -1) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
             {
-                brow_Transparent.BringToFront();
                 browser.Navigate(url);
             }
             else
@@ -425,62 +443,70 @@ namespace elbro
             }
         }
 
+        void f_brow_GoCache(string url)
+        {
+            string raw = brow_cacheResponse[url];
+            if (raw != null)
+            {
+                string s = raw, title = string.Empty, htm = string.Empty;
+
+                var mbody = Regex.Match(s, @"(?<=<body[^>]*>)[\s\S]*?(?=</body>)");
+                if (mbody.Success) s = mbody.Value;
+                s = Regex.Replace(s, @"<script[^>]*>[\s\S]*?</script>", string.Empty);
+
+                var mtit = Regex.Match(raw, @"(?<=<title[^>]*>)[\s\S]*?(?=</title>)");
+                if (mtit.Success) title = mtit.Value;
+                this.Text = title;
+
+                //s = f_brow_htmlFormat(s);
+                htm = @"<!DOCTYPE html><html xmlns=""http://www.w3.org/1999/xhtml"" xml:lang=""en"" lang=""en""><head><meta http-equiv=""Content-Type"" content =""text /html; charset=UTF-8"" /><meta name=""viewport"" content=""width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"" />" +
+                "<title>" + title + "</title>" + f_brow_cssPublish(true) + "</head><body>" + s + "</body></html>";
+
+                brow_URL = url;
+                brow_Domain = brow_URL.Split('/')[2];
+
+                browser.Stop();
+                browser.LoadHtml(htm);
+                //browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+                browser.Refresh();
+
+                this.f_log("[END] LOAD_CACHE: " + url);
+
+                ActionTimer.SetTimeout(() =>
+                {
+                    brow_Transparent.crossThreadPerformSafely(() =>
+                    {
+                        brow_Transparent.SendToBack();
+                    });
+                }, 300);
+            }
+        }
+
         void f_brow_onBeforeNavigating(GeckoNavigatingEventArgs ev)
         {
             string url = ev.Uri.ToString();
             this.f_log("[1] BeforeNavigating: " + url);
+            brow_UrlTextBox.Text = url;
 
             if (brow_cacheResponse.ContainsKey(url))
             {
                 // cache
                 brow_IsReadCache = true;
-                string raw = brow_cacheResponse[url];
-                if (raw != null)
-                {
-                    string s = raw, title = string.Empty, htm = string.Empty;
-
-                    var mbody = Regex.Match(s, @"(?<=<body[^>]*>)[\s\S]*?(?=</body>)");
-                    if (mbody.Success) s = mbody.Value;
-                    s = Regex.Replace(s, @"<script[^>]*>[\s\S]*?</script>", string.Empty);
-
-                    var mtit = Regex.Match(raw, @"(?<=<title[^>]*>)[\s\S]*?(?=</title>)");
-                    if (mtit.Success) title = mtit.Value;
-
-                    this.Text = title;
-                    brow_UrlTextBox.Text = url;
-
-                    //s = f_brow_htmlFormat(s);
-                    htm = @"<!DOCTYPE html><html xmlns=""http://www.w3.org/1999/xhtml"" xml:lang=""en"" lang=""en""><head><meta http-equiv=""Content-Type"" content =""text /html; charset=UTF-8"" /><meta name=""viewport"" content=""width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"" />" +
-                    "<title>" + title + "</title>" + f_brow_cssPublish(true) + "</head><body>" + s + "</body></html>";
-
-                    brow_URL = url;
-                    browser.Stop();
-                    browser.LoadHtml(htm);
-                    //browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
-                    browser.Refresh();
-
-                    this.f_log("[END] LOAD_CACHE: " + url);
-                    
-                    ActionTimer.SetTimeout(() => {
-                        brow_Transparent.crossThreadPerformSafely(() => {
-                            brow_Transparent.SendToBack();
-                        });
-                    }, 500);
-                }
+                f_brow_GoCache(url);
             }
             else
             {
+                // online
                 brow_IsReadCache = false;
 
                 brow_URL = url.ToString();
                 brow_Domain = brow_URL.Split('/')[2];
-                brow_UrlTextBox.Text = brow_URL;
             }
         }
 
         void f_brow_onDOMContentLoaded(string title, Uri uri)
         {
-            if (brow_IsReadCache) return; 
+            if (brow_IsReadCache) return;
 
             this.f_log("[2] DOMContentLoaded: " + uri.ToString());
 
@@ -542,6 +568,34 @@ namespace elbro
 
         }
 
+        void f_brow_GoYouTube(string url) {
+
+        }
+
+        #endregion
+
+        #region [ BACK, NEXT ]
+
+        void f_brow_goBack()
+        {
+            if (brow_linkHistoryList.Count <= 1) return;
+
+            brow_linkBackIndexHistory++;
+            if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory < 0) brow_linkBackIndexHistory = 0;
+            string url = "http" + brow_linkHistoryList[brow_linkBackIndexHistory].Split(new string[] { " | http" }, StringSplitOptions.None)[1];
+            f_brow_Go(url);
+        }
+
+        void f_brow_goNext()
+        {
+            if (brow_linkHistoryList.Count <= 1) return;
+
+            if (brow_linkBackIndexHistory == 0) brow_linkBackIndexHistory = brow_linkHistoryList.Count - 1;
+            brow_linkBackIndexHistory--;
+            if (brow_linkBackIndexHistory == brow_linkHistoryList.Count || brow_linkBackIndexHistory < 0) brow_linkBackIndexHistory = 0;
+            string url = "http" + brow_linkHistoryList[brow_linkBackIndexHistory].Split(new string[] { " | http" }, StringSplitOptions.None)[1];
+            f_brow_Go(url);
+        }
 
         #endregion
 
@@ -817,73 +871,91 @@ form, input, textarea, select, button { display:none !important; }
 
         #endregion
 
-
         #region [ DOM_CLICK ]
 
         void f_brow_onDomClick(object sender, DomMouseEventArgs eventArgs)
         {
-            this.f_log("DOM___CLICK ... ... ...");
-
-            GeckoAnchorElement anchor;
-            GeckoElement el = new GeckoElement(eventArgs.Target.NativeObject);
-            if (el.TagName == "A" || el.ParentNode.NodeName == "A")
+            try
             {
-                if (el.TagName == "A")
-                    anchor = new GeckoAnchorElement(el.DomObject);
-                else
-                    anchor = new GeckoAnchorElement(el.ParentElement.DomObject);
+                this.f_log("DOM___CLICK ... ... ...");
 
-                if (string.IsNullOrEmpty(anchor.Href)) return;
-
-                string url = anchor.Href.Trim();
-                if (!url.StartsWith("http"))
+                GeckoAnchorElement anchor;
+                GeckoElement el = new GeckoElement(eventArgs.Target.NativeObject);
+                if (el.TagName == "A" || el.ParentNode.NodeName == "A")
                 {
-                    if (url.StartsWith("../"))
+                    if (el.TagName == "A")
+                        anchor = new GeckoAnchorElement(el.DomObject);
+                    else
+                        anchor = new GeckoAnchorElement(el.ParentElement.DomObject);
+
+                    if (string.IsNullOrEmpty(anchor.Href)) return;
+
+                    string url = anchor.Href.Trim();
+                    if (!url.StartsWith("http"))
                     {
-                        url = url.Substring(3);
-                        string split = url.Split('/')[0];
-                        if (split == url)
+                        if (url.StartsWith("../"))
                         {
-                            //[1] is page-abc.html
-                            string[] a = brow_URL.Split('/'); // 0/1/2/../..(.)html
-                            if (a[a.Length - 1].Contains("."))
+                            url = url.Substring(3);
+                            string split = url.Split('/')[0];
+                            if (split == url)
                             {
-                                //[1.1] path ref exist (.)html
-                                if (a.Length > 5)
+                                //[1] is page-abc.html
+                                string[] a = brow_URL.Split('/'); // 0/1/2/../..(.)html
+                                if (a[a.Length - 1].Contains("."))
                                 {
-                                    // exist middle path /../
-                                    url = brow_URL.Substring(0, brow_URL.Length - (a[a.Length - 2].Length + a[a.Length - 1].Length + 1)) + url;
+                                    //[1.1] path ref exist (.)html
+                                    if (a.Length > 5)
+                                    {
+                                        // exist middle path /../
+                                        url = brow_URL.Substring(0, brow_URL.Length - (a[a.Length - 2].Length + a[a.Length - 1].Length + 1)) + url;
+                                    }
+                                    else
+                                    {
+                                        // not exist middle path /../
+                                        url = brow_URL.Substring(0, brow_URL.Length - a[a.Length - 1].Length) + url;
+                                    }
                                 }
                                 else
                                 {
-                                    // not exist middle path /../
-                                    url = brow_URL.Substring(0, brow_URL.Length - a[a.Length - 1].Length) + url;
+                                    //[1.2] path ref not exist (.)html
+                                    if (a.Length > 5)
+                                    {
+                                        // exist middle path /../
+                                        url = brow_URL.Substring(0, brow_URL.Length - (a[a.Length - 2].Length + a[a.Length - 1].Length + 1)) + url;
+                                    }
+                                    else
+                                    {
+                                        // not exist middle path /../
+                                        url = brow_URL.Substring(0, brow_URL.Length - a[a.Length - 1].Length) + url;
+                                    }
                                 }
                             }
                             else
                             {
-                                //[1.2] path ref not exist (.)html
-                                if (a.Length > 5)
-                                {
-                                    // exist middle path /../
-                                    url = brow_URL.Substring(0, brow_URL.Length - (a[a.Length - 2].Length + a[a.Length - 1].Length + 1)) + url;
-                                }
-                                else
-                                {
-                                    // not exist middle path /../
-                                    url = brow_URL.Substring(0, brow_URL.Length - a[a.Length - 1].Length) + url;
-                                }
+                                //[2] is path-xyz/.../page-abc.html
+                                url = brow_URL.Split(new string[] { split }, StringSplitOptions.None)[0] + url;
                             }
                         }
-                        else
-                        {
-                            //[2] is path-xyz/.../page-abc.html
-                            url = brow_URL.Split(new string[] { split }, StringSplitOptions.None)[0] + url;
-                        }
                     }
+
+                    //https://www.google.com.vn/url?q=https://www.britishcouncilfoundation.id/en/english&sa=U&ved=0ahUKEwiUmbaSxYncAhWFo5QKHYPGC4Y4ChAWCEAwCQ&usg=AOvVaw0xa_Ri84llhzTgWLE29d57
+                    if (url.Contains(brow_Domain) && url.Contains("/url?q="))
+                        url = url.Split(new string[] { "/url?q=", "&" }, StringSplitOptions.None)[1].Trim();
+                    url = HttpUtility.UrlDecode(url);
+                    string domain = url.IndexOf("//") == -1 ? url.Split('/')[0] : url.Split('/')[2];
+                    switch (domain) {
+                        case DOMAIN_YOUTUBE:
+                            f_brow_GoYouTube(url);
+                            break;
+                        default:
+                            f_brow_Go(url);
+                            break;
+                    }                    
+                    eventArgs.Handled = true; // cancel
                 }
-                f_brow_Go(url);
-                eventArgs.Handled = true; // cancel
+            }
+            catch (Exception ex) {
+                MessageBox.Show("ERROR DOM_CLICK: " + ex.Message);
             }
         }
 
@@ -1139,8 +1211,7 @@ form, input, textarea, select, button { display:none !important; }
         #region [  === TAB === ]
 
         #region [ TAB: MAIN ]
-
-        const string tab_IconToggle = "☰";
+        
         FATabStrip tab_Main;
         FATabStripItem tab_Note;
         FATabStripItem tab_Link;
