@@ -351,7 +351,7 @@ namespace elbro
 
         bool f_requestCancel(string url, string refer)
         {
-            if (url.Contains(DOMAIN_YOUTUBE_IMG)) return false;
+            //if (url.Contains(DOMAIN_YOUTUBE_IMG)) return false;
 
             if (refer.Length > 0 && refer != brow_URL)
                 if (brow_UrlFullRequest.IndexOf(refer) != -1) return false;
