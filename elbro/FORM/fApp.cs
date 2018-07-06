@@ -93,6 +93,7 @@ namespace elbro
         const string DOMAIN_GOOGLE = "www.google.com.vn";
         const string DOMAIN_BING = "www.bing.com";
         const string DOMAIN_YOUTUBE = "www.youtube.com";
+        const string DOMAIN_YOUTUBE_IMG = "i.ytimg.com";
 
         const int TOOLBAR_HEIGHT = 28;
         const int SHORTCUTBAR_HEIGHT = 17;
@@ -350,6 +351,8 @@ namespace elbro
 
         bool f_requestCancel(string url, string refer)
         {
+            if (url.Contains(DOMAIN_YOUTUBE_IMG)) return false;
+
             if (refer.Length > 0 && refer != brow_URL)
                 if (brow_UrlFullRequest.IndexOf(refer) != -1) return false;
 
@@ -360,8 +363,9 @@ namespace elbro
                 || url.Contains(brow_Domain) == false
                 || url.Contains("about:")
                 || url.Contains("json")
-                || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf")
-                || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif"))
+                || url.Contains("accounts.google.com")
+                || url.Contains("/image") || url.Contains(".png") || url.Contains(".jpeg") || url.Contains(".jpg") || url.Contains(".gif")
+                || url.Contains("font") || url.Contains(".svg") || url.Contains(".woff") || url.Contains(".ttf"))
                 return true;
 
             return false;
@@ -484,16 +488,19 @@ namespace elbro
         }
 
         void f_brow_GoYouTube(string url) {
-            if (brow_UrlFullRequest.IndexOf(url) == -1)
-                brow_UrlFullRequest.Add(url);
+            string urlEmbed = "https://www.youtube.com/embed/" + url.Split('=')[1];
 
+            if (brow_UrlFullRequest.IndexOf(urlEmbed) == -1)
+                brow_UrlFullRequest.Add(urlEmbed);
+
+            Form f = new Form();
+            f.Text = url;
             var w = new GeckoWebBrowser { Dock = DockStyle.Fill };
             w.DocumentCompleted += (se, ev) => {
-                //
+                f.Text = w.DocumentTitle;
             };
-            Form f = new Form();
             f.Controls.Add(w);
-            w.Navigate(url);
+            w.Navigate(urlEmbed);
             f.FormClosing += (se, ev) => {
                 w.Stop();
                 w.Dispose();
@@ -633,8 +640,8 @@ div::before,div::after { content:"""" !important; }
 li {list-style:none;}
 table td { width:auto !important; }
 
-img, iframe, header, footer, nav,
-form, input, textarea, select, button { display:none !important; }
+iframe, header, footer, nav,
+textarea, select, button { display:none !important; }
 
 .adsbygoogle { display:none !important; }
 ";
