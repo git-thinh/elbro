@@ -906,7 +906,8 @@ textarea, select, button { display:none !important; }
                 this.f_log("DOM___CLICK ... ... ...");
 
                 GeckoAnchorElement anchor;
-                GeckoElement el = new GeckoElement(eventArgs.Target.NativeObject);
+                var inode = eventArgs.Target.NativeObject;                
+                GeckoElement el = new GeckoElement(inode);
                 if (el.TagName == "A" || el.ParentNode.NodeName == "A")
                 {
                     if (el.TagName == "A")

@@ -52,13 +52,15 @@ namespace Gecko
 
         private string m_cachedTagName;
 
-        internal GeckoElement(nsIDOMElement domElement)
+        //internal GeckoElement(nsIDOMElement domElement)
+        public GeckoElement(nsIDOMElement domElement)
             : base(domElement)
         {
             _domElement = domElement;
         }
 
-        internal GeckoElement(object domElement)
+        //internal GeckoElement(object domElement)
+        public GeckoElement(object domElement)
             : base(domElement)
         {
             if (domElement is nsIDOMElement)
