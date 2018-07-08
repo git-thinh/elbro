@@ -100,7 +100,7 @@ namespace elbro
 
         //string brow_URL = "https://www.google.com.vn";
         //string brow_URL = "https://dictionary.cambridge.org";
-        //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/present-perfect-simple-i-have-worked";
+        string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/present-perfect-simple-i-have-worked";
         //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/do-or-make";
         //string brow_URL = "https://en.oxforddictionaries.com/grammar/";
         //string brow_URL = "https://vietjack.com/";
@@ -113,7 +113,7 @@ namespace elbro
         //string brow_URL = "https://www.google.com/maps";
         //string brow_URL = "http://web20office.com/crm/demo/system/login.php?r=/crm/demo";
         //string brow_URL = "file:///G:/_EL/Document/data_el2/book/84-cau-truc-va-cau-vi-du-thong-dung-trong-tieng-anh-giao-tiep.pdf";
-        string brow_URL = "https://www.youtube.com/";
+        //string brow_URL = "https://www.youtube.com/";
         //string brow_URL = "https://drive.google.com/open?id=1TG-FDU0cZ48vaJCMcAO33iNOuNqgL9BH";
         //string brow_URL = "https://drive.google.com/open?id=1B_DuOqTAQOcZjuls6bw9Tnx_0nd8qpr8";
         //string brow_URL = "https://drive.google.com/file/d/1B_DuOqTAQOcZjuls6bw9Tnx_0nd8qpr8/view";
