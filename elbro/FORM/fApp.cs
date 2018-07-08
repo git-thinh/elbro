@@ -33,7 +33,7 @@ namespace elbro
                         case MESSAGE_ACTION.ITEM_SEARCH:
                             if (m.Output.Ok)
                                 if (m.Output.GetData() is oLink[])
-                                    f_history_drawNodes((oLink[])m.Output.GetData());
+                                    f_tabLink_drawNodes((oLink[])m.Output.GetData());
                             break;
                         case MESSAGE_ACTION.URL_REQUEST_CACHE:
                             break;
@@ -648,7 +648,8 @@ div::before,div::after { content:"""" !important; }
 li {list-style:none;}
 table td { width:auto !important; }
 
-iframe, header, footer, nav,
+img, iframe, header, footer, nav,
+input[type=""radio""], input[type=""check""], input[type=""submit""], input[type=""button""], 
 textarea, select, button { display:none !important; }
 
 .adsbygoogle { display:none !important; }
@@ -1274,7 +1275,7 @@ textarea, select, button { display:none !important; }
             });
 
             f_tab_SettingInit();
-            f_tab_LinkInit();
+            f_tabLink_Init();
             f_tab_LinkNote();
         }
 
@@ -1297,10 +1298,10 @@ textarea, select, button { display:none !important; }
 
         #region [ TAB:LINK ]
 
-        TextBoxWaterMark tab_LinkSearchTextBox;
-        System.Windows.Forms.TreeView tab_LinkTreeView;
+        TextBoxWaterMark tabLink_SearchTextBox;
+        System.Windows.Forms.TreeView tabLink_TreeView;
 
-        void f_tab_LinkInit()
+        void f_tabLink_Init()
         {
             Panel barSearch = new Panel()
             {
@@ -1309,7 +1310,7 @@ textarea, select, button { display:none !important; }
                 //BackColor = Color.Gray,
                 Padding = new Padding(9, 1, 0, 0),
             };
-            tab_LinkSearchTextBox = new TextBoxWaterMark()
+            tabLink_SearchTextBox = new TextBoxWaterMark()
             {
                 WaterMark = "Search Link",
                 Dock = DockStyle.Right,
@@ -1319,22 +1320,22 @@ textarea, select, button { display:none !important; }
                 WaterMarkActiveForeColor = Color.DarkGray,
             };
             barSearch.Controls.AddRange(new Control[] {
-                tab_LinkSearchTextBox
+                tabLink_SearchTextBox
             });
-            tab_LinkSearchTextBox.KeyDown += (se, ev) =>
+            tabLink_SearchTextBox.KeyDown += (se, ev) =>
             {
                 if (ev.KeyCode == Keys.Enter)
-                    this.f_sendRequestToJob(JOB_NAME.SYS_LINK, MESSAGE_ACTION.ITEM_SEARCH, tab_LinkSearchTextBox.Text.Trim());
+                    this.f_sendRequestToJob(JOB_NAME.SYS_LINK, MESSAGE_ACTION.ITEM_SEARCH, tabLink_SearchTextBox.Text.Trim());
             };
 
-            tab_LinkTreeView = new System.Windows.Forms.TreeView()
+            tabLink_TreeView = new System.Windows.Forms.TreeView()
             {
                 Dock = DockStyle.Fill,
                 Font = font_Title,
                 BorderStyle = BorderStyle.None,
             };
-            tab_LinkTreeView.MouseDoubleClick += f_history_items_selectIndexChange;
-            f_history_drawNodes(null);
+            tabLink_TreeView.MouseDoubleClick += f_tabLink_selectIndexChange;
+            f_tabLink_drawNodes(null);
 
             Panel barFooter = new Panel()
             {
@@ -1344,13 +1345,80 @@ textarea, select, button { display:none !important; }
             };
 
             tab_Link.Controls.AddRange(new Control[] {
-                tab_LinkTreeView,
+                tabLink_TreeView,
                 barSearch,
                 barFooter,
                 new Label() { Dock = DockStyle.Left, Width = 1, BackColor = Color.LightGray }
             });
         }
 
+        void f_tabLink_drawNodes(oLink[] links)
+        {
+            if (links != null && links.Length > 0)
+            {
+                List<string> tags = new List<string>();
+                foreach (string[] a in links.Select(x => x.Tags.Split(','))) tags.AddRange(a);
+                tags = tags.Select(x => x.Trim()).Distinct().ToList();
+                TreeNode[] nodes = tags.Select(x => new TreeNode(x)).ToArray();
+                foreach (TreeNode node in nodes) node.Nodes.AddRange(links.Where(o => o.Tags.Contains(node.Text)).Select(o => new TreeNode(o.TitleDomain()) { Tag = o }).ToArray());
+                tabLink_TreeView.crossThreadPerformSafely(() =>
+                {
+                    tabLink_TreeView.Nodes.Clear();
+                    tabLink_TreeView.Nodes.AddRange(new TreeNode[] {
+                        new TreeNode("Youtube"){ Tag = new oLink(){ Title = "Youtube", Tags= "", Link = "https://www.youtube.com/results?search_query={0}" } },
+                        new TreeNode("Google"){ Tag = new oLink(){ Title = "Google", Tags= "", Link = "https://www.google.com/search?q={0}" } },
+                        new TreeNode("Grammar By Oxford"){ Tag = new oLink(){ Title = "Grammar By Oxford", Tags= "", Link = "https://en.oxforddictionaries.com/grammar/" } },
+                        new TreeNode("British Grammar By Cambridge"){ Tag = new oLink(){ Title = "British Grammar By Cambridge", Tags= "", Link = "https://dictionary.cambridge.org/grammar/british-grammar/" } },
+                        new TreeNode("Pronuncian.com"){ Tag = new oLink(){ Title = "Pronuncian.com", Tags= "", Link = "https://pronuncian.com/pronounce-th-sounds/" } },
+                        new TreeNode("Learning-english-online.net"){ Tag = new oLink(){ Title = "Learning-english-online.net", Tags= "", Link = "https://www.learning-english-online.net/pronunciation/the-english-th/" } },
+                    });
+                    tabLink_TreeView.Nodes.AddRange(nodes);
+                });
+            }
+            else
+            {
+                tabLink_TreeView.crossThreadPerformSafely(() =>
+                {
+                    tabLink_TreeView.Nodes.Clear();
+                    tabLink_TreeView.Nodes.AddRange(new TreeNode[] {
+                        new TreeNode("Youtube"){ Tag = new oLink(){ Title = "Youtube", Tags= "", Link = "https://www.youtube.com/results?search_query={0}" } },
+                        new TreeNode("Google"){ Tag = new oLink(){ Title = "Google", Tags= "", Link = "https://www.google.com/search?q={0}" } },
+                        new TreeNode("Grammar By Oxford"){ Tag = new oLink(){ Title = "Grammar By Oxford", Tags= "", Link = "https://en.oxforddictionaries.com/grammar/" } },
+                        new TreeNode("British Grammar By Cambridge"){ Tag = new oLink(){ Title = "British Grammar By Cambridge", Tags= "", Link = "https://dictionary.cambridge.org/grammar/british-grammar/" } },
+                        new TreeNode("Pronuncian.com"){ Tag = new oLink(){ Title = "Pronuncian.com", Tags= "", Link = "https://pronuncian.com/pronounce-th-sounds/" } },
+                        new TreeNode("Learning-english-online.net"){ Tag = new oLink(){ Title = "Learning-english-online.net", Tags= "", Link = "https://www.learning-english-online.net/pronunciation/the-english-th/" } },
+                    });
+                });
+            }
+        }
+
+        void f_tabLink_selectIndexChange(object sender, EventArgs e)
+        {
+            TreeNode node = tabLink_TreeView.SelectedNode;
+            if (node != null && node.Tag != null)
+            {
+                oLink link = node.Tag as oLink;
+                string url = string.Empty;
+                if (link.Title == "Youtube" || link.Title == "Google")
+                {
+                    string key = Prompt.ShowDialog("Input to search?", link.Title).Trim();
+                    if (key.Length > 0)
+                        url = string.Format(link.Link, key);
+                }
+                else url = link.Link;
+                if (url.Length > 0)
+                {
+                    f_brow_Go(url);
+
+                    //m_url_textBox.Text = url;
+                    //m_tab_Browser.Text = link.TitleDomain();
+                    //m_brow_web.DocumentText = "<h1>LOADING: " + url + "</h1>";
+
+                    //this.f_sendRequestToJob(JOB_NAME.SYS_LINK, MESSAGE_ACTION.URL_REQUEST_CACHE, url);
+                }
+            }
+        }
+        
         #endregion
 
         #region [ TAB:NOTE ]
@@ -1419,72 +1487,6 @@ textarea, select, button { display:none !important; }
 
         #region [ HISTORY ]
 
-        void f_history_drawNodes(oLink[] links)
-        {
-            if (links != null && links.Length > 0)
-            {
-                List<string> tags = new List<string>();
-                foreach (string[] a in links.Select(x => x.Tags.Split(','))) tags.AddRange(a);
-                tags = tags.Select(x => x.Trim()).Distinct().ToList();
-                TreeNode[] nodes = tags.Select(x => new TreeNode(x)).ToArray();
-                foreach (TreeNode node in nodes) node.Nodes.AddRange(links.Where(o => o.Tags.Contains(node.Text)).Select(o => new TreeNode(o.TitleDomain()) { Tag = o }).ToArray());
-                tab_LinkTreeView.crossThreadPerformSafely(() =>
-                {
-                    tab_LinkTreeView.Nodes.Clear();
-                    tab_LinkTreeView.Nodes.AddRange(new TreeNode[] {
-                        new TreeNode("Youtube"){ Tag = new oLink(){ Title = "Youtube", Tags= "", Link = "https://www.youtube.com/results?search_query={0}" } },
-                        new TreeNode("Google"){ Tag = new oLink(){ Title = "Google", Tags= "", Link = "https://www.google.com/search?q={0}" } },
-                        new TreeNode("Grammar By Oxford"){ Tag = new oLink(){ Title = "Grammar By Oxford", Tags= "", Link = "https://en.oxforddictionaries.com/grammar/" } },
-                        new TreeNode("British Grammar By Cambridge"){ Tag = new oLink(){ Title = "British Grammar By Cambridge", Tags= "", Link = "https://dictionary.cambridge.org/grammar/british-grammar/" } },
-                        new TreeNode("Pronuncian.com"){ Tag = new oLink(){ Title = "Pronuncian.com", Tags= "", Link = "https://pronuncian.com/pronounce-th-sounds/" } },
-                        new TreeNode("Learning-english-online.net"){ Tag = new oLink(){ Title = "Learning-english-online.net", Tags= "", Link = "https://www.learning-english-online.net/pronunciation/the-english-th/" } },
-                    });
-                    tab_LinkTreeView.Nodes.AddRange(nodes);
-                });
-            }
-            else
-            {
-                tab_LinkTreeView.crossThreadPerformSafely(() =>
-                {
-                    tab_LinkTreeView.Nodes.Clear();
-                    tab_LinkTreeView.Nodes.AddRange(new TreeNode[] {
-                        new TreeNode("Youtube"){ Tag = new oLink(){ Title = "Youtube", Tags= "", Link = "https://www.youtube.com/results?search_query={0}" } },
-                        new TreeNode("Google"){ Tag = new oLink(){ Title = "Google", Tags= "", Link = "https://www.google.com/search?q={0}" } },
-                        new TreeNode("Grammar By Oxford"){ Tag = new oLink(){ Title = "Grammar By Oxford", Tags= "", Link = "https://en.oxforddictionaries.com/grammar/" } },
-                        new TreeNode("British Grammar By Cambridge"){ Tag = new oLink(){ Title = "British Grammar By Cambridge", Tags= "", Link = "https://dictionary.cambridge.org/grammar/british-grammar/" } },
-                        new TreeNode("Pronuncian.com"){ Tag = new oLink(){ Title = "Pronuncian.com", Tags= "", Link = "https://pronuncian.com/pronounce-th-sounds/" } },
-                        new TreeNode("Learning-english-online.net"){ Tag = new oLink(){ Title = "Learning-english-online.net", Tags= "", Link = "https://www.learning-english-online.net/pronunciation/the-english-th/" } },
-                    });
-                });
-            }
-        }
-
-        void f_history_items_selectIndexChange(object sender, EventArgs e)
-        {
-            TreeNode node = tab_LinkTreeView.SelectedNode;
-            if (node != null && node.Tag != null)
-            {
-                oLink link = node.Tag as oLink;
-                string url = string.Empty;
-                if (link.Title == "Youtube" || link.Title == "Google")
-                {
-                    string key = Prompt.ShowDialog("Input to search?", link.Title).Trim();
-                    if (key.Length > 0)
-                        url = string.Format(link.Link, key);
-                }
-                else url = link.Link;
-                if (url.Length > 0)
-                {
-                    f_brow_Go(url);
-
-                    //m_url_textBox.Text = url;
-                    //m_tab_Browser.Text = link.TitleDomain();
-                    //m_brow_web.DocumentText = "<h1>LOADING: " + url + "</h1>";
-
-                    //this.f_sendRequestToJob(JOB_NAME.SYS_LINK, MESSAGE_ACTION.URL_REQUEST_CACHE, url);
-                }
-            }
-        }
 
         #endregion
         #endregion
