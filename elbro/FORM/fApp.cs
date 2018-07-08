@@ -31,6 +31,9 @@ namespace elbro
                     switch (m.getAction())
                     {
                         case MESSAGE_ACTION.ITEM_SEARCH:
+                            if (m.Output.Ok)
+                                if (m.Output.GetData() is oLink[])
+                                    f_history_drawNodes((oLink[])m.Output.GetData());
                             break;
                         case MESSAGE_ACTION.URL_REQUEST_CACHE:
                             break;
@@ -120,7 +123,7 @@ namespace elbro
         //string brow_URL = "https://drive.google.com/file/d/1TG-FDU0cZ48vaJCMcAO33iNOuNqgL9BH/view";
 
         string brow_Domain;
-        bool            
+        bool
             brow_IsReadCache = false,
             brow_EnabelJS = true,
             brow_EnableCSS = false,
@@ -277,16 +280,18 @@ namespace elbro
                 brow_UrlTextBox.Text = string.Empty;
             };
 
-            var btn_ToggleTab = new Button() {
+            var btn_ToggleTab = new Button()
+            {
                 Text = BROW_BUTTON_TOGGLE_TAB,
                 Width = 19,
                 Height = 20,
                 Dock = DockStyle.Right,
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.DarkGray,
-                BackColor = SystemColors.Control                
+                BackColor = SystemColors.Control
             };
-            var btn_back = new Button() {
+            var btn_back = new Button()
+            {
                 Text = BROW_BUTTON_BACK,
                 TextAlign = ContentAlignment.MiddleRight,
                 Width = 32,
@@ -357,7 +362,7 @@ namespace elbro
                 if (brow_UrlFullRequest.IndexOf(refer) != -1) return false;
 
             if (url.Contains("/chat/")) return true;
-            
+
             if (brow_cacheResponse.ContainsKey(url)
                 || (url.Contains(".js") && !url.EndsWith(".jsp")) || url.Contains("/js/")
                 || url.Contains(brow_Domain) == false
@@ -384,7 +389,7 @@ namespace elbro
                 e.Cancel = true;
                 return;
             }
-            System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url + Environment.NewLine + "REF: " +  refer);
+            System.Tracer.WriteLine("---->[2] Observe REQUEST OK: " + url + Environment.NewLine + "REF: " + refer);
         }
 
         #endregion
@@ -487,7 +492,8 @@ namespace elbro
             }
         }
 
-        void f_brow_GoYouTube(string url) {
+        void f_brow_GoYouTube(string url)
+        {
             string urlEmbed = "https://www.youtube.com/embed/" + url.Split('=')[1];
 
             if (brow_UrlFullRequest.IndexOf(urlEmbed) == -1)
@@ -496,12 +502,14 @@ namespace elbro
             Form f = new Form();
             f.Text = url;
             var w = new GeckoWebBrowser { Dock = DockStyle.Fill };
-            w.DocumentCompleted += (se, ev) => {
+            w.DocumentCompleted += (se, ev) =>
+            {
                 f.Text = w.DocumentTitle;
             };
             f.Controls.Add(w);
             w.Navigate(urlEmbed);
-            f.FormClosing += (se, ev) => {
+            f.FormClosing += (se, ev) =>
+            {
                 w.Stop();
                 w.Dispose();
                 if (brow_UrlFullRequest.IndexOf(url) != -1)
@@ -906,7 +914,7 @@ textarea, select, button { display:none !important; }
                 this.f_log("DOM___CLICK ... ... ...");
 
                 GeckoAnchorElement anchor;
-                var inode = eventArgs.Target.NativeObject;                
+                var inode = eventArgs.Target.NativeObject;
                 GeckoElement el = new GeckoElement(inode);
                 if (el.TagName == "A" || el.ParentNode.NodeName == "A")
                 {
@@ -970,18 +978,20 @@ textarea, select, button { display:none !important; }
                         url = url.Split(new string[] { "/url?q=", "&" }, StringSplitOptions.None)[1].Trim();
                     url = HttpUtility.UrlDecode(url);
                     string domain = url.IndexOf("//") == -1 ? url.Split('/')[0] : url.Split('/')[2];
-                    switch (domain) {
+                    switch (domain)
+                    {
                         case DOMAIN_YOUTUBE:
                             f_brow_GoYouTube(url);
                             break;
                         default:
                             f_brow_Go(url);
                             break;
-                    }                    
+                    }
                     eventArgs.Handled = true; // cancel
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 MessageBox.Show("ERROR DOM_CLICK: " + ex.Message);
             }
         }
@@ -1239,7 +1249,7 @@ textarea, select, button { display:none !important; }
         #region [  === TAB === ]
 
         #region [ TAB: MAIN ]
-        
+
         FATabStrip tab_Main;
         FATabStripItem tab_Note;
         FATabStripItem tab_Link;
@@ -1311,6 +1321,11 @@ textarea, select, button { display:none !important; }
             barSearch.Controls.AddRange(new Control[] {
                 tab_LinkSearchTextBox
             });
+            tab_LinkSearchTextBox.KeyDown += (se, ev) =>
+            {
+                if (ev.KeyCode == Keys.Enter)
+                    this.f_sendRequestToJob(JOB_NAME.SYS_LINK, MESSAGE_ACTION.ITEM_SEARCH, tab_LinkSearchTextBox.Text.Trim());
+            };
 
             tab_LinkTreeView = new System.Windows.Forms.TreeView()
             {
@@ -1318,6 +1333,8 @@ textarea, select, button { display:none !important; }
                 Font = font_Title,
                 BorderStyle = BorderStyle.None,
             };
+            tab_LinkTreeView.MouseDoubleClick += f_history_items_selectIndexChange;
+            f_history_drawNodes(null);
 
             Panel barFooter = new Panel()
             {
@@ -1400,6 +1417,76 @@ textarea, select, button { display:none !important; }
 
         #endregion
 
+        #region [ HISTORY ]
+
+        void f_history_drawNodes(oLink[] links)
+        {
+            if (links != null && links.Length > 0)
+            {
+                List<string> tags = new List<string>();
+                foreach (string[] a in links.Select(x => x.Tags.Split(','))) tags.AddRange(a);
+                tags = tags.Select(x => x.Trim()).Distinct().ToList();
+                TreeNode[] nodes = tags.Select(x => new TreeNode(x)).ToArray();
+                foreach (TreeNode node in nodes) node.Nodes.AddRange(links.Where(o => o.Tags.Contains(node.Text)).Select(o => new TreeNode(o.TitleDomain()) { Tag = o }).ToArray());
+                tab_LinkTreeView.crossThreadPerformSafely(() =>
+                {
+                    tab_LinkTreeView.Nodes.Clear();
+                    tab_LinkTreeView.Nodes.AddRange(new TreeNode[] {
+                        new TreeNode("Youtube"){ Tag = new oLink(){ Title = "Youtube", Tags= "", Link = "https://www.youtube.com/results?search_query={0}" } },
+                        new TreeNode("Google"){ Tag = new oLink(){ Title = "Google", Tags= "", Link = "https://www.google.com/search?q={0}" } },
+                        new TreeNode("Grammar By Oxford"){ Tag = new oLink(){ Title = "Grammar By Oxford", Tags= "", Link = "https://en.oxforddictionaries.com/grammar/" } },
+                        new TreeNode("British Grammar By Cambridge"){ Tag = new oLink(){ Title = "British Grammar By Cambridge", Tags= "", Link = "https://dictionary.cambridge.org/grammar/british-grammar/" } },
+                        new TreeNode("Pronuncian.com"){ Tag = new oLink(){ Title = "Pronuncian.com", Tags= "", Link = "https://pronuncian.com/pronounce-th-sounds/" } },
+                        new TreeNode("Learning-english-online.net"){ Tag = new oLink(){ Title = "Learning-english-online.net", Tags= "", Link = "https://www.learning-english-online.net/pronunciation/the-english-th/" } },
+                    });
+                    tab_LinkTreeView.Nodes.AddRange(nodes);
+                });
+            }
+            else
+            {
+                tab_LinkTreeView.crossThreadPerformSafely(() =>
+                {
+                    tab_LinkTreeView.Nodes.Clear();
+                    tab_LinkTreeView.Nodes.AddRange(new TreeNode[] {
+                        new TreeNode("Youtube"){ Tag = new oLink(){ Title = "Youtube", Tags= "", Link = "https://www.youtube.com/results?search_query={0}" } },
+                        new TreeNode("Google"){ Tag = new oLink(){ Title = "Google", Tags= "", Link = "https://www.google.com/search?q={0}" } },
+                        new TreeNode("Grammar By Oxford"){ Tag = new oLink(){ Title = "Grammar By Oxford", Tags= "", Link = "https://en.oxforddictionaries.com/grammar/" } },
+                        new TreeNode("British Grammar By Cambridge"){ Tag = new oLink(){ Title = "British Grammar By Cambridge", Tags= "", Link = "https://dictionary.cambridge.org/grammar/british-grammar/" } },
+                        new TreeNode("Pronuncian.com"){ Tag = new oLink(){ Title = "Pronuncian.com", Tags= "", Link = "https://pronuncian.com/pronounce-th-sounds/" } },
+                        new TreeNode("Learning-english-online.net"){ Tag = new oLink(){ Title = "Learning-english-online.net", Tags= "", Link = "https://www.learning-english-online.net/pronunciation/the-english-th/" } },
+                    });
+                });
+            }
+        }
+
+        void f_history_items_selectIndexChange(object sender, EventArgs e)
+        {
+            TreeNode node = tab_LinkTreeView.SelectedNode;
+            if (node != null && node.Tag != null)
+            {
+                oLink link = node.Tag as oLink;
+                string url = string.Empty;
+                if (link.Title == "Youtube" || link.Title == "Google")
+                {
+                    string key = Prompt.ShowDialog("Input to search?", link.Title).Trim();
+                    if (key.Length > 0)
+                        url = string.Format(link.Link, key);
+                }
+                else url = link.Link;
+                if (url.Length > 0)
+                {
+                    f_brow_Go(url);
+
+                    //m_url_textBox.Text = url;
+                    //m_tab_Browser.Text = link.TitleDomain();
+                    //m_brow_web.DocumentText = "<h1>LOADING: " + url + "</h1>";
+
+                    //this.f_sendRequestToJob(JOB_NAME.SYS_LINK, MESSAGE_ACTION.URL_REQUEST_CACHE, url);
+                }
+            }
+        }
+
+        #endregion
         #endregion
     }
 

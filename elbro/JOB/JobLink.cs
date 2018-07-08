@@ -37,7 +37,7 @@ namespace elbro
         private volatile bool _inited = false;
         private void f_Init()
         {
-            list.ReadFile("link.dat");
+            list.ReadFile("data/link.dat");
             // Tracer.WriteLine("J{0} executes on thread {1}: INIT ...");
         }
 
