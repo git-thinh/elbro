@@ -50,7 +50,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
-      <HintPath>DLL\System.Core.dll</HintPath>
+      <HintPath>..\run\bin\System.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Data" />
@@ -108,32 +108,6 @@
     <Compile Include="API\ActionTimeout.cs" />
     <Compile Include="MODEL\oLink.cs" />
     <Compile Include="MODEL\oWordDefine.cs" />
-    <Compile Include="NHTTP\HttpClient.cs" />
-    <Compile Include="NHTTP\HttpContext.cs" />
-    <Compile Include="NHTTP\HttpCookie.cs" />
-    <Compile Include="NHTTP\HttpCookieCollection.cs" />
-    <Compile Include="NHTTP\HttpExceptionEventHandler.cs" />
-    <Compile Include="NHTTP\HttpFileCollection.cs" />
-    <Compile Include="NHTTP\HttpMultiPartItem.cs" />
-    <Compile Include="NHTTP\HttpMultiPartRequestParser.cs" />
-    <Compile Include="NHTTP\HttpOutputStream.cs" />
-    <Compile Include="NHTTP\HttpPostedFile.cs" />
-    <Compile Include="NHTTP\HttpReadBuffer.cs" />
-    <Compile Include="NHTTP\HttpRequest.cs" />
-    <Compile Include="NHTTP\HttpRequestEventHandler.cs" />
-    <Compile Include="NHTTP\HttpRequestParser.cs" />
-    <Compile Include="NHTTP\HttpResponse.cs" />
-    <Compile Include="NHTTP\HttpServer.cs" />
-    <Compile Include="NHTTP\HttpServerState.cs" />
-    <Compile Include="NHTTP\HttpServerUtility.cs" />
-    <Compile Include="NHTTP\HttpTimeoutManager.cs" />
-    <Compile Include="NHTTP\HttpUnknownRequestParser.cs" />
-    <Compile Include="NHTTP\HttpUrlEncodedRequestParser.cs" />
-    <Compile Include="NHTTP\HttpUtil.cs" />
-    <Compile Include="NHTTP\ILog.cs" />
-    <Compile Include="NHTTP\LogManager.cs" />
-    <Compile Include="NHTTP\NHttpException.cs" />
-    <Compile Include="NHTTP\ProtocolException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="test.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">

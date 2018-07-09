@@ -2776,6 +2776,32 @@
       <DependentUpon>MP3StreamingPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="LIB\NAudio\_Demo\Mp3Streaming\ReadFullyStream.cs" />
+    <Compile Include="LIB\NHTTP\HttpClient.cs" />
+    <Compile Include="LIB\NHTTP\HttpContext.cs" />
+    <Compile Include="LIB\NHTTP\HttpCookie.cs" />
+    <Compile Include="LIB\NHTTP\HttpCookieCollection.cs" />
+    <Compile Include="LIB\NHTTP\HttpExceptionEventHandler.cs" />
+    <Compile Include="LIB\NHTTP\HttpFileCollection.cs" />
+    <Compile Include="LIB\NHTTP\HttpMultiPartItem.cs" />
+    <Compile Include="LIB\NHTTP\HttpMultiPartRequestParser.cs" />
+    <Compile Include="LIB\NHTTP\HttpOutputStream.cs" />
+    <Compile Include="LIB\NHTTP\HttpPostedFile.cs" />
+    <Compile Include="LIB\NHTTP\HttpReadBuffer.cs" />
+    <Compile Include="LIB\NHTTP\HttpRequest.cs" />
+    <Compile Include="LIB\NHTTP\HttpRequestEventHandler.cs" />
+    <Compile Include="LIB\NHTTP\HttpRequestParser.cs" />
+    <Compile Include="LIB\NHTTP\HttpResponse.cs" />
+    <Compile Include="LIB\NHTTP\HttpServer.cs" />
+    <Compile Include="LIB\NHTTP\HttpServerState.cs" />
+    <Compile Include="LIB\NHTTP\HttpServerUtility.cs" />
+    <Compile Include="LIB\NHTTP\HttpTimeoutManager.cs" />
+    <Compile Include="LIB\NHTTP\HttpUnknownRequestParser.cs" />
+    <Compile Include="LIB\NHTTP\HttpUrlEncodedRequestParser.cs" />
+    <Compile Include="LIB\NHTTP\HttpUtil.cs" />
+    <Compile Include="LIB\NHTTP\ILog.cs" />
+    <Compile Include="LIB\NHTTP\LogManager.cs" />
+    <Compile Include="LIB\NHTTP\NHttpException.cs" />
+    <Compile Include="LIB\NHTTP\ProtocolException.cs" />
     <Compile Include="LIB\Salar.Bois\BoisContractAttribute.cs" />
     <Compile Include="LIB\Salar.Bois\BoisMemberAttribute.cs" />
     <Compile Include="LIB\Salar.Bois\BoisMemberInfo.cs" />
