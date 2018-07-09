@@ -76,7 +76,7 @@ namespace elbro
 
         private void f_msg_Clear()
         {
-            if (joh_Messages.f_getJob().State != JOB_STATE.RUNNING)
+            if (joh_Messages.f_getJob().f_getState() != JOB_STATE.RUNNING)
                 joh_Messages.f_stopJob();
             joh_Messages.f_removeJob();
 
@@ -383,7 +383,7 @@ namespace elbro
             f_addGroupJobName(joh_Messages.f_getJob());
 
             // link
-            joh_Link = f_job_addNew(new JobLink(this));
+            joh_Link = f_job_addNew(new JobLink(JOB_TYPE.LINK, this));
             joh_fileHttpCache = f_job_addNew(new JobFileHttp(this)); 
             
             #region [ FORM ]

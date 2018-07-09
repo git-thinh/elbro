@@ -18,10 +18,13 @@ namespace elbro
         readonly QueueThreadSafe<string> queue;
         readonly DictionaryThreadSafe<string, string> storeUrl;
         readonly DictionaryThreadSafe<string, string> storePath;
-
-
+        
         private volatile JOB_STATE _state = JOB_STATE.NONE;
-        public JOB_STATE State { get { return _state; } }
+        private volatile JOB_TYPE _type = JOB_TYPE.NONE;
+
+        public JOB_STATE f_getState() { return _state; }
+        public JOB_TYPE f_getType() { return _type; }
+
         public IJobStore StoreJob { get; }
         public void f_stopAndFreeResource()
         {

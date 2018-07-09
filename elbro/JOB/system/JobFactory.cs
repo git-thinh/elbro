@@ -5,6 +5,8 @@ using System.Threading;
 
 namespace elbro
 {
+
+
     public interface IJobFactory
     {
         void f_runJobs();
@@ -19,12 +21,14 @@ namespace elbro
 
     public class JobFactory : IJobFactory
     {
-        readonly DictionaryThreadSafe<int, AutoResetEvent> jobEvents;
-        readonly DictionaryThreadSafe<int, IJobHandle> jobHandles;
+        readonly DictionaryThreadSafe<int, AutoResetEvent> JobEvents;
+        readonly DictionaryThreadSafe<int, IJobHandle> JobHandles;
+        readonly JOB_TYPE JobType;
 
-        public JobFactory() {
-            jobEvents = new DictionaryThreadSafe<int, AutoResetEvent>();
-            jobHandles = new DictionaryThreadSafe<int, IJobHandle>();
+        public JobFactory(JOB_TYPE jobType) {
+            this.JobType = jobType;
+            JobEvents = new DictionaryThreadSafe<int, AutoResetEvent>();
+            JobHandles = new DictionaryThreadSafe<int, IJobHandle>();
         }
 
         public IJobHandle f_addJobNew(IJob job)
@@ -41,10 +45,10 @@ namespace elbro
             //      – WaitOne([parameters]): Chặn thread hiện tại cho đến khi trạng thái của event được chuyển sang signaled.
             AutoResetEvent ev = new AutoResetEvent(false);
             IJobHandle jo = new JobHandle(job, ev);
-            int _id = job.f_getId();
+            int id = job.f_getId();
 
-            jobHandles.Add(_id, jo);
-            jobEvents.Add(_id, ev); 
+            JobHandles.Add(id, jo);
+            JobEvents.Add(id, ev); 
 
             return jo;
         }

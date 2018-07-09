@@ -50,8 +50,13 @@ namespace elbro
             };
         }
 
+
         private volatile JOB_STATE _state = JOB_STATE.NONE;
-        public JOB_STATE State { get { return _state; } }
+        private volatile JOB_TYPE _type = JOB_TYPE.NONE;
+
+        public JOB_STATE f_getState() { return _state; }
+        public JOB_TYPE f_getType() { return _type; }
+
         public IJobStore StoreJob { get; }
         private volatile int Id = 0;
         public int f_getId() { return Id; }

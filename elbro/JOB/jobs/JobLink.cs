@@ -4,51 +4,37 @@ using System.Linq;
 
 namespace elbro
 {
-    public class JobLink : IJob
+    public class JobLink : JobBase
     {
         readonly DictionaryThreadSafe<string, string> urlData;
         readonly QueueThreadSafe<Message> msg;
         readonly ListThreadSafe<oLink> list;
 
-        private volatile JOB_STATE _state = JOB_STATE.NONE;
-        public JOB_STATE State { get { return _state; } }
-        public IJobStore StoreJob { get; }
-        public void f_stopJob() { }
-        public void f_sendMessage(Message m) { if (this.StoreJob != null) this.StoreJob.f_job_sendMessage(m); }
-
-        private volatile int Id = 0;
-        public int f_getId() { return Id; }
-        public int f_getPort() { return 0; }
-        public bool f_checkKey(object key) { return false; }
-        public bool f_setData(string key, object data) { return false; }
-        public void f_setId(int id) { Interlocked.Add(ref Id, id); }
-        readonly string _groupName = JOB_NAME.SYS_LINK;
-        public string f_getGroupName() { return _groupName; }
-        public JobLink(IJobStore _store)
+        public JobLink(JOB_TYPE type, IJobStore store): base(type, store)
         {
-            this.StoreJob = _store;
             list = new ListThreadSafe<oLink>();
             msg = new QueueThreadSafe<Message>();
             urlData = new DictionaryThreadSafe<string, string>();
         }
 
-        public void f_receiveMessage(Message m)
+        public override void f_sendMessage(Message m) { if (this.StoreJob != null) this.StoreJob.f_job_sendMessage(m); }
+        
+        public override void f_receiveMessage(Message m)
         {
             msg.Enqueue(m);
         }
-
-        private volatile bool _inited = false;
+        
         private void f_Init()
         {
             list.ReadFile("data/link.dat");
             // Tracer.WriteLine("J{0} executes on thread {1}: INIT ...");
         }
 
-        public void f_runLoop(object state, bool timedOut)
+        public override void f_runLoop(object state, bool timedOut)
         {
-            if (!_inited)
+            if (!this.m_inited)
             {
-                _inited = true;
+                this.m_inited = true;
                 f_Init();
                 return;
             }
@@ -89,7 +75,7 @@ namespace elbro
                                 }
 
                                 m.Type = MESSAGE_TYPE.RESPONSE;
-                                m.JobName = this._groupName;
+                                m.JobName = this.f_getGroupName();
 
                                 m.Output.Ok = true;
                                 m.Output.PageSize = 10;
@@ -111,7 +97,7 @@ namespace elbro
                                     string htm = urlData[url];
 
                                     m.Type = MESSAGE_TYPE.RESPONSE;
-                                    m.JobName = this._groupName;
+                                    m.JobName = this.f_getGroupName();
 
                                     m.Output.Ok = true;
                                     m.Output.SetData(htm);
@@ -128,7 +114,7 @@ namespace elbro
                                             if (!urlData.ContainsKey(url)) urlData.Add(url, htm);
 
                                             m.Type = MESSAGE_TYPE.RESPONSE;
-                                            m.JobName = this._groupName;
+                                            m.JobName = this.f_getGroupName();
 
                                             m.Output.Ok = true;
                                             m.Output.SetData(htm);

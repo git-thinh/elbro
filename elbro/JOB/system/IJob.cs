@@ -6,8 +6,13 @@ namespace elbro
 {
     public interface IJob
     {
-        JOB_STATE State { get; }
+        void f_receiveMessage(Message m);
+        void f_sendMessage(Message m);
+
         IJobStore StoreJob { get; }
+
+        JOB_STATE f_getState();
+        JOB_TYPE f_getType();
 
         void f_stopJob();
 
@@ -17,10 +22,7 @@ namespace elbro
         bool f_setData(string key, object data);
         void f_setId(int id);
         string f_getGroupName();
-
-        void f_receiveMessage(Message m);
-        void f_sendMessage(Message m);
-                
+                        
         void f_runLoop(object state, bool timedOut);
     }
 }

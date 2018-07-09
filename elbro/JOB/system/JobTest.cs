@@ -5,8 +5,13 @@ namespace elbro
 {
     public class JobTest : IJob
     {
+
         private volatile JOB_STATE _state = JOB_STATE.NONE;
-        public JOB_STATE State { get { return _state; } }
+        private volatile JOB_TYPE _type = JOB_TYPE.NONE;
+
+        public JOB_STATE f_getState() { return _state; }
+        public JOB_TYPE f_getType() { return _type; }
+
         public IJobStore StoreJob { get; }
         public void f_stopAndFreeResource() { }
         public void f_sendMessage(Message m) { if (this.StoreJob != null) this.StoreJob.f_job_sendMessage(m); }
