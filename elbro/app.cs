@@ -88,6 +88,8 @@ namespace elbro
 
         static void f_Exit()
         {
+            jobs.f_Exit();
+
             if (Xpcom.IsInitialized)
                 Xpcom.Shutdown();
             Application.ExitThread();

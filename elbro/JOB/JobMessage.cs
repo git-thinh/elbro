@@ -9,12 +9,13 @@ namespace elbro
         readonly ListThreadSafe<oLink> list;
         public IJobStore StoreJob { get; }
         public void f_sendMessage(Message m) { if (this.StoreJob != null) this.StoreJob.f_job_sendMessage(m); }
-
-        private JobInfo jobInfo;
+        
         private volatile JOB_STATE _state = JOB_STATE.NONE;
         public JOB_STATE State { get { return _state; } }
         private volatile int Id = 0;
         public int f_getId() { return Id; }
+        public int f_getPort() { return 0; }
+        public bool f_checkKey(object key) { return false; }
         public void f_setId(int id)
         {
             //Interlocked.Add(ref Id, id);
@@ -29,14 +30,14 @@ namespace elbro
             msg = new QueueThreadSafe<Message>();
         }
 
-        public void f_stopAndFreeResource()
-        {
-            if (_state != JOB_STATE.STOPED)
-                lock (jobInfo)
-                    jobInfo.f_stopJob();
-            list.Clear();
-            msg.Clear();
-        }
+        //public void f_stopAndFreeResource()
+        //{
+        //    if (_state != JOB_STATE.STOPED)
+        //        lock (jobInfo)
+        //            jobInfo.f_stopJob();
+        //    list.Clear();
+        //    msg.Clear();
+        //}
 
         public void f_receiveMessage(Message m)
         {
@@ -44,30 +45,50 @@ namespace elbro
         }
 
         private volatile bool _inited = false;
-        private void f_Init()
+        public void f_stopJob()
         {
-            //Tracer.WriteLine("J{0} executes on thread {1}: INIT ...");
+            list.Clear();
+            msg.Clear();
+
+            //jobInfo.f_stopJob();
         }
 
+        private JobHandle jobInfo;
         public void f_runLoop(object state, bool timedOut)
         {
             if (!_inited)
             {
+                jobInfo = (JobHandle)state;
                 _inited = true;
-                f_Init();
+                
                 _state = JOB_STATE.INIT;
-                if (jobInfo != null)
-                    lock (jobInfo)
-                        jobInfo = (JobInfo)state;
-                else
-                    jobInfo = (JobInfo)state;
                 return;
             }
+            if (!timedOut)
+            {
+                System.Tracer.WriteLine("J{0} executes on thread {1}: SIGNAL -> STOP", Id, Thread.CurrentThread.GetHashCode().ToString());
+                // Tracer.WriteLine("J{0} executes on thread {1}: SIGNAL -> STOP ...", Id, Thread.CurrentThread.GetHashCode().ToString());
+                f_stopJob();
+                return;
+            }
+
+            //if (!_inited)
+            //{
+            //    _inited = true;
+            //    f_Init();
+            //    _state = JOB_STATE.INIT;
+            //    if (jobInfo != null)
+            //        lock (jobInfo)
+            //            jobInfo = (JobInfo)state;
+            //    else
+            //        jobInfo = (JobInfo)state;
+            //    return;
+            //}
 
             if (!timedOut)
             {
                 //Tracer.WriteLine("J{0} executes on thread {1}: SIGNAL -> STOP ...", Id, Thread.CurrentThread.GetHashCode().ToString());
-                JobInfo ti = (JobInfo)state;
+                JobHandle ti = (JobHandle)state;
                 ti.f_stopJob();
                 _state = JOB_STATE.STOPED;
                 return;

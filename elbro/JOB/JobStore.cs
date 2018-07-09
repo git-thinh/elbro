@@ -78,7 +78,7 @@ namespace elbro
         {
             if (msgInfo.f_getState() != JOB_STATE.RUNNING)
                 msgInfo.f_stopJob();
-            msgInfo.f_stopAndFreeResource();
+            msgInfo.f_removeJob();
 
             msgCache.Clear();
             msgCacheData.Clear();
@@ -157,9 +157,31 @@ namespace elbro
 
         #region [ JOB ]
 
+        const int job_exist_default = 2;
+        readonly DictionaryThreadSafe<int, AutoResetEvent> jobEvents;
+        readonly DictionaryThreadSafe<int, IJobHandle> jobInfos;
+        readonly DictionaryThreadSafe<string, ListThreadSafe<int>> jobGroups;
+
+        // Volatile is used as hint to the compiler that this data member will be accessed by multiple threads.
+        volatile bool event_JobsStoping = false;
+        readonly ListThreadSafe<int> listIdsStop;
+
+        public event EventHandler OnStopAll;
+        IJob job_FileHttpCache;
+
+        public string f_job_FileHttpCache_getUrl(string file_name)
+        {
+            return string.Format("http://localhost:{0}/?file_name={1}", job_FileHttpCache.f_getPort(), file_name);
+        }
+
+        public bool f_job_FileHttpCache_checkExist(object key)
+        {
+            return job_FileHttpCache.f_checkKey(key);
+        }
+
         public IJob[] f_job_getByID(int[] ids)
         {
-            JobInfo[] jis = jobInfos.GetValues(ids);
+            IJobHandle[] jis = jobInfos.GetValues(ids);
             IJob[] jobs = jis.Select(x => x.f_getJob()).ToArray();
             return jobs;
         }
@@ -182,13 +204,13 @@ namespace elbro
 
         public void f_restartAllJob()
         {
-            f_stopAll();
+            f_job_stopAll();
 
             if (jobInfos.Count > 0)
             {
-                JobInfo[] jobs = jobInfos.ValuesArray;
+                IJobHandle[] jobs = jobInfos.ValuesArray;
                 for (int i = 0; i < jobs.Length; i++)
-                    jobs[i].f_reStart();
+                    jobs[i].f_resetJob();
             }
         }
 
@@ -224,7 +246,7 @@ namespace elbro
             }
         }
 
-        public int f_addJob(IJob job)
+        public int f_job_addNew(IJob job)
         {
             // The main thread uses AutoResetEvent to signal the
             // registered wait handle, which executes the callback
@@ -237,7 +259,7 @@ namespace elbro
             //      – Set: chuyển trạng thái của event thành signaled.
             //      – WaitOne([parameters]): Chặn thread hiện tại cho đến khi trạng thái của event được chuyển sang signaled.
             AutoResetEvent ev = new AutoResetEvent(false);
-            JobInfo jo = new JobInfo(job, ev);
+            JobHandle jo = new JobHandle(job, ev);
             int _id = job.f_getId();
 
             jobInfos.Add(_id, jo);
@@ -247,7 +269,7 @@ namespace elbro
             return _id;
         }
 
-        public void f_stopAll()
+        public void f_job_stopAll()
         {
             listIdsStop.Clear();
             if (jobEvents.Count > 0)
@@ -263,13 +285,13 @@ namespace elbro
             }
         }
 
-        public void f_freeResource()
+        public void f_job_removeAll()
         {
             if (jobInfos.Count > 0)
             {
-                JobInfo[] jobs = jobInfos.ValuesArray;
+                IJobHandle[] jobs = jobInfos.ValuesArray;
                 for (int i = 0; i < jobs.Length; i++)
-                    jobs[i].f_stopAndFreeResource();
+                    jobs[i].f_removeJob();
             }
         }
 
@@ -305,24 +327,9 @@ namespace elbro
         }
 
         #endregion
-
-        #region [ === VARIABLE === ]
-
-        #region [ VAR: JOB ]
-        const int job_exist_default = 2;
-        readonly DictionaryThreadSafe<int, AutoResetEvent> jobEvents;
-        readonly DictionaryThreadSafe<int, JobInfo> jobInfos;
-        readonly DictionaryThreadSafe<string, ListThreadSafe<int>> jobGroups;
-
-        // Volatile is used as hint to the compiler that this data member will be accessed by multiple threads.
-        private volatile bool event_JobsStoping = false;
-        readonly ListThreadSafe<int> listIdsStop;
-
-        public event EventHandler OnStopAll;
-        #endregion
-
+        
         #region [ VAR: MESSAGE ]
-        readonly JobInfo msgInfo;
+        readonly JobHandle msgInfo;
         readonly DictionaryThreadSafe<Guid, object> msgCacheData;
         readonly DictionaryThreadSafe<Guid, Message> msgCache;
         #endregion
@@ -345,13 +352,12 @@ namespace elbro
         public event EventHandler OnUrlFetchComplete;
         #endregion
         
-        #endregion
 
         public JobStore()
         {
             #region [ JOB ]
             jobEvents = new DictionaryThreadSafe<int, AutoResetEvent>();
-            jobInfos = new DictionaryThreadSafe<int, JobInfo>();
+            jobInfos = new DictionaryThreadSafe<int, IJobHandle>();
             jobGroups = new DictionaryThreadSafe<string, ListThreadSafe<int>>();
             listIdsStop = new ListThreadSafe<int>();
             #endregion
@@ -359,7 +365,7 @@ namespace elbro
             #region [ MESSAGE ]
             msgCacheData = new DictionaryThreadSafe<Guid, object>();
             msgCache = new DictionaryThreadSafe<Guid, Message>();
-            msgInfo = new JobInfo(new JobMessage(this), new AutoResetEvent(false));
+            msgInfo = new JobHandle(new JobMessage(this), new AutoResetEvent(false));
             f_addGroupJobName(msgInfo.f_getJob());
             #endregion
 
@@ -375,19 +381,20 @@ namespace elbro
             f_url_Init();
             #endregion
 
-            f_addJob(new JobLink(this));
+            f_job_addNew(new JobLink(this));
+            job_FileHttpCache = new JobFileHttp(this);   
+            f_job_addNew(job_FileHttpCache); 
         }
 
-        ~JobStore()
-        {
+        public void f_Exit() {
             #region [ JOB ]
-            f_stopAll();
-            f_freeResource();
+            f_job_stopAll();
+            f_job_removeAll();
             #endregion
 
             #region [ MESSAGE ]
             msgInfo.f_stopJob();
-            msgInfo.f_stopAndFreeResource();
+            msgInfo.f_removeJob();
             f_responseMessageFromJob_clearAll();
             #endregion
 
@@ -400,6 +407,11 @@ namespace elbro
             
             GC.Collect(); // Start .NET CLR Garbage Collection
             GC.WaitForPendingFinalizers(); // Wait for Garbage Collection to finish
+        }
+
+        ~JobStore()
+        {
+            f_Exit();
         }
     }
 }

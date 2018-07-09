@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27130.2003
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "elbro", "elbro\elbro.csproj", "{EC0FD3E4-741F-48F7-A56F-D5D13810C991}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Core", "System.Core\System.Core.csproj", "{13E0EE89-985D-4C35-A387-24344910BE07}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,14 @@ Global
 		{EC0FD3E4-741F-48F7-A56F-D5D13810C991}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EC0FD3E4-741F-48F7-A56F-D5D13810C991}.Release|x86.ActiveCfg = Release|Any CPU
 		{EC0FD3E4-741F-48F7-A56F-D5D13810C991}.Release|x86.Build.0 = Release|Any CPU
+		{13E0EE89-985D-4C35-A387-24344910BE07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13E0EE89-985D-4C35-A387-24344910BE07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13E0EE89-985D-4C35-A387-24344910BE07}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{13E0EE89-985D-4C35-A387-24344910BE07}.Debug|x86.Build.0 = Debug|Any CPU
+		{13E0EE89-985D-4C35-A387-24344910BE07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13E0EE89-985D-4C35-A387-24344910BE07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13E0EE89-985D-4C35-A387-24344910BE07}.Release|x86.ActiveCfg = Release|Any CPU
+		{13E0EE89-985D-4C35-A387-24344910BE07}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

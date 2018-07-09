@@ -8,6 +8,8 @@ namespace elbro
     {
         #region [ JOB - MESSAGE ]
 
+        void f_Exit();
+
         /// <summary>
         /// Call this event after stop executing job
         /// </summary>
@@ -20,6 +22,10 @@ namespace elbro
 
         List<Message> f_msg_getMessageDatas(Guid[] ids);
         Message f_msg_getMessageData(Guid id);
+
+
+        string f_job_FileHttpCache_getUrl(string file_name);
+        bool f_job_FileHttpCache_checkExist(object key);
 
         #endregion
 

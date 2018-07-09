@@ -58,6 +58,8 @@ namespace elbro
         }
         private volatile int Id = 0;
         public int f_getId() { return Id; }
+        public int f_getPort() { return 0; }
+        public bool f_checkKey(object key) { return false; }
         public void f_setId(int id) { Interlocked.Add(ref Id, id); }
         readonly string _groupName = string.Empty;
         public string f_getGroupName() { return _groupName; }
@@ -71,15 +73,28 @@ namespace elbro
         public void f_receiveMessage(Message m) { }
         public void f_sendMessage(Message m) { if (this.StoreJob != null) this.StoreJob.f_job_sendMessage(m); }
 
+        private volatile bool _inited = false;
+        public void f_stopJob()
+        { 
+            jobInfo.f_stopJob();
+        }
+
+        private JobHandle jobInfo;
         public void f_runLoop(object state, bool timedOut)
         {
-            JobInfo ti = (JobInfo)state;
-            if (!timedOut)
+            if (!_inited)
             {
-                System.Tracer.WriteLine("J{0} executes on thread {1}: SIGNAL -> STOP", Id, Thread.CurrentThread.GetHashCode().ToString());
-                ti.f_stopJob();
+                jobInfo = (JobHandle)state;
+                _inited = true; 
                 return;
             }
+            if (!timedOut)
+            {
+            System.Tracer.WriteLine("J{0} executes on thread {1}: SIGNAL -> STOP", Id, Thread.CurrentThread.GetHashCode().ToString());
+                // Tracer.WriteLine("J{0} executes on thread {1}: SIGNAL -> STOP ...", Id, Thread.CurrentThread.GetHashCode().ToString());
+                f_stopJob();
+                return;
+            } 
 
 
             if (this.queue.Count > 0)

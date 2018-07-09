@@ -23,6 +23,8 @@ namespace elbro
 
         private volatile int Id = 0;
         public int f_getId() { return Id; }
+        public int f_getPort() { return 0; }
+        public bool f_checkKey(object key) { return false; }
         public void f_setId(int id) { Interlocked.Add(ref Id, id); }
         readonly string _groupName = string.Empty;
         public string f_getGroupName() { return _groupName; }
@@ -31,15 +33,29 @@ namespace elbro
             this.StoreJob = _store;
         }
 
+        private volatile bool _inited = false;
+        public void f_stopJob()
+        {
+            jobInfo.f_stopJob();
+        }
+
+        private JobHandle jobInfo;
         public void f_runLoop(object state, bool timedOut)
         {
-            JobInfo ti = (JobInfo)state;
-            if (!timedOut)
+            if (!_inited)
             {
-                ti.f_stopJob();
+                jobInfo = (JobHandle)state;
+                _inited = true;
                 return;
             }
-            
+            if (!timedOut)
+            {
+                System.Tracer.WriteLine("J{0} executes on thread {1}: SIGNAL -> STOP", Id, Thread.CurrentThread.GetHashCode().ToString());
+                // Tracer.WriteLine("J{0} executes on thread {1}: SIGNAL -> STOP ...", Id, Thread.CurrentThread.GetHashCode().ToString());
+                f_stopJob();
+                return;
+            }
+
             lock (_lock)
                 if (isDownloading)
                     return;
