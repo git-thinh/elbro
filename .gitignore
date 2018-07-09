@@ -54,3 +54,7 @@ System.Core/obj/Debug/System.Core.csproj.FileListAbsolute.txt
 System.Core/obj/Debug/System.Core.csproj.GenerateResource.Cache
 System.Core/obj/Debug/System.Core.dll
 System.Core/obj/Debug/System.Core.pdb
+.vs/CefSharp.Example/v15/.suo
+.vs/CefSharp.Example/v15/Server/sqlite3/db.lock
+.vs/CefSharp.Example/v15/Server/sqlite3/storage.ide
+.vs/CefSharp.WinForms.Example/v15/.suo

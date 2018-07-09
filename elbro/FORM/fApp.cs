@@ -103,7 +103,8 @@ namespace elbro
 
         //string brow_URL = "https://www.google.com.vn";
         //string brow_URL = "https://dictionary.cambridge.org";
-        string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/present-perfect-simple-i-have-worked";
+        string brow_URL = "https://www.codeproject.com/Articles/7933/Smart-Thread-Pool";
+        //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/present-perfect-simple-i-have-worked";
         //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/do-or-make";
         //string brow_URL = "https://en.oxforddictionaries.com/grammar/";
         //string brow_URL = "https://vietjack.com/";
@@ -648,7 +649,7 @@ div::before,div::after { content:"""" !important; }
 li {list-style:none;}
 table td { width:auto !important; }
 
-img, iframe, header, footer, nav,
+svg, img, iframe, header, footer, nav,
 input[type=""radio""], input[type=""check""], input[type=""submit""], input[type=""button""], 
 textarea, select, button { display:none !important; }
 
