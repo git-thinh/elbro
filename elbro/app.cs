@@ -49,6 +49,7 @@ namespace elbro
         }
 
         static IJobStore jobs;
+        static fBase main;
 
         public static void f_RUN()
         {
@@ -74,7 +75,9 @@ namespace elbro
             //Application.Run(new fEdit());
             //Application.Run(new fBrowser());
             //Application.Run(new fGeckFX());
-            Application.Run(new fApp(jobs));
+            //main = new fApp(jobs);
+            main = new fNone(jobs);
+            Application.Run(main);
             f_Exit();
         }
 

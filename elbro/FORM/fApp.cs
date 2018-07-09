@@ -19,6 +19,7 @@ namespace elbro
 {
     public class fApp : fBase
     {
+        const bool brow_AutoCacheFile = true;
         readonly Font font_Title = new Font("Arial", 11f, FontStyle.Regular);
         readonly Font font_TextView = new Font("Courier New", 11f, FontStyle.Regular);
         readonly Font font_LogView = new Font("Courier New", 9f, FontStyle.Regular);
@@ -66,8 +67,10 @@ namespace elbro
             //f_brow_Go(brow_URL);
             brow_LinkOnPage.Location = new Point(this.Width - (tab_Main.Width + brow_LinkOnPage.Width), brow_UrlTextBox.Height);
             brow_LinkOnPage.Height = this.Height - brow_UrlTextBox.Height;
-        }
 
+            f_tabLink_drawNodes(null);
+        }
+         
         #endregion
 
         #region [ === BROWSER === ]
@@ -103,10 +106,10 @@ namespace elbro
 
         //string brow_URL = "https://www.google.com.vn";
         //string brow_URL = "https://dictionary.cambridge.org";
-        string brow_URL = "https://www.codeproject.com/Articles/7933/Smart-Thread-Pool";
+        //string brow_URL = "https://www.codeproject.com/Articles/7933/Smart-Thread-Pool";
         //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/present-perfect-simple-i-have-worked";
         //string brow_URL = "https://dictionary.cambridge.org/grammar/british-grammar/do-or-make";
-        //string brow_URL = "https://en.oxforddictionaries.com/grammar/";
+        string brow_URL = "https://en.oxforddictionaries.com/grammar/";
         //string brow_URL = "https://vietjack.com/";
         //string brow_URL = "https://vietjack.com/ngu-phap-tieng-anh/thi-hien-tai-tiep-dien-trong-tieng-anh.jsp";
         //string brow_URL = "https://hocmai.vn/khoa-hoc-truc-tuyen/1009/tieng-anh-5-10-nam-2018-2019.html";
@@ -145,6 +148,7 @@ namespace elbro
         List<string> brow_linkReferentList = new List<string>();
         DictionaryThreadSafe<string, string> brow_cacheResponse = new DictionaryThreadSafe<string, string>();
         ListThreadSafe<string> brow_UrlFullRequest = new ListThreadSafe<string>();
+        StringBuilder brow_CssBuilder = new StringBuilder();
 
         ListBox brow_LinkOnPage;
         Button brow_linkCloseButton;
@@ -158,6 +162,7 @@ namespace elbro
 
             brow_Domain = brow_URL.Split('/')[2];
             browser = new GeckoWebBrowser();
+            browser.BackColor = SystemColors.Control;
             browser.Dock = DockStyle.Fill;
             //browser.NavigationError += (s, e) =>
             //{
@@ -397,6 +402,11 @@ namespace elbro
 
         #region [ CACHE ]
 
+        string f_brow_convertUrlToPathFileCache(string url)
+        {
+            return "cache/" + url.Split('?')[0].Split('#')[0].Substring(url.Split('/')[0].Length + 2).Replace(":", string.Empty).Replace("/", string.Empty) + ".htm";
+        }
+
         void f_brow_cacheUpdate(string url, string data)
         {
             if (url.Contains(brow_Domain))
@@ -404,9 +414,32 @@ namespace elbro
                 if (!string.IsNullOrEmpty(data))
                 {
                     if (brow_cacheResponse.ContainsKey(url))
-                        brow_cacheResponse.Add(url, data);
-                    else
                         brow_cacheResponse[url] = data;
+                    else
+                    {
+                        if (url == brow_URL && brow_AutoCacheFile)
+                        {
+                            brow_CssBuilder.Length = 0;
+                            brow_CssBuilder.Capacity = 0;
+
+                            string file = f_brow_convertUrlToPathFileCache(url);
+                            if (!File.Exists(file))
+                                File.WriteAllText(file, data);
+                        }
+                        else {
+                            if (url.Contains(".css"))
+                            {
+                                brow_CssBuilder.Append(Environment.NewLine);
+                                brow_CssBuilder.Append("/* " + url + " */");
+                                brow_CssBuilder.Append(Environment.NewLine);
+                                brow_CssBuilder.Append(data);
+                                brow_CssBuilder.Append(Environment.NewLine);
+                            }
+                        }
+
+                        if (url == brow_URL)
+                            brow_cacheResponse.Add(url, data);
+                    }
                 }
             }
         }
@@ -456,6 +489,7 @@ namespace elbro
 
         void f_brow_GoCache(string url)
         {
+            brow_Transparent.BringToFront();
             string raw = brow_cacheResponse[url];
             if (raw != null)
             {
@@ -471,25 +505,39 @@ namespace elbro
 
                 //s = f_brow_htmlFormat(s);
                 htm = @"<!DOCTYPE html><html xmlns=""http://www.w3.org/1999/xhtml"" xml:lang=""en"" lang=""en""><head><meta http-equiv=""Content-Type"" content =""text /html; charset=UTF-8"" /><meta name=""viewport"" content=""width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"" />" +
-                "<title>" + title + "</title>" + f_brow_cssPublish(true) + "</head><body>" + s + "</body></html>";
+                "<title>" + title + "</title>" + f_brow_cssPublish(true) + @"</head><body><div id=""___links""></div>" + s + "</body></html>";
 
                 brow_URL = url;
                 brow_Domain = brow_URL.Split('/')[2];
 
                 browser.Stop();
                 browser.LoadHtml(htm);
-                //browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
+                browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
                 browser.Refresh();
+                
+
 
                 this.f_log("[END] LOAD_CACHE: " + url);
 
                 ActionTimer.SetTimeout(() =>
                 {
+                    browser.crossThreadPerformSafely(() => {
+
+                    //var elink = browser.Document.GetElementById("___links");
+                    //if (elink != null) {
+                        //var h1s = browser.Document.GetElementsByTagName("h1");
+                        //if (h1s.Length > 0) {
+                        //    GeckoInputElement h1 = h1s[h1s.Length - 1] as GeckoInputElement;
+                        
+                        //}
+                    //}
+
+                    });
                     brow_Transparent.crossThreadPerformSafely(() =>
                     {
                         brow_Transparent.SendToBack();
                     });
-                }, 300);
+                }, 100);
             }
         }
 
@@ -527,20 +575,31 @@ namespace elbro
             this.f_log("[1] BeforeNavigating: " + url);
             brow_UrlTextBox.Text = url;
 
+            // cache memory
             if (brow_cacheResponse.ContainsKey(url))
             {
-                // cache
                 brow_IsReadCache = true;
                 f_brow_GoCache(url);
+                return;
             }
-            else
-            {
-                // online
-                brow_IsReadCache = false;
 
-                brow_URL = url.ToString();
-                brow_Domain = brow_URL.Split('/')[2];
+            // cache file
+            string file = f_brow_convertUrlToPathFileCache(url);
+            if (File.Exists(file))
+            {
+                string data = File.ReadAllText(file);
+                brow_cacheResponse.Add(url, data);
+                
+                brow_IsReadCache = true;
+                f_brow_GoCache(url);
+                return;
             }
+
+            // online
+            brow_IsReadCache = false;
+
+            brow_URL = url.ToString();
+            brow_Domain = brow_URL.Split('/')[2];
         }
 
         void f_brow_onDOMContentLoaded(string title, Uri uri)
@@ -654,12 +713,58 @@ input[type=""radio""], input[type=""check""], input[type=""submit""], input[type
 textarea, select, button { display:none !important; }
 
 .adsbygoogle { display:none !important; }
+
+#___links{
+position: absolute;
+left: 0;
+top: 0;
+width: 100%;
+height: 99px;
+background-color: #292929;
+color: #fff;
+z-index: 99999;
+}
+
 ";
         #endregion
 
         string f_brow_cssPublish(bool hasTagStyle)
         {
-            string css = string.Join(Environment.NewLine, brow_cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray());
+            string css = string.Empty, css_key = brow_Domain + ".css";
+
+            //string css = string.Join(Environment.NewLine, brow_cacheResponse.Where(x => x.Key.Contains(brow_Domain) && x.Key.Contains(".css")).Select(x => x.Value).ToArray());
+            if (brow_cacheResponse.ContainsKey(css_key))
+                css = brow_cacheResponse[css_key];
+            else {
+
+                if (!brow_cacheResponse.ContainsKey(brow_Domain + ".css"))
+                {
+                    string file = "cache/" + brow_Domain + ".css";
+                    if (File.Exists(file))
+                    {
+                        css = File.ReadAllText(file);
+                        brow_cacheResponse.Add(css_key, css);
+                    }
+
+                    brow_CssBuilder.Length = 0;
+                    brow_CssBuilder.Capacity = 0;
+                }
+                else
+                { 
+                    if (brow_CssBuilder.Length > 0)
+                    {
+                        css = brow_CssBuilder.ToString();
+                        brow_cacheResponse.Add(css_key, css);
+
+                        brow_CssBuilder.Length = 0;
+                        brow_CssBuilder.Capacity = 0;
+
+                        string file = "cache/" + css_key;
+                        if (!File.Exists(file)) File.WriteAllText(file, css);
+                    }
+                }
+            }
+
             css += brow_CSS_FIX;
             if (hasTagStyle)
                 css = @"<style type=""text/css"">\r\n " + css + " \r\n</style>";
@@ -1331,12 +1436,13 @@ textarea, select, button { display:none !important; }
 
             tabLink_TreeView = new System.Windows.Forms.TreeView()
             {
+                Visible = false,
                 Dock = DockStyle.Fill,
                 Font = font_Title,
                 BorderStyle = BorderStyle.None,
             };
             tabLink_TreeView.MouseDoubleClick += f_tabLink_selectIndexChange;
-            f_tabLink_drawNodes(null);
+            
 
             Panel barFooter = new Panel()
             {
@@ -1378,8 +1484,8 @@ textarea, select, button { display:none !important; }
             }
             else
             {
-                tabLink_TreeView.crossThreadPerformSafely(() =>
-                {
+                //tabLink_TreeView.crossThreadPerformSafely(() =>
+                //{
                     tabLink_TreeView.Nodes.Clear();
                     tabLink_TreeView.Nodes.AddRange(new TreeNode[] {
                         new TreeNode("Youtube"){ Tag = new oLink(){ Title = "Youtube", Tags= "", Link = "https://www.youtube.com/results?search_query={0}" } },
@@ -1389,7 +1495,17 @@ textarea, select, button { display:none !important; }
                         new TreeNode("Pronuncian.com"){ Tag = new oLink(){ Title = "Pronuncian.com", Tags= "", Link = "https://pronuncian.com/pronounce-th-sounds/" } },
                         new TreeNode("Learning-english-online.net"){ Tag = new oLink(){ Title = "Learning-english-online.net", Tags= "", Link = "https://www.learning-english-online.net/pronunciation/the-english-th/" } },
                     });
-                });
+                //});
+
+                ActionTimer.SetTimeout(() =>
+                {
+                    tabLink_TreeView.crossThreadPerformSafely(() =>
+                    {
+                        tabLink_TreeView.Visible = true;
+                    });
+                }, 500);
+
+                //tabLink_TreeView.Visible = true;
             }
         }
 
@@ -1419,7 +1535,7 @@ textarea, select, button { display:none !important; }
                 }
             }
         }
-        
+
         #endregion
 
         #region [ TAB:NOTE ]
