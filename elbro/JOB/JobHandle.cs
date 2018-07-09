@@ -12,9 +12,11 @@ namespace elbro
         void f_resetJob();
         void f_pauseJob();
         void f_removeJob();
-
-        JOB_STATE f_getState();
+        
         IJob f_getJob();
+
+        void f_receiveMessage(Message m);
+        void f_sendMessage(Message m);
     }
 
     public class JobHandle: IJobHandle
@@ -75,19 +77,10 @@ namespace elbro
                 this.Handle.Unregister(null);
             this.Job.StoreJob.f_job_eventAfterStop(this.Job.f_getId());
         }
-
-        public JOB_STATE f_getState()
-        {
-            return this.Job.State;
-        }
-
+        
         public IJob f_getJob() {
             return this.Job;
         }
-
-        #endregion
-
-
 
 
         public void f_receiveMessage(Message m)
@@ -106,6 +99,10 @@ namespace elbro
             }
         }
          
+        #endregion
+
+
+
 
         public AutoResetEvent f_getEvent() { return Even; }
         

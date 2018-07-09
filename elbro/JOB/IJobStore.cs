@@ -24,8 +24,8 @@ namespace elbro
         Message f_msg_getMessageData(Guid id);
 
 
-        string f_job_FileHttpCache_getUrl(string file_name);
-        bool f_job_FileHttpCache_checkExist(object key);
+        string f_fileHttpCache_getUrl(string file_name);
+        bool f_fileHttpCache_checkExist(object key);
 
         #endregion
 

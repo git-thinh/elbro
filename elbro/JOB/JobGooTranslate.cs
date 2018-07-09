@@ -53,13 +53,11 @@ namespace elbro
         private volatile JOB_STATE _state = JOB_STATE.NONE;
         public JOB_STATE State { get { return _state; } }
         public IJobStore StoreJob { get; }
-        public void f_stopAndFreeResource()
-        {
-        }
         private volatile int Id = 0;
         public int f_getId() { return Id; }
         public int f_getPort() { return 0; }
         public bool f_checkKey(object key) { return false; }
+        public bool f_setData(string key, object data) { return false; }
         public void f_setId(int id) { Interlocked.Add(ref Id, id); }
         readonly string _groupName = string.Empty;
         public string f_getGroupName() { return _groupName; }

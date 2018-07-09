@@ -14,6 +14,7 @@ namespace elbro
         int f_getId();
         int f_getPort();
         bool f_checkKey(object key);
+        bool f_setData(string key, object data);
         void f_setId(int id);
         string f_getGroupName();
 

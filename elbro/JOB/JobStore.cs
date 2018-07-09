@@ -24,7 +24,7 @@ namespace elbro
                         msgCache.Add(m.GetMessageId(), m);
                 }
             }
-            msgInfo.f_sendMessage(m);
+            joh_Messages.f_sendMessage(m);
         }
 
         public object f_responseMessageFromJob_getDataByID(Guid id)
@@ -76,9 +76,9 @@ namespace elbro
 
         private void f_msg_Clear()
         {
-            if (msgInfo.f_getState() != JOB_STATE.RUNNING)
-                msgInfo.f_stopJob();
-            msgInfo.f_removeJob();
+            if (joh_Messages.f_getJob().State != JOB_STATE.RUNNING)
+                joh_Messages.f_stopJob();
+            joh_Messages.f_removeJob();
 
             msgCache.Clear();
             msgCacheData.Clear();
@@ -159,7 +159,7 @@ namespace elbro
 
         const int job_exist_default = 2;
         readonly DictionaryThreadSafe<int, AutoResetEvent> jobEvents;
-        readonly DictionaryThreadSafe<int, IJobHandle> jobInfos;
+        readonly DictionaryThreadSafe<int, IJobHandle> jobHandles;
         readonly DictionaryThreadSafe<string, ListThreadSafe<int>> jobGroups;
 
         // Volatile is used as hint to the compiler that this data member will be accessed by multiple threads.
@@ -167,21 +167,11 @@ namespace elbro
         readonly ListThreadSafe<int> listIdsStop;
 
         public event EventHandler OnStopAll;
-        IJob job_FileHttpCache;
 
-        public string f_job_FileHttpCache_getUrl(string file_name)
-        {
-            return string.Format("http://localhost:{0}/?file_name={1}", job_FileHttpCache.f_getPort(), file_name);
-        }
-
-        public bool f_job_FileHttpCache_checkExist(object key)
-        {
-            return job_FileHttpCache.f_checkKey(key);
-        }
 
         public IJob[] f_job_getByID(int[] ids)
         {
-            IJobHandle[] jis = jobInfos.GetValues(ids);
+            IJobHandle[] jis = jobHandles.GetValues(ids);
             IJob[] jobs = jis.Select(x => x.f_getJob()).ToArray();
             return jobs;
         }
@@ -193,22 +183,22 @@ namespace elbro
             return new int[] { };
         }
 
-        public int f_job_countAll() { return jobInfos.Count + job_exist_default; }
+        public int f_job_countAll() { return jobHandles.Count + job_exist_default; }
 
         public void f_job_sendMessage(Message m)
         {
             if (!msgCache.ContainsKey(m.GetMessageId()))
                 msgCache.Add(m.GetMessageId(), m);
-            msgInfo.f_sendMessage(m);
+            joh_Messages.f_sendMessage(m);
         }
 
         public void f_restartAllJob()
         {
             f_job_stopAll();
 
-            if (jobInfos.Count > 0)
+            if (jobHandles.Count > 0)
             {
-                IJobHandle[] jobs = jobInfos.ValuesArray;
+                IJobHandle[] jobs = jobHandles.ValuesArray;
                 for (int i = 0; i < jobs.Length; i++)
                     jobs[i].f_resetJob();
             }
@@ -217,7 +207,7 @@ namespace elbro
         public void f_job_eventAfterStop(int id)
         {
             listIdsStop.Add(id);
-            if (listIdsStop.Count == jobInfos.Count && event_JobsStoping == false)
+            if (listIdsStop.Count == jobHandles.Count && event_JobsStoping == false)
             {
                 event_JobsStoping = true;
                 Thread.Sleep(JOB_CONST.JOB_TIMEOUT_STOP_ALL);
@@ -246,7 +236,7 @@ namespace elbro
             }
         }
 
-        public int f_job_addNew(IJob job)
+        public IJobHandle f_job_addNew(IJob job)
         {
             // The main thread uses AutoResetEvent to signal the
             // registered wait handle, which executes the callback
@@ -259,14 +249,14 @@ namespace elbro
             //      – Set: chuyển trạng thái của event thành signaled.
             //      – WaitOne([parameters]): Chặn thread hiện tại cho đến khi trạng thái của event được chuyển sang signaled.
             AutoResetEvent ev = new AutoResetEvent(false);
-            JobHandle jo = new JobHandle(job, ev);
+            IJobHandle jo = new JobHandle(job, ev);
             int _id = job.f_getId();
 
-            jobInfos.Add(_id, jo);
+            jobHandles.Add(_id, jo);
             jobEvents.Add(_id, ev);
             f_addGroupJobName(job);
 
-            return _id;
+            return jo;
         }
 
         public void f_job_stopAll()
@@ -287,9 +277,9 @@ namespace elbro
 
         public void f_job_removeAll()
         {
-            if (jobInfos.Count > 0)
+            if (jobHandles.Count > 0)
             {
-                IJobHandle[] jobs = jobInfos.ValuesArray;
+                IJobHandle[] jobs = jobHandles.ValuesArray;
                 for (int i = 0; i < jobs.Length; i++)
                     jobs[i].f_removeJob();
             }
@@ -328,10 +318,12 @@ namespace elbro
 
         #endregion
         
-        #region [ VAR: MESSAGE ]
-        readonly JobHandle msgInfo;
+        #region [ MESSAGE ]
+
+        readonly IJobHandle joh_Messages;
         readonly DictionaryThreadSafe<Guid, object> msgCacheData;
         readonly DictionaryThreadSafe<Guid, Message> msgCache;
+
         #endregion
 
         #region [ VAR: FORM ]
@@ -339,6 +331,7 @@ namespace elbro
         #endregion
 
         #region [ VAR: URL ]
+
         readonly DictionaryThreadSafe<string, string> urlOk;
         readonly DictionaryThreadSafe<string, string> urlFail;
 
@@ -350,25 +343,49 @@ namespace elbro
         const int urlMax = 9;
 
         public event EventHandler OnUrlFetchComplete;
+
         #endregion
-        
+
+        #region [ FILE HTTP CACHE ]
+
+        readonly IJobHandle joh_fileHttpCache;
+
+        public string f_fileHttpCache_getUrl(string file_name)
+        {
+            return string.Format("http://localhost:{0}/?file_name={1}", joh_fileHttpCache.f_getJob().f_getPort(), file_name);
+        }
+
+        public bool f_fileHttpCache_checkExist(object key)
+        {
+            return joh_fileHttpCache.f_getJob().f_checkKey(key);
+        }
+
+        #endregion
+
+        #region [ LINK ]
+
+        readonly IJobHandle joh_Link;
+
+        #endregion
 
         public JobStore()
         {
-            #region [ JOB ]
+            // store job
             jobEvents = new DictionaryThreadSafe<int, AutoResetEvent>();
-            jobInfos = new DictionaryThreadSafe<int, IJobHandle>();
+            jobHandles = new DictionaryThreadSafe<int, IJobHandle>();
             jobGroups = new DictionaryThreadSafe<string, ListThreadSafe<int>>();
             listIdsStop = new ListThreadSafe<int>();
-            #endregion
 
-            #region [ MESSAGE ]
+            // message
             msgCacheData = new DictionaryThreadSafe<Guid, object>();
             msgCache = new DictionaryThreadSafe<Guid, Message>();
-            msgInfo = new JobHandle(new JobMessage(this), new AutoResetEvent(false));
-            f_addGroupJobName(msgInfo.f_getJob());
-            #endregion
+            joh_Messages = new JobHandle(new JobMessage(this), new AutoResetEvent(false));
+            f_addGroupJobName(joh_Messages.f_getJob());
 
+            // link
+            joh_Link = f_job_addNew(new JobLink(this));
+            joh_fileHttpCache = f_job_addNew(new JobFileHttp(this)); 
+            
             #region [ FORM ]
             storeForms = new DictionaryThreadSafe<int, IFORM>();
             #endregion
@@ -380,10 +397,6 @@ namespace elbro
             urlAll = new ListThreadSafe<string>();
             f_url_Init();
             #endregion
-
-            f_job_addNew(new JobLink(this));
-            job_FileHttpCache = new JobFileHttp(this);   
-            f_job_addNew(job_FileHttpCache); 
         }
 
         public void f_Exit() {
@@ -393,8 +406,8 @@ namespace elbro
             #endregion
 
             #region [ MESSAGE ]
-            msgInfo.f_stopJob();
-            msgInfo.f_removeJob();
+            joh_Messages.f_stopJob();
+            joh_Messages.f_removeJob();
             f_responseMessageFromJob_clearAll();
             #endregion
 

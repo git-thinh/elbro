@@ -53,6 +53,8 @@ namespace elbro
 
         public static void f_RUN()
         {
+            ThreadPool.SetMaxThreads(25, 25);
+
             System.Net.ServicePointManager.DefaultConnectionLimit = 1000;
             // active SSL 1.1, 1.2, 1.3 for WebClient request HTTPS
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };

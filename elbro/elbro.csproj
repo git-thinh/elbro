@@ -90,6 +90,7 @@
     <Compile Include="FORM\Prompt.cs" />
     <Compile Include="JOB\IJob.cs" />
     <Compile Include="JOB\IJobStore.cs" />
+    <Compile Include="JOB\JobFactory.cs" />
     <Compile Include="JOB\JobGooTranslate.cs" />
     <Compile Include="JOB\JobHandle.cs" />
     <Compile Include="JOB\JobFileHttp.cs" />

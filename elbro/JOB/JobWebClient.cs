@@ -25,6 +25,7 @@ namespace elbro
         public int f_getId() { return Id; }
         public int f_getPort() { return 0; }
         public bool f_checkKey(object key) { return false; }
+        public bool f_setData(string key, object data) { return false; }
         public void f_setId(int id) { Interlocked.Add(ref Id, id); }
         readonly string _groupName = string.Empty;
         public string f_getGroupName() { return _groupName; }

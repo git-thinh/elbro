@@ -44,6 +44,7 @@ namespace elbro
         }
 
         public bool f_checkKey(object key) { return false; }
+        public bool f_setData(string key, object data) { return false; }
 
         public void f_receiveMessage(Message m)
         {

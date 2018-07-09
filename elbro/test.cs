@@ -101,7 +101,7 @@ namespace elbro
         {
             var jobs = new JobStore();
 
-            int id = jobs.f_job_addNew(new JobSpeechEN(jobs)); 
+            jobs.f_job_addNew(new JobSpeechEN(jobs)); 
 
             jobs.OnStopAll += (se, ev) => {
                 Tracer.WriteLine(">>>>> STOP ALL JOBS: DONE ...");
@@ -126,7 +126,7 @@ namespace elbro
         {
             var jobs = new JobStore();
 
-            int id = jobs.f_job_addNew(new JobGooTranslate(jobs)); 
+            jobs.f_job_addNew(new JobGooTranslate(jobs)); 
 
             jobs.OnStopAll += (se, ev) => {
                 Tracer.WriteLine(">>>>> STOP ALL JOBS: DONE ...");
@@ -151,7 +151,7 @@ namespace elbro
         {
             var jobs = new JobStore();
 
-            int id = jobs.f_job_addNew(new JobWord(jobs)); 
+            jobs.f_job_addNew(new JobWord(jobs)); 
 
             jobs.OnStopAll += (se, ev) => {
                 Tracer.WriteLine(">>>>> STOP ALL JOBS: DONE ...");
