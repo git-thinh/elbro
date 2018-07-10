@@ -84,6 +84,7 @@ namespace elbro
 
         public virtual void f_sendMessage(Message m) { }
         public virtual void f_receiveMessage(Message m) { }
+        public virtual void f_sendMessages(Message[] ms) { }
 
         public virtual void f_Init() { }
         public virtual void f_processMessage() { }

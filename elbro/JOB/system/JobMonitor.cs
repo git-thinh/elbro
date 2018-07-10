@@ -104,7 +104,7 @@ namespace elbro
             if (this.JobFactories.ContainsKey(type)) {
                 this.JobFactories[type].f_sendRequestLoadBalancer(ms);
             } else if (this.JobSingletons.ContainsKey(type)) {
-                
+                this.JobSingletons[type].f_sendMessages(ms);
             }
             return false;
         }

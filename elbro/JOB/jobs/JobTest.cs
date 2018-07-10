@@ -21,6 +21,10 @@ namespace elbro
         {
         }
 
+        public override void f_sendMessages(Message[] ms)
+        {
+        }
+
         public override int f_getPort()
         {
             return 0;

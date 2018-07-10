@@ -19,6 +19,7 @@ namespace elbro
 
         void f_receiveMessage(Message m);
         void f_sendMessage(Message m);
+        void f_sendMessages(Message[] ms);
     }
 
     public enum JOB_HANDLE_STATE {
@@ -136,8 +137,9 @@ namespace elbro
             if (Job != null)
                 Job.f_receiveMessage(m);
         }
-         
-        public void f_sendMessage(Message m) {
+
+        public void f_sendMessage(Message m)
+        {
             //if (this.Job.f_getGroupName() == JOB_NAME.SYS_MESSAGE)
             //    f_receiveMessage(m);
             //else
@@ -147,7 +149,12 @@ namespace elbro
             //}
             this.Job.f_sendMessage(m);
         }
-         
+
+        public void f_sendMessages(Message[] ms)
+        {
+            this.Job.f_sendMessages(ms);
+        }
+
 
 
 

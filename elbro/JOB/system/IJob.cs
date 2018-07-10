@@ -8,6 +8,7 @@ namespace elbro
     {
         void f_receiveMessage(Message m);
         void f_sendMessage(Message m);
+        void f_sendMessages(Message[] ms);
 
         IJobAction JobAction { get; }
 
