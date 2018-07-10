@@ -69,6 +69,8 @@ namespace elbro
 
     public class Message
     {
+        Guid GroupId = Guid.Empty;
+
         readonly Guid Id = Guid.Empty;
         readonly int SenderId;
         readonly int[] JobReceiveID;
@@ -97,6 +99,17 @@ namespace elbro
             //Id = Guid.NewGuid();
             //Output = new MessageResult();
             Input = input;
+        }
+
+        public Message SetGroupId(Guid groupId)
+        {
+            this.GroupId = groupId;
+            return this;
+        }
+
+        public Guid GetGroupId()
+        {
+            return this.GroupId;
         }
 
         public Guid GetMessageId()

@@ -17,34 +17,35 @@ namespace elbro
 
     public class JobFactory : IJobFactory
     {
-       static readonly Func<IJobHandle, object, bool> JOB_ACTION = (IJobHandle handle, object para) =>
-        {
-            JOB_HANDLE_STATE cmd = (JOB_HANDLE_STATE)para;
-            switch (cmd)
-            {
-                case JOB_HANDLE_STATE.PAUSE:
-                    handle.f_stopJob();
-                    break;
-                case JOB_HANDLE_STATE.REMOVE:
-                    handle.f_removeJob();
-                    break;
-                case JOB_HANDLE_STATE.RESET:
-                    handle.f_resetJob();
-                    break;
-                case JOB_HANDLE_STATE.RUN:
-                    handle.f_runJob();
-                    break;
-                case JOB_HANDLE_STATE.STOP:
-                    handle.f_stopJob();
-                    break;
-            }
-            return true;
-        };
+        static readonly Func<IJobHandle, object, bool> JOB_ACTION = (IJobHandle handle, object para) =>
+         {
+             JOB_HANDLE_STATE cmd = (JOB_HANDLE_STATE)para;
+             switch (cmd)
+             {
+                 case JOB_HANDLE_STATE.PAUSE:
+                     handle.f_stopJob();
+                     break;
+                 case JOB_HANDLE_STATE.REMOVE:
+                     handle.f_removeJob();
+                     break;
+                 case JOB_HANDLE_STATE.RESET:
+                     handle.f_resetJob();
+                     break;
+                 case JOB_HANDLE_STATE.RUN:
+                     handle.f_runJob();
+                     break;
+                 case JOB_HANDLE_STATE.STOP:
+                     handle.f_stopJob();
+                     break;
+             }
+             return true;
+         };
 
         static readonly Func<IJobHandle[], Message[], bool> SEND_MESSAGE_LOAD_BALANCER_TO_JOB = (IJobHandle[] handles, Message[] ms) =>
         {
             int count = ms.Length, i = 0, id = 0;
-            while (count > 0) {
+            while (count > 0)
+            {
                 i = 0;
                 for (i = 0; i < handles.Length; i++)
                 {
@@ -53,7 +54,8 @@ namespace elbro
                     System.Tracer.WriteLine(String.Format("J{0}: message-{1}: {2}", handles[i].f_getJob().f_getId(), id, ms[id].GetMessageId()));
 
                     id++;
-                    if (id == ms.Length) {
+                    if (id == ms.Length)
+                    {
                         count = 0;
                         break;
                     }
@@ -91,7 +93,7 @@ namespace elbro
 
             return jo;
         }
-         
+
         public int f_count()
         {
             return JobHandles.Count;
@@ -99,12 +101,12 @@ namespace elbro
 
         public void f_actionJobs(JOB_HANDLE_STATE action)
         {
-            this.JobHandles.ExecuteFunc(JOB_ACTION, action); 
+            this.JobHandles.ExecuteFunc(JOB_ACTION, action);
         }
 
         public void f_sendRequestLoadBalancer(Message[] messages)
         {
-            this.JobHandles.ExecuteFuncLoadBalancer<Message>(SEND_MESSAGE_LOAD_BALANCER_TO_JOB, messages); 
+            this.JobHandles.ExecuteFuncLoadBalancer<Message>(SEND_MESSAGE_LOAD_BALANCER_TO_JOB, messages);
         }
 
         ~JobFactory()

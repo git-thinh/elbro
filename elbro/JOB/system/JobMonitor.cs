@@ -19,9 +19,17 @@ namespace elbro
         readonly DictionaryThreadSafe<JOB_TYPE, IJobFactory> JobFactories;
         readonly DictionaryThreadSafe<JOB_TYPE, IJobHandle> JobSingletons;
 
+        readonly DictionaryThreadSafe<Guid, List<Guid>> RequestMessageGroup;
+        readonly DictionaryThreadSafe<Guid, int> RequestMessageGroupTotal;
+        readonly DictionaryThreadSafe<Guid, Action> RequestMessageGroupAction;
+
         public JobMonitor()
         {
             this.ResponseMessages = new DictionaryThreadSafe<Guid, Message>();
+            this.RequestMessageGroup = new DictionaryThreadSafe<Guid, List<Guid>>();
+            this.RequestMessageGroupTotal = new DictionaryThreadSafe<Guid, int>();
+            this.RequestMessageGroupAction = new DictionaryThreadSafe<Guid, Action>();
+
             this.JobFactories = new DictionaryThreadSafe<JOB_TYPE, IJobFactory>();
             this.JobSingletons = new DictionaryThreadSafe<JOB_TYPE, IJobHandle>();
 
@@ -74,10 +82,6 @@ namespace elbro
             System.Tracer.WriteLine("MONITOR J{0} = {1}", jobId, state);
         }
 
-        public void f_eventJobResponseMessage(int jobId, Message m) {
-            this.ResponseMessages.Add(m.GetMessageId(), m);
-        }
-
         public int f_getTotalJob()
         {
             IJobFactory[] facs = this.JobFactories.ValuesArray;
@@ -105,14 +109,47 @@ namespace elbro
             return false;
         }
 
-        public bool f_requestMessages(JOB_TYPE type, Message[] ms)
+        public void f_eventJobResponseMessage(int jobId, Message m) {
+            Guid groupId = m.GetGroupId();
+            if (this.RequestMessageGroup.ContainsKey(groupId)) {
+                this.RequestMessageGroup.Remove(groupId);
+                if (this.RequestMessageGroup.Count == 0)
+                {
+                    System.Tracer.WriteLine("MONITOR DONE GROUP MESSAGES {0} = {1}", groupId, this.RequestMessageGroupTotal[groupId]);
+                    this.RequestMessageGroupAction[groupId]();
+                }
+            }
+            this.ResponseMessages.Add(m.GetMessageId(), m);
+        }
+
+        public bool f_requestMessages(JOB_TYPE type, Message[] ms, Action actionCallBackDoneAll = null)
         {
             if (this.JobFactories.ContainsKey(type)) {
+                if (actionCallBackDoneAll != null)
+                {
+                    Guid groupId = Guid.NewGuid();
+                    ms = ms.Select(x => x.SetGroupId(groupId)).ToArray();
+                    var ids = ms.Select(x => x.GetMessageId()).ToList();
+                    this.RequestMessageGroup.Add(groupId, ids);
+                    this.RequestMessageGroupTotal.Add(groupId, ids.Count);
+                    this.RequestMessageGroupAction.Add(groupId, actionCallBackDoneAll);
+                }
                 this.JobFactories[type].f_sendRequestLoadBalancer(ms);
             } else if (this.JobSingletons.ContainsKey(type)) {
                 this.JobSingletons[type].f_sendMessages(ms);
             }
             return false;
+        }
+
+        ~JobMonitor()
+        {
+            f_removeAll();
+
+            this.ResponseMessages.Clear();
+            this.RequestMessageGroup.Clear();
+
+            this.JobFactories.Clear();
+            this.JobSingletons.Clear();
         }
     }
 }
