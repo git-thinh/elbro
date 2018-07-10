@@ -70,8 +70,11 @@ namespace elbro
     public class Message
     {
         Guid GroupId = Guid.Empty;
-        int JobExecuteId = 0;
+        int TimeOut = 0;
+        public void f_setTimeOut(int timeOut) { this.TimeOut = timeOut; }
+        public int f_getTimeOut() { return this.TimeOut; }
 
+        int JobExecuteId = 0;
         public void f_setJobExecuteId(int jobExecuteId) { this.JobExecuteId = jobExecuteId; }
         public int f_getJobExecuteId() { return this.JobExecuteId; }
 

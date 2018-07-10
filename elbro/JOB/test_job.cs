@@ -36,7 +36,11 @@ namespace elbro
             Console.ReadLine();
             const int len = 9;
             Message[] ms = new Message[len];
-            for (int i = 0; i < len; i++) ms[i] = new Message() { };
+            for (int i = 0; i < len; i++)
+            {
+                ms[i] = new Message() { Input = i };
+                if (i == 0) ms[i].f_setTimeOut(3000);
+            }
 
             Func<IJobMessageContext, IJobHandle, Guid, bool> FUNC_CALLBACK = (jobAction, msgHandle, groupId) =>
              {

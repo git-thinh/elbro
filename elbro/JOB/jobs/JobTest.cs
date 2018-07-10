@@ -5,16 +5,16 @@ namespace elbro
 {
     public class JobTest : JobBase
     {
-        readonly QueueThreadSafe<Message> messages;
+        readonly QueueThreadSafe<Message> Messages;
 
         public JobTest(IJobAction jobAction) : base(JOB_TYPE.NONE, jobAction)
         {
-            this.messages = new QueueThreadSafe<Message>();
+            this.Messages = new QueueThreadSafe<Message>();
         }
 
         public override void f_sendMessage(Message m)
         {
-            this.messages.Enqueue(m);
+            this.Messages.Enqueue(m);
         }
 
         public override void f_receiveMessage(Message m)
@@ -46,7 +46,7 @@ namespace elbro
         public override void f_processMessage()
         {
             Message m = null;
-            m = this.messages.Dequeue(null);
+            m = this.Messages.Dequeue(null);
             if (m != null)
             {
                 Tracer.WriteLine("J{0} TEST: Do something: {1} ", this.f_getId(), m.GetMessageId());
