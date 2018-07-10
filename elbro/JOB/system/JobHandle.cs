@@ -9,40 +9,56 @@ namespace elbro
     {
         void f_runJob();
         void f_stopJob();
-        void f_stopJobComplete();
+        void f_eventJobStoped();
         void f_resetJob();
         void f_pauseJob();
         void f_removeJob();
         
         IJob f_getJob();
+        JOB_HANDLE_STATE f_getState();
 
         void f_receiveMessage(Message m);
         void f_sendMessage(Message m);
     }
 
+    public enum JOB_HANDLE_STATE {
+        NONE,
+        PAUSE,
+        STOP,
+        RESET,
+        REMOVE, 
+        CLEAR,
+        RUN,
+    }
+
     public class JobHandle: IJobHandle
     {
         readonly IJob Job;
-        readonly AutoResetEvent Even;
+        readonly AutoResetEvent EvenStopLoop;
         readonly static Random _random = new Random(); 
         RegisteredWaitHandle Handle;
+        JOB_HANDLE_STATE HandleCurrent;
 
         public JobHandle(IJob job, AutoResetEvent ev)
         {
+            this.HandleCurrent = JOB_HANDLE_STATE.NONE;
             int id = job.JobAction.f_getTotalJob() + 1;
             job.f_setId(id); 
 
             this.Job = job;
-            this.Even = ev;            
+            this.EvenStopLoop = ev;
         }
-
-
-        #region [ Job Handle ]
+        
+        public JOB_HANDLE_STATE f_getState()
+        {
+            return this.HandleCurrent;
+        }
 
         public void f_runJob()
         {
+            this.HandleCurrent = JOB_HANDLE_STATE.RUN;
             this.Handle = ThreadPool.RegisterWaitForSingleObject(
-                this.Even,
+                this.EvenStopLoop,
                 new WaitOrTimerCallback(this.Job.f_runLoop),
                 this,
                 JOB_CONST.JOB_TIMEOUT_RUN,
@@ -54,41 +70,60 @@ namespace elbro
             if (this.Handle != null)
                 this.Handle.Unregister(null);
 
-            this.Even.Reset();
+            this.EvenStopLoop.Reset();
 
             this.Handle = ThreadPool.RegisterWaitForSingleObject(
-                this.Even,
+                this.EvenStopLoop,
                 new WaitOrTimerCallback(this.Job.f_runLoop),
                 this,
                 JOB_CONST.JOB_TIMEOUT_RUN,
                 false);
         }
 
-        public void f_stopJob()
+        void f_postEventStopLoop(JOB_HANDLE_STATE cmd)
         {
-            if (this.Even != null)
-                this.Even.Set();
+            if (this.EvenStopLoop != null)
+            {
+                this.HandleCurrent = cmd;
+                this.EvenStopLoop.Set();
+            }
         }
 
-        public void f_stopJobComplete()
+        public void f_eventJobStoped()
         {
+            switch (this.HandleCurrent) {
+                case JOB_HANDLE_STATE.PAUSE:
+                    break;
+                case JOB_HANDLE_STATE.STOP:
+                    this.f_getJob().JobAction.f_eventJobHandleChangeState(this.HandleCurrent, this.Job.f_getId());
+                    break;
+                case JOB_HANDLE_STATE.RESET:
+                    break;
+                case JOB_HANDLE_STATE.REMOVE:
+                    if (this.Handle != null)
+                    {
+                        this.Handle.Unregister(null);
+                        this.Handle = null;
+                    }
+                    this.EvenStopLoop.Close();
+                    this.f_getJob().JobAction.f_eventJobHandleChangeState(this.HandleCurrent, this.Job.f_getId());
+                    break;
+            }
+        }
+        
+        public void f_stopJob()
+        { 
+            f_postEventStopLoop(JOB_HANDLE_STATE.STOP);
         }
 
         public void f_pauseJob()
         {
+            f_postEventStopLoop(JOB_HANDLE_STATE.PAUSE);
         }
 
         public void f_removeJob()
         {
-            f_stopJob();
-
-            if (this.Handle != null)
-            {
-                this.Handle.Unregister(null);
-                this.Handle = null;
-            }
-
-            //this.Job.StoreJob.f_job_eventAfterStop(this.Job.f_getId());
+            f_postEventStopLoop(JOB_HANDLE_STATE.REMOVE);             
         }
         
         public IJob f_getJob() {
@@ -112,16 +147,15 @@ namespace elbro
             //}
         }
          
-        #endregion
 
 
 
-
-        public AutoResetEvent f_getEvent() { return Even; }
+        public AutoResetEvent f_getEvent() { return EvenStopLoop; }
         
         public string f_getGroupName() { return this.Job.f_getGroupName(); }
 
 
         public override string ToString() { return this.Job.f_getId().ToString(); }
+
     }
 }

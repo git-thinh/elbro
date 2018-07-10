@@ -12,22 +12,20 @@ namespace elbro
 
         readonly string m_groupName = string.Empty;
 
-        protected bool f_checkState(JOB_STATE state)
+        #region [ STATE ]
+
+        bool f_checkState(JOB_STATE state)
         {
             switch (state)
             {
                 case JOB_STATE.NONE:
                     return m_State == 0;
-                    break;
                 case JOB_STATE.RUNNING:
                     return m_State == 1;
-                    break;
                 case JOB_STATE.STOPED:
                     return m_State == 2;
-                    break;
                 case JOB_STATE.INIT:
-                    m_State = 3;
-                    break;
+                    return m_State == 3;
             }
             return false;
         }
@@ -62,6 +60,8 @@ namespace elbro
             return JOB_STATE.NONE;
         }
 
+        #endregion
+
         public JOB_TYPE f_getType() { return m_Type; }
 
         public IJobAction JobAction { get; }
@@ -90,25 +90,25 @@ namespace elbro
 
         public void f_runLoop(object state, bool timedOut)
         {
-            if (this.m_State == JOB_STATE.STOPED) return;
+            if (this.f_checkState(JOB_STATE.STOPED)) return;
 
             if (!timedOut)
-                this.m_State = JOB_STATE.STOPED;
+                f_setState(JOB_STATE.STOPED);
 
-            switch (this.m_State)
+            switch (this.f_getState())
             {
                 case JOB_STATE.INIT:
-                    System.Tracer.WriteLine("J{0} BASE: SIGNAL -> INITED", this.f_getId());
+                    //System.Tracer.WriteLine("J{0} BASE: SIGNAL -> INITED", this.f_getId());
                     this.m_Handle = (IJobHandle)state;
-                    this.m_State = JOB_STATE.RUNNING;
+                    this.f_setState(JOB_STATE.RUNNING);
                     this.f_Init();
                     break;
                 case JOB_STATE.STOPED:
-                    System.Tracer.WriteLine("J{0} BASE: SIGNAL -> STOP", this.f_getId());
-                    this.m_Handle.f_stopJobComplete();
+                    //System.Tracer.WriteLine("J{0} BASE: SIGNAL -> STOP", this.f_getId());
+                    this.m_Handle.f_eventJobStoped();
                     break;
                 case JOB_STATE.RUNNING:
-                    Tracer.WriteLine("J{0} BASE: Do something ...", this.f_getId());
+                    //Tracer.WriteLine("J{0} BASE: Do something ...", this.f_getId());
                     this.f_processMessage();
                     break;
             }

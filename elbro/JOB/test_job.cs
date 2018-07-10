@@ -14,7 +14,7 @@ namespace elbro
             var jobs = new JobMonitor();
 
             jobs.f_createNew(new JobTest(jobs));
-            //jobs.f_createNew(new JobTest(jobs));
+            jobs.f_createNew(new JobTest(jobs));
             //jobs.f_createNew(new JobTest(jobs));
             //jobs.f_createNew(new JobTest(jobs));
             //jobs.f_createNew(new JobTest(jobs));

@@ -161,12 +161,12 @@ namespace System.Threading
         // GetValueAddIfNotExist
         #endregion
 
-        public void ExecuteFunc(Func<TValue,bool> func)
+        public void ExecuteFunc(Func<TValue, object, bool> func, object paramenter)
         {
             Lock_Dictionary.PerformUsingWriteLock(() =>
             {
                 foreach (var kv in m_Dictionary)
-                    func(kv.Value);
+                    func(kv.Value, paramenter);
             });
         }
 

@@ -57,6 +57,11 @@ namespace elbro
             return handle;
         }
 
+        public void f_eventJobHandleChangeState(JOB_HANDLE_STATE state, int jobId)
+        {
+            System.Tracer.WriteLine("MONITOR J{0} = {1}", jobId, state);
+        }
+
         public int f_getTotalJob()
         {
             return this.JobFactories.Values.Sum(x => x.f_count()) + this.JobSingletons.Count;
