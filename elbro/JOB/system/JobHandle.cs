@@ -9,6 +9,7 @@ namespace elbro
     {
         void f_runJob();
         void f_stopJob();
+        void f_stopJobComplete();
         void f_resetJob();
         void f_pauseJob();
         void f_removeJob();
@@ -29,7 +30,7 @@ namespace elbro
         public JobHandle(IJob job, AutoResetEvent ev)
         {
             int id = job.JobAction.f_getTotalJob() + 1;
-            job.f_setId(id);
+            job.f_setId(id); 
 
             this.Job = job;
             this.Even = ev;            
@@ -63,9 +64,14 @@ namespace elbro
                 false);
         }
 
-        public void f_stopJob() {
-            if (this.Job != null)
-                this.Job.f_stopJob();
+        public void f_stopJob()
+        {
+            if (this.Even != null)
+                this.Even.Set();
+        }
+
+        public void f_stopJobComplete()
+        {
         }
 
         public void f_pauseJob()

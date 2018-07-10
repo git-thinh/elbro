@@ -28,31 +28,15 @@ namespace elbro
         {
             return false;
         }
-        
-        public override void f_runLoop(object state, bool timedOut)
+
+        public override void f_Init() {
+                Tracer.WriteLine("J{0} TEST: SIGNAL -> INITED", this.f_getId());
+        }
+
+        public override void f_processMessage()
         {
-            if (!this.m_inited)
-            {
-                this.m_jobHandle = (IJobHandle)state;
-                this.m_inited = true;
-                return;
-            }
-            if (!timedOut)
-            {
-                System.Tracer.WriteLine("J{0}: SIGNAL -> STOP", this.f_getId());
-                //f_stopJob();
-                return;
-            }
-
-            //JobInfo ti = (JobInfo)state;
-            //if (!timedOut)
-            //{
-            //    Tracer.WriteLine("J{0} executes on thread {1}: SIGNAL -> STOP", Id, Thread.CurrentThread.GetHashCode().ToString());
-            //    ti.f_stopJob();
-            //    return;
-            //}
-
-            Tracer.WriteLine("J{0}: Do something ...", this.f_getId());
-        } 
+            Tracer.WriteLine("J{0} TEST: Do something ...", this.f_getId());
+        }
+        
     }
 }

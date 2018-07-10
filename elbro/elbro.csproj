@@ -54,6 +54,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core">
       <HintPath>..\run\bin\System.Core.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -99,8 +100,6 @@
     <Compile Include="JOB\system\IJobAction.cs" />
     <Compile Include="JOB\system\JobFactory.cs" />
     <Compile Include="JOB\system\JobHandle.cs" />
-    <Compile Include="JOB\jobs\JobFileHttp.cs" />
-    <Compile Include="JOB\jobs\JobLink.cs" />
     <Compile Include="JOB\system\JobMonitor.cs" />
     <Compile Include="JOB\system\JobBase.cs" />
     <Compile Include="JOB\system\JOB_CONST.cs" />

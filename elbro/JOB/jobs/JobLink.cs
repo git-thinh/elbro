@@ -32,7 +32,7 @@ namespace elbro
         {
             if (!this.m_inited)
             {
-                this.m_jobHandle = (IJobHandle)state;
+                this.m_Handle = (IJobHandle)state;
                 this.m_inited = true;
                 this.m_state = JOB_STATE.RUNNING;
 
