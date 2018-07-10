@@ -13,26 +13,14 @@ namespace elbro
         void f_runAll();
     }
 
-    public class JobMonitor : IJobMonitor, IJobAction, IMessageEvent
+    public class JobMonitor : IJobMonitor, IJobAction, IMessageContext
     {
         readonly IJobHandle HandleMessage;
-        readonly QueueThreadSafe<Guid> ResponseIds;
-        readonly DictionaryThreadSafe<Guid, Message> ResponseMessages;
         readonly DictionaryThreadSafe<JOB_TYPE, IJobFactory> JobFactories;
         readonly DictionaryThreadSafe<JOB_TYPE, IJobHandle> JobSingletons;
-
-        readonly DictionaryThreadSafe<Guid, List<Guid>> RequestMessageGroup;
-        readonly DictionaryThreadSafe<Guid, int> RequestMessageGroupTotal;
-        readonly DictionaryThreadSafe<Guid, Action> RequestMessageGroupAction;
-
+        
         public JobMonitor()
         {
-            this.ResponseIds = new QueueThreadSafe<Guid>();
-            this.ResponseMessages = new DictionaryThreadSafe<Guid, Message>();
-            this.RequestMessageGroup = new DictionaryThreadSafe<Guid, List<Guid>>();
-            this.RequestMessageGroupTotal = new DictionaryThreadSafe<Guid, int>();
-            this.RequestMessageGroupAction = new DictionaryThreadSafe<Guid, Action>();
-
             this.JobFactories = new DictionaryThreadSafe<JOB_TYPE, IJobFactory>();
             this.JobSingletons = new DictionaryThreadSafe<JOB_TYPE, IJobHandle>();
 
@@ -114,34 +102,13 @@ namespace elbro
 
         public void f_eventJobResponseMessage(int jobId, Message m) {
             this.HandleMessage.f_sendMessage(m);
-
-            //Guid id = m.GetMessageId();
-            //this.ResponseIds.Enqueue(id);
-            //this.ResponseMessages.Add(id, m);
-            
-            //Guid groupId = m.GetGroupId();
-            //if (this.RequestMessageGroup.ContainsKey(groupId)) {
-            //    this.RequestMessageGroup.Remove(groupId);
-            //    if (this.RequestMessageGroup.Count == 0)
-            //    {
-            //        System.Tracer.WriteLine("MONITOR DONE GROUP MESSAGES {0} = {1}", groupId, this.RequestMessageGroupTotal[groupId]);
-            //        this.RequestMessageGroupAction[groupId]();
-            //    }
-            //}
         }
 
-        public bool f_requestMessages(JOB_TYPE type, Message[] ms, Action actionCallBackDoneAll = null)
+        public bool f_requestMessages(JOB_TYPE type, Message[] ms, Func<IJobAction, Guid, Guid[], IJobHandle, bool> actionCallBackDoneAll = null)
         {
             if (this.JobFactories.ContainsKey(type)) {
                 if (actionCallBackDoneAll != null)
-                {
-                    Guid groupId = Guid.NewGuid();
-                    ms = ms.Select(x => x.SetGroupId(groupId)).ToArray();
-                    var ids = ms.Select(x => x.GetMessageId()).ToList();
-                    this.RequestMessageGroup.Add(groupId, ids);
-                    this.RequestMessageGroupTotal.Add(groupId, ids.Count);
-                    this.RequestMessageGroupAction.Add(groupId, actionCallBackDoneAll);
-                }
+                    this.HandleMessage.f_getJob().f_setData(JobMessage.REQUEST_MSG_GROUP, new Tuple<Func<IJobAction, Guid, Guid[], IJobHandle, bool>, Message[]>(actionCallBackDoneAll, ms));
                 this.JobFactories[type].f_sendRequestLoadBalancer(ms);
             } else if (this.JobSingletons.ContainsKey(type)) {
                 this.JobSingletons[type].f_sendMessages(ms);
@@ -149,13 +116,15 @@ namespace elbro
             return false;
         }
 
+        public void f_eventRequestGroupMessageComplete(Guid groupId)
+        {
+
+        }
+
         ~JobMonitor()
         {
             f_removeAll();
-
-            this.ResponseMessages.Clear();
-            this.RequestMessageGroup.Clear();
-
+            
             this.JobFactories.Clear();
             this.JobSingletons.Clear();
         }

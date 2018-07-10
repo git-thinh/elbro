@@ -106,8 +106,7 @@ namespace elbro
                     {
                         this.Handle.Unregister(null);
                         this.Handle = null;
-                    }
-                    this.EvenStopLoop.Close();
+                    }               
                     this.f_getJob().JobAction.f_eventJobHandleChangeState(this.HandleCurrent, this.Job.f_getId());
                     break;
             }

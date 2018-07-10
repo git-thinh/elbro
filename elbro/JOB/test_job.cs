@@ -38,9 +38,13 @@ namespace elbro
             const int len = 9;
             Message[] ms = new Message[len];
             for (int i = 0; i < len; i++) ms[i] = new Message() { };
-            jobs.f_requestMessages(JOB_TYPE.NONE, ms, ()=> {
-                System.Tracer.WriteLine("FINISH ....");
-            });
+
+            Func<IJobAction, Guid, Guid[], IJobHandle, bool> FUNC_CALLBACK = (jobAction, groupId, MsgIds, msgHandle) =>
+             {
+                 System.Tracer.WriteLine("TEST_JOB.RUN_TEST(): FINISH ....");
+                 return false;
+             };
+            jobs.f_requestMessages(JOB_TYPE.NONE, ms, FUNC_CALLBACK);
 
 
 
