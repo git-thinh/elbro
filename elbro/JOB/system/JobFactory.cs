@@ -49,8 +49,8 @@ namespace elbro
                 i = 0;
                 for (i = 0; i < handles.Length; i++)
                 {
+                    ms[id].f_setJobExecuteId(handles[i].f_getJob().f_getId());
                     handles[i].f_sendMessage(ms[id]);
-
                     System.Tracer.WriteLine(String.Format("J{0}: message-{1}: {2}", handles[i].f_getJob().f_getId(), id, ms[id].GetMessageId()));
 
                     id++;

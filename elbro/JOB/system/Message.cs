@@ -70,6 +70,10 @@ namespace elbro
     public class Message
     {
         Guid GroupId = Guid.Empty;
+        int JobExecuteId = 0;
+
+        public void f_setJobExecuteId(int jobExecuteId) { this.JobExecuteId = jobExecuteId; }
+        public int f_getJobExecuteId() { return this.JobExecuteId; }
 
         readonly Guid Id = Guid.Empty;
         readonly int SenderId;

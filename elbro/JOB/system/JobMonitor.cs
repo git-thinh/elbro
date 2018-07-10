@@ -13,8 +13,10 @@ namespace elbro
         void f_runAll();
     }
 
-    public class JobMonitor : IJobMonitor, IJobAction
+    public class JobMonitor : IJobMonitor, IJobAction, IMessageEvent
     {
+        readonly IJobHandle HandleMessage;
+        readonly QueueThreadSafe<Guid> ResponseIds;
         readonly DictionaryThreadSafe<Guid, Message> ResponseMessages;
         readonly DictionaryThreadSafe<JOB_TYPE, IJobFactory> JobFactories;
         readonly DictionaryThreadSafe<JOB_TYPE, IJobHandle> JobSingletons;
@@ -25,6 +27,7 @@ namespace elbro
 
         public JobMonitor()
         {
+            this.ResponseIds = new QueueThreadSafe<Guid>();
             this.ResponseMessages = new DictionaryThreadSafe<Guid, Message>();
             this.RequestMessageGroup = new DictionaryThreadSafe<Guid, List<Guid>>();
             this.RequestMessageGroupTotal = new DictionaryThreadSafe<Guid, int>();
@@ -33,7 +36,7 @@ namespace elbro
             this.JobFactories = new DictionaryThreadSafe<JOB_TYPE, IJobFactory>();
             this.JobSingletons = new DictionaryThreadSafe<JOB_TYPE, IJobHandle>();
 
-            //f_createNew(new JobMessage(this));
+            this.HandleMessage = f_createNew(new JobMessage(this, this));
             //f_createNew(new JobLink(this));
         }
 
@@ -110,16 +113,21 @@ namespace elbro
         }
 
         public void f_eventJobResponseMessage(int jobId, Message m) {
-            Guid groupId = m.GetGroupId();
-            if (this.RequestMessageGroup.ContainsKey(groupId)) {
-                this.RequestMessageGroup.Remove(groupId);
-                if (this.RequestMessageGroup.Count == 0)
-                {
-                    System.Tracer.WriteLine("MONITOR DONE GROUP MESSAGES {0} = {1}", groupId, this.RequestMessageGroupTotal[groupId]);
-                    this.RequestMessageGroupAction[groupId]();
-                }
-            }
-            this.ResponseMessages.Add(m.GetMessageId(), m);
+            this.HandleMessage.f_sendMessage(m);
+
+            //Guid id = m.GetMessageId();
+            //this.ResponseIds.Enqueue(id);
+            //this.ResponseMessages.Add(id, m);
+            
+            //Guid groupId = m.GetGroupId();
+            //if (this.RequestMessageGroup.ContainsKey(groupId)) {
+            //    this.RequestMessageGroup.Remove(groupId);
+            //    if (this.RequestMessageGroup.Count == 0)
+            //    {
+            //        System.Tracer.WriteLine("MONITOR DONE GROUP MESSAGES {0} = {1}", groupId, this.RequestMessageGroupTotal[groupId]);
+            //        this.RequestMessageGroupAction[groupId]();
+            //    }
+            //}
         }
 
         public bool f_requestMessages(JOB_TYPE type, Message[] ms, Action actionCallBackDoneAll = null)

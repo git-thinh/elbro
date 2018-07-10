@@ -10,7 +10,7 @@ namespace elbro
         public JobTest(IJobAction jobAction) : base(JOB_TYPE.NONE, jobAction)
         {
             this.messages = new QueueThreadSafe<Message>();
-        } 
+        }
 
         public override void f_sendMessage(Message m)
         {
@@ -38,8 +38,9 @@ namespace elbro
             return false;
         }
 
-        public override void f_Init() {
-                Tracer.WriteLine("J{0} TEST: SIGNAL -> INITED", this.f_getId());
+        public override void f_Init()
+        {
+            Tracer.WriteLine("J{0} TEST: SIGNAL -> INITED", this.f_getId());
         }
 
         public override void f_processMessage()
@@ -49,7 +50,9 @@ namespace elbro
             if (m != null)
             {
                 Tracer.WriteLine("J{0} TEST: Do something: {1} ", this.f_getId(), m.GetMessageId());
-                m.Output = new MessageResult() {
+                
+                m.Output = new MessageResult()
+                {
                     Ok = true,
                     MessageText = string.Format("J{0} TEST: Done {1} ", this.f_getId(), m.GetMessageId())
                 };
@@ -57,6 +60,6 @@ namespace elbro
             }
             //else Tracer.WriteLine("J{0} TEST: waiting message to execute that ...", this.f_getId());
         }
-        
+
     }
 }

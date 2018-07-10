@@ -39,7 +39,7 @@ namespace elbro
             Message[] ms = new Message[len];
             for (int i = 0; i < len; i++) ms[i] = new Message() { };
             jobs.f_requestMessages(JOB_TYPE.NONE, ms, ()=> {
-                Console.WriteLine("DONE ....");
+                System.Tracer.WriteLine("FINISH ....");
             });
 
 

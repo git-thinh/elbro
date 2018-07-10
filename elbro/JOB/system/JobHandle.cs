@@ -86,7 +86,8 @@ namespace elbro
             if (this.EvenStopLoop != null)
             {
                 this.HandleCurrent = cmd;
-                this.EvenStopLoop.Set();
+                if (this.EvenStopLoop != null)
+                    this.EvenStopLoop.Set();
             }
         }
 

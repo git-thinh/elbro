@@ -3,77 +3,61 @@ using System.Threading;
 
 namespace elbro
 {
+    public interface IMessageEvent {
+
+    }
+
     public class JobMessage : JobBase
     {
-        readonly QueueThreadSafe<Message> msg;
+        readonly QueueThreadSafe<Message> Messages;
+        readonly IMessageEvent MsgEvent;
 
-        public JobMessage(IJobStore store) : base(JOB_TYPE.MESSAGE, store)
+        public JobMessage(IJobAction jobAction, IMessageEvent msgEvent) : base(JOB_TYPE.MESSAGE, jobAction)
         {
-            msg = new QueueThreadSafe<Message>();
+            this.Messages = new QueueThreadSafe<Message>();
+            this.MsgEvent = msgEvent;
         }
-        
+
+        public override void f_sendMessage(Message m)
+        {
+            this.Messages.Enqueue(m);
+        }
+
         public override void f_receiveMessage(Message m)
         {
-            msg.Enqueue(m);
         }
 
-        public override void f_runLoop(object state, bool timedOut)
+        public override void f_sendMessages(Message[] ms)
         {
-            if (!this.m_inited)
-            {
-                this.m_jobHandle  = (IJobHandle)state;
-                this.m_inited = true;                
-                this.m_state = JOB_STATE.RUNNING;
+        }
 
-                return;
-            }
-            if (!timedOut)
-            {
-                System.Tracer.WriteLine("J{0} executes on thread {1}: SIGNAL -> STOP", this.f_getId(), Thread.CurrentThread.GetHashCode().ToString());
-                // Tracer.WriteLine("J{0} executes on thread {1}: SIGNAL -> STOP ...", Id, Thread.CurrentThread.GetHashCode().ToString());
-                f_stopJob();
-                return;
-            }
-             
-            //Tracer.WriteLine("J{0} executes on thread {1}:DO SOMETHING ...", Id, Thread.CurrentThread.GetHashCode().ToString());
-            // Do something ...
+        public override int f_getPort()
+        {
+            return 0;
+        }
+        public override bool f_checkKey(object key)
+        {
+            return false;
+        }
+        public override bool f_setData(string key, object data)
+        {
+            return false;
+        }
 
-            if (msg.Count > 0)
+        public override void f_Init()
+        {
+            Tracer.WriteLine("J{0} TEST: SIGNAL -> INITED", this.f_getId());
+        }
+
+        public override void f_processMessage()
+        {
+            Message m = null;
+            m = this.Messages.Dequeue(null);
+            if (m != null)
             {
-                Message m = msg.Dequeue(null);
-                if (m != null)
-                {
-                    //[1] SEND REQUEST TO JOB FOR EXECUTE
-                    if (m.Type == MESSAGE_TYPE.REQUEST)
-                    {
-                        IJob[] jobs = this.StoreJob.f_job_getByID(m.GetReceiverId());
-                        if (jobs.Length > 0)
-                            for (int i = 0; i < jobs.Length; i++)
-                                jobs[i].f_receiveMessage(m);
-                    }
-                    else
-                    {
-                        //[2] RESPONSE TO SENDER
-                        switch (m.getSenderType())
-                        {
-                            case SENDER_TYPE.IS_FORM:
-                                IFORM fom = this.StoreJob.f_form_Get(m.GetSenderId());
-                                if (fom != null)
-                                    fom.f_receiveMessage(m.GetMessageId());
-                                // write to LOG ...
-                                break;
-                            case SENDER_TYPE.HIDE_SENDER:
-                                // do not send response to sender
-                                // write to LOG ...
-                                break;
-                        }
-                    }
-                }
+                
             }
         }
 
-        ~JobMessage() {
-            msg.Clear();
-        }
     }
 }
