@@ -20,27 +20,30 @@ namespace elbro
 
     public class JobFactory : IJobFactory
     {
-        //readonly Func<IJobHandle, object, bool> JOB_ACTION = (IJobHandle handle, object para) => {
-        //    JOB_HANDLE_STATE cmd = (JOB_HANDLE_STATE)para;
-        //    switch (cmd) {
-        //        case JOB_HANDLE_STATE.PAUSE:
-        //            handle.f_stopJob();
-        //            break;
-        //        case JOB_HANDLE_STATE.REMOVE:
-        //            handle.f_removeJob();
-        //            break;
-        //        case JOB_HANDLE_STATE.RESET:
-        //            handle.f_resetJob();
-        //            break;
-        //        case JOB_HANDLE_STATE.RUN:
-        //            handle.f_runJob();
-        //            break;
-        //        case JOB_HANDLE_STATE.STOP:
-        //            handle.f_stopJob();
-        //            break;
-        //    }            
-        //    return true;
-        //}; 
+        readonly Func<IJobHandle, object, bool> JOB_ACTION = (IJobHandle handle, object para) =>
+        {
+            JOB_HANDLE_STATE cmd = (JOB_HANDLE_STATE)para;
+            switch (cmd)
+            {
+                case JOB_HANDLE_STATE.PAUSE:
+                    handle.f_stopJob();
+                    break;
+                case JOB_HANDLE_STATE.REMOVE:
+                    handle.f_removeJob();
+                    break;
+                case JOB_HANDLE_STATE.RESET:
+                    handle.f_resetJob();
+                    break;
+                case JOB_HANDLE_STATE.RUN:
+                    handle.f_runJob();
+                    break;
+                case JOB_HANDLE_STATE.STOP:
+                    handle.f_stopJob();
+                    break;
+            }
+            return true;
+        };
+
         readonly DictionaryThreadSafe<int, IJobHandle> JobHandles;
         readonly JOB_TYPE JobType;
 
@@ -63,64 +66,36 @@ namespace elbro
             //      – Set: chuyển trạng thái của event thành signaled.
             //      – WaitOne([parameters]): Chặn thread hiện tại cho đến khi trạng thái của event được chuyển sang signaled.
 
-            int id = job.f_getId();
             IJobHandle jo = new JobHandle(job, new AutoResetEvent(false));
+            int id = job.f_getId();
             JobHandles.Add(id, jo);
 
             return jo;
         }
-
-        void f_execute(JOB_HANDLE_STATE cmd)
-        {
-            IJobHandle[] a = this.JobHandles.ValuesArray;
-            IJobHandle handle;
-            for (int i = 0; i < a.Length; i++)
-            {
-                handle = a[i];
-                switch (cmd)
-                {
-                    case JOB_HANDLE_STATE.PAUSE:
-                        handle.f_stopJob();
-                        break;
-                    case JOB_HANDLE_STATE.REMOVE:
-                        handle.f_removeJob();
-                        break;
-                    case JOB_HANDLE_STATE.RESET:
-                        handle.f_resetJob();
-                        break;
-                    case JOB_HANDLE_STATE.RUN:
-                        handle.f_runJob();
-                        break;
-                    case JOB_HANDLE_STATE.STOP:
-                        handle.f_stopJob();
-                        break;
-                }
-            }
-        }
-
+         
         public void f_pauseJobs()
         {
-            this.f_execute(JOB_HANDLE_STATE.PAUSE);
+            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.PAUSE);
         }
 
         public void f_resetJobs()
         {
-            this.f_execute(JOB_HANDLE_STATE.RESET);
+            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.RESET);
         }
 
         public void f_runJobs()
         {
-            this.f_execute(JOB_HANDLE_STATE.RUN);
+            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.RUN);
         }
 
         public void f_stopJobs()
         {
-            this.f_execute(JOB_HANDLE_STATE.STOP);
+            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.STOP);
         }
 
         public void f_removeJobs()
         {
-            this.f_execute(JOB_HANDLE_STATE.REMOVE);
+            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.REMOVE);
         }
 
         public int f_count()

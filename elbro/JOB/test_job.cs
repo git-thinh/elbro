@@ -15,9 +15,9 @@ namespace elbro
 
             jobs.f_createNew(new JobTest(jobs));
             jobs.f_createNew(new JobTest(jobs));
-            //jobs.f_createNew(new JobTest(jobs));
-            //jobs.f_createNew(new JobTest(jobs));
-            //jobs.f_createNew(new JobTest(jobs));
+            jobs.f_createNew(new JobTest(jobs));
+            jobs.f_createNew(new JobTest(jobs));
+            jobs.f_createNew(new JobTest(jobs));
 
 
             //jobs.OnStopAll += (se, ev) => {
