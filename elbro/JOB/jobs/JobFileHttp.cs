@@ -6,29 +6,13 @@ using System.IO;
 
 namespace elbro
 {
-    public class JobFileHttp : IJob
+    public class JobFileHttp : JobBase
     {
         readonly DictionaryThreadSafe<string, string> fileData;
         readonly QueueThreadSafe<Message> msg;
-        
-        private volatile JOB_STATE _state = JOB_STATE.NONE;
-        private volatile JOB_TYPE _type = JOB_TYPE.NONE;
 
-        public JOB_STATE f_getState() { return _state; }
-        public JOB_TYPE f_getType() { return _type; }
-
-        public IJobStore StoreJob { get; }
-        public void f_stopAndFreeResource() { }
-        public void f_sendMessage(Message m) { if (this.StoreJob != null) this.StoreJob.f_job_sendMessage(m); }
-
-        private volatile int Id = 0;
-        public int f_getId() { return Id; }
-        public void f_setId(int id) { Interlocked.Add(ref Id, id); }
-        readonly string _groupName = JOB_NAME.SYS_LINK;
-        public string f_getGroupName() { return _groupName; }
-        public JobFileHttp(IJobStore _store)
+        public JobFileHttp(IJobAction jobAction) : base(JOB_TYPE.FILE_HTTP_CACHE, jobAction)
         {
-            this.StoreJob = _store;
             msg = new QueueThreadSafe<Message>();
             fileData = new DictionaryThreadSafe<string, string>();
             server = new HttpServer();
@@ -47,17 +31,17 @@ namespace elbro
             }
         }
 
-        public bool f_checkKey(object key) { return false; }
-        public bool f_setData(string key, object data) { return false; }
+        public override int f_getPort() { return Port; }
+        public override bool f_checkKey(object key) { return false; }
+        public override bool f_setData(string key, object data) { return false; }
 
-        public void f_receiveMessage(Message m)
+        public override void f_receiveMessage(Message m)
         {
             msg.Enqueue(m);
         }
 
-        readonly HttpServer server;
         int Port = 0;
-        public int f_getPort() { return Port; }
+        readonly HttpServer server;
         private void f_Init()
         {
             // Tracer.WriteLine("J{0} executes on thread {1}: INIT ...");
@@ -94,7 +78,7 @@ namespace elbro
                 return;
             }
 
-            Tracer.WriteLine("J{0} executes on thread {1}:DO SOMETHING ...", Id, Thread.CurrentThread.GetHashCode().ToString());
+            Tracer.WriteLine("J{0} executes on thread {1}:DO SOMETHING ...", this.f_getId(), Thread.CurrentThread.GetHashCode().ToString());
             // Do something ...
 
         }

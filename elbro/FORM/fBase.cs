@@ -10,18 +10,18 @@ namespace elbro
 {
     public class fBase : Form, IFORM //, IMessageFilter
     {
-        public IJobStore JobStore { get; }
+        public IJobAction JobAction { get; }
         public event EventReceiveMessage OnReceiveMessage;
 
         readonly QueueThreadSafe<Message> StoreMessages;
         readonly System.Threading.Timer timer_api = null;
 
-        public fBase(IJobStore store)
+        public fBase(IJobAction jobAction)
         {
             StoreMessages = new QueueThreadSafe<Message>();
-            JobStore = store;
-            store.f_form_Add(this);
-            this.FormClosing += (se, ev) => { store.f_form_Remove(this); };
+            JobAction = jobAction;
+            //store.f_form_Add(this);
+            //this.FormClosing += (se, ev) => { store.f_form_Remove(this); };
 
             timer_api = new System.Threading.Timer(new System.Threading.TimerCallback((obj) =>
             {
@@ -37,24 +37,24 @@ namespace elbro
 
         public void f_receiveMessage(Guid id)
         {
-            Message m = this.JobStore.f_msg_getMessageData(id);
-            if (m != null) StoreMessages.Enqueue(m);
+            //Message m = this.JobStore.f_msg_getMessageData(id);
+            //if (m != null) StoreMessages.Enqueue(m);
         }
 
         public void f_sendRequestMessage(Message m)
         {
-            this.JobStore.f_job_sendMessage(m);
+            //this.JobStore.f_job_sendMessage(m);
         }
 
         public bool f_sendRequestToJob(string job_name, MESSAGE_ACTION action, object input)
         {
-            int[] job_IDs = this.JobStore.f_job_getIdsByName(job_name);
-            if (job_IDs.Length > 0)
-            {
-                Message m = new Message(this.f_getFormID(), job_IDs, action, input);
-                this.JobStore.f_job_sendMessage(m);
-                return true;
-            }
+            //int[] job_IDs = this.JobStore.f_job_getIdsByName(job_name);
+            //if (job_IDs.Length > 0)
+            //{
+            //    Message m = new Message(this.f_getFormID(), job_IDs, action, input);
+            //    this.JobStore.f_job_sendMessage(m);
+            //    return true;
+            //}
             return false;
         }
 

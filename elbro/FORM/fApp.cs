@@ -45,7 +45,7 @@ namespace elbro
 
         #region [ === FORM === ]
 
-        public fApp(IJobStore store) : base(store)
+        public fApp(IJobAction jobAction) : base(jobAction)
         {
             this.WindowState = FormWindowState.Maximized;
             this.Text = "English";
@@ -519,7 +519,7 @@ namespace elbro
 
                 this.f_log("[END] LOAD_CACHE: " + url);
 
-                ActionTimer.SetTimeout(() =>
+                TimerAction.SetTimeout(() =>
                 {
                     browser.crossThreadPerformSafely(() => {
 
@@ -1497,7 +1497,7 @@ z-index: 99999;
                     });
                 //});
 
-                ActionTimer.SetTimeout(() =>
+                TimerAction.SetTimeout(() =>
                 {
                     tabLink_TreeView.crossThreadPerformSafely(() =>
                     {

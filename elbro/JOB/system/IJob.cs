@@ -9,7 +9,7 @@ namespace elbro
         void f_receiveMessage(Message m);
         void f_sendMessage(Message m);
 
-        IJobStore StoreJob { get; }
+        IJobAction JobAction { get; }
 
         JOB_STATE f_getState();
         JOB_TYPE f_getType();

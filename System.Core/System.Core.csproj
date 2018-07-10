@@ -2881,13 +2881,10 @@
     <Compile Include="LIB\System.Linq\Tuple\IStructuralEquatable.cs" />
     <Compile Include="LIB\System.Linq\Tuple\Tuple.cs" />
     <Compile Include="LIB\System.Threading\CrossThreadExtensions.cs" />
-    <Compile Include="LIB\System.Threading\DictionaryThreadSafe.cs" />
-    <Compile Include="LIB\System.Threading\ListThreadSafe.cs" />
-    <Compile Include="LIB\System.Threading\QueueThreadSafe.cs" />
     <Compile Include="LIB\System.Threading\ReaderWriterLockSlim.cs" />
     <Compile Include="LIB\System.Threading\ReaderWriterLockSlimExtensions.cs" />
     <Compile Include="LIB\System.Threading\ReadWriteLockSlimExtend.cs" />
-    <Compile Include="LIB\System.Threading\StackThreadSafe.cs" />
+    <Compile Include="LIB\System.Threading\TimerAction.cs" />
     <Compile Include="LIB\TabStrip\BaseClasses\BaseStyledPanel.cs">
       <SubType>Component</SubType>
     </Compile>

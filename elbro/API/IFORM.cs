@@ -11,7 +11,7 @@ namespace elbro
     {
         int f_getFormID();
 
-        IJobStore JobStore { get; }
+        IJobAction JobAction { get; }
         void f_receiveMessage(Guid id);
         event EventReceiveMessage OnReceiveMessage;
     }

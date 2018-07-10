@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{EC0FD3E4-741F-48F7-A56F-D5D13810C991}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>elbro</RootNamespace>
     <AssemblyName>elbro</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
@@ -34,6 +34,9 @@
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="AxInterop.WMPLib">
       <HintPath>DLL\AxInterop.WMPLib.dll</HintPath>
@@ -51,7 +54,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core">
       <HintPath>..\run\bin\System.Core.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -66,9 +68,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="API\DictionaryThreadSafe.cs" />
     <Compile Include="API\GooTranslateService_v1.cs" />
     <Compile Include="API\GooTranslateService_v2.cs" />
     <Compile Include="API\IFORM.cs" />
+    <Compile Include="API\ListThreadSafe.cs" />
+    <Compile Include="API\QueueThreadSafe.cs" />
+    <Compile Include="API\StackThreadSafe.cs" />
     <Compile Include="API\Tracer.cs" />
     <Compile Include="API\UrlService.cs" />
     <Compile Include="app.cs" />
@@ -88,31 +94,24 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FORM\Prompt.cs" />
+    <Compile Include="JOB\jobs\JobTest.cs" />
     <Compile Include="JOB\system\IJob.cs" />
-    <Compile Include="JOB\system\IJobStore.cs" />
+    <Compile Include="JOB\system\IJobAction.cs" />
     <Compile Include="JOB\system\JobFactory.cs" />
-    <Compile Include="JOB\jobs\JobGooTranslate.cs" />
     <Compile Include="JOB\system\JobHandle.cs" />
     <Compile Include="JOB\jobs\JobFileHttp.cs" />
     <Compile Include="JOB\jobs\JobLink.cs" />
-    <Compile Include="JOB\system\JobMessage.cs" />
     <Compile Include="JOB\system\JobMonitor.cs" />
-    <Compile Include="JOB\jobs\JobSpeechEN.cs" />
-    <Compile Include="JOB\system\JobStore.cs" />
     <Compile Include="JOB\system\JobBase.cs" />
-    <Compile Include="JOB\system\JobTest.cs" />
-    <Compile Include="JOB\jobs\JobWebClient.cs" />
-    <Compile Include="JOB\jobs\JobWord.cs" />
     <Compile Include="JOB\system\JOB_CONST.cs" />
     <Compile Include="JOB\system\JOB_NAME.cs" />
     <Compile Include="JOB\system\JOB_STATE.cs" />
     <Compile Include="JOB\system\JOB_TYPE.cs" />
     <Compile Include="JOB\system\Message.cs" />
-    <Compile Include="API\ActionTimeout.cs" />
+    <Compile Include="JOB\test_job.cs" />
     <Compile Include="MODEL\oLink.cs" />
     <Compile Include="MODEL\oWordDefine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="test.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

@@ -59,3 +59,5 @@ System.Core/obj/Debug/System.Core.pdb
 .vs/CefSharp.Example/v15/Server/sqlite3/storage.ide
 .vs/CefSharp.WinForms.Example/v15/.suo
 System.Core/obj/Debug/System.Core.csproj.CoreCompileInputs.cache
+run/System.Core.pdb
+run/System.Core.dll

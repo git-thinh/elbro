@@ -48,27 +48,37 @@ namespace elbro
             };
         }
 
-        static IJobStore jobs;
+        static JobMonitor jom;
         static fBase main;
 
-        public static void f_RUN()
+        public static void f_INIT()
         {
             ThreadPool.SetMaxThreads(25, 25);
 
             System.Net.ServicePointManager.DefaultConnectionLimit = 1000;
-            // active SSL 1.1, 1.2, 1.3 for WebClient request HTTPS
-            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
             try
             {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | (SecurityProtocolType)3072 | (SecurityProtocolType)0x00000C00 | SecurityProtocolType.Tls;
+                // active SSL 1.1, 1.2, 1.3 for WebClient request HTTPS
+                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3
+                    | (SecurityProtocolType)3072
+                    | (SecurityProtocolType)0x00000C00
+                    | SecurityProtocolType.Tls;
             }
-            catch {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls;
+            catch
+            {
+                // active SSL 1.1, 1.2, 1.3 for WebClient request HTTPS
+                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3
+                    | SecurityProtocolType.Tls;
             }
+        }
 
+        public static void f_RUN()
+        {
             f_geckoSetting();
 
-            jobs = new JobStore();
+            jom = new JobMonitor();
             Application.EnableVisualStyles();
 
 
@@ -78,7 +88,7 @@ namespace elbro
             //Application.Run(new fBrowser());
             //Application.Run(new fGeckFX());
             //main = new fApp(jobs);
-            main = new fNone(jobs);
+            main = new fNone(jom);
             Application.Run(main);
             f_Exit();
         }
@@ -90,7 +100,7 @@ namespace elbro
 
         static void f_Exit()
         {
-            jobs.f_Exit();
+            jom.f_removeAll();
 
             if (Xpcom.IsInitialized)
                 Xpcom.Shutdown();
@@ -319,32 +329,10 @@ namespace elbro
         [STAThread]
         static void Main(string[] args)
         {
-            System.Net.ServicePointManager.DefaultConnectionLimit = 1000;
-            try
-            {
-                // active SSL 1.1, 1.2, 1.3 for WebClient request HTTPS
-                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3
-                    | (SecurityProtocolType)3072
-                    | (SecurityProtocolType)0x00000C00
-                    | SecurityProtocolType.Tls;
-            }
-            catch
-            {
-                // active SSL 1.1, 1.2, 1.3 for WebClient request HTTPS
-                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3
-                    | SecurityProtocolType.Tls;
-            }
-            app.f_RUN();
+            app.f_INIT();
+            //app.f_RUN();
 
-            //test.f_MediaMP3Stream_Demo();
-            //test.f_jobTest();
-            //test.f_jobWebClient();
-            //test.f_jobSpeechEN();
-            //test.f_JobGooTranslate();
-            //test.f_JobWord();
-            //Console.ReadLine();
+            test_job.f_jobTest_Factory();
         }
     }
 }

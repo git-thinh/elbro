@@ -10,32 +10,34 @@ namespace elbro
         readonly QueueThreadSafe<Message> msg;
         readonly ListThreadSafe<oLink> list;
 
-        public JobLink(JOB_TYPE type, IJobStore store): base(type, store)
+        public JobLink(IJobAction jobAction) : base(JOB_TYPE.LINK, jobAction)
         {
             list = new ListThreadSafe<oLink>();
             msg = new QueueThreadSafe<Message>();
             urlData = new DictionaryThreadSafe<string, string>();
         }
 
-        public override void f_sendMessage(Message m) { if (this.StoreJob != null) this.StoreJob.f_job_sendMessage(m); }
-        
+        public override void f_sendMessage(Message m)
+        {
+            //if (this.StoreJob != null)
+            //    this.StoreJob.f_job_sendMessage(m);
+        }
+
         public override void f_receiveMessage(Message m)
         {
             msg.Enqueue(m);
-        }
-        
-        private void f_Init()
-        {
-            list.ReadFile("data/link.dat");
-            // Tracer.WriteLine("J{0} executes on thread {1}: INIT ...");
         }
 
         public override void f_runLoop(object state, bool timedOut)
         {
             if (!this.m_inited)
             {
+                this.m_jobHandle = (IJobHandle)state;
                 this.m_inited = true;
-                f_Init();
+                this.m_state = JOB_STATE.RUNNING;
+
+                list.ReadFile("data/link.dat");
+                // Tracer.WriteLine("J{0} executes on thread {1}: INIT ...");
                 return;
             }
 
@@ -83,7 +85,7 @@ namespace elbro
                                 m.Output.Total = list.Count;
                                 m.Output.SetData(a);
 
-                                this.StoreJob.f_responseMessageFromJob(m);
+                                //this.StoreJob.f_responseMessageFromJob(m);
                             }
                             #endregion
                             break;
@@ -102,7 +104,7 @@ namespace elbro
                                     m.Output.Ok = true;
                                     m.Output.SetData(htm);
 
-                                    this.StoreJob.f_responseMessageFromJob(m);
+                                    //this.StoreJob.f_responseMessageFromJob(m);
                                 }
                                 else
                                 {
@@ -119,7 +121,7 @@ namespace elbro
                                             m.Output.Ok = true;
                                             m.Output.SetData(htm);
 
-                                            this.StoreJob.f_responseMessageFromJob(m);
+                                            //this.StoreJob.f_responseMessageFromJob(m);
                                         }
                                     });
                                 }
@@ -128,8 +130,8 @@ namespace elbro
                             break;
                     }
                 }
-            }//end
-        }
+            }//end if
 
+        } // end loop
     }
 }

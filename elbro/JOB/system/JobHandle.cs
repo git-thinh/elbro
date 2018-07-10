@@ -28,7 +28,8 @@ namespace elbro
 
         public JobHandle(IJob job, AutoResetEvent ev)
         {
-            job.f_setId(job.StoreJob.f_job_countAll() + 1);
+            int id = job.JobAction.f_getTotalJob() + 1;
+            job.f_setId(id);
 
             this.Job = job;
             this.Even = ev;            
@@ -72,10 +73,16 @@ namespace elbro
         }
 
         public void f_removeJob()
-        { 
+        {
+            f_stopJob();
+
             if (this.Handle != null)
+            {
                 this.Handle.Unregister(null);
-            this.Job.StoreJob.f_job_eventAfterStop(this.Job.f_getId());
+                this.Handle = null;
+            }
+
+            //this.Job.StoreJob.f_job_eventAfterStop(this.Job.f_getId());
         }
         
         public IJob f_getJob() {
@@ -90,13 +97,13 @@ namespace elbro
         }
          
         public void f_sendMessage(Message m) {
-            if (this.Job.f_getGroupName() == JOB_NAME.SYS_MESSAGE)
-                f_receiveMessage(m);
-            else
-            {
-                if (this.Job.StoreJob != null)
-                    this.Job.StoreJob.f_job_sendMessage(m);
-            }
+            //if (this.Job.f_getGroupName() == JOB_NAME.SYS_MESSAGE)
+            //    f_receiveMessage(m);
+            //else
+            //{
+            //    if (this.Job.StoreJob != null)
+            //        this.Job.StoreJob.f_job_sendMessage(m);
+            //}
         }
          
         #endregion
