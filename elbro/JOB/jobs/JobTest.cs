@@ -47,7 +47,15 @@ namespace elbro
             Message m = null;
             m = this.messages.Dequeue(null);
             if (m != null)
+            {
                 Tracer.WriteLine("J{0} TEST: Do something: {1} ", this.f_getId(), m.GetMessageId());
+                m.Output = new MessageResult() {
+                    Ok = true,
+                    MessageText = string.Format("J{0} TEST: Done {1} ", this.f_getId(), m.GetMessageId())
+                };
+                this.JobAction.f_eventJobResponseMessage(this.f_getId(), m);
+            }
+            //else Tracer.WriteLine("J{0} TEST: waiting message to execute that ...", this.f_getId());
         }
         
     }

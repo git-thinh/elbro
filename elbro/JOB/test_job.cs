@@ -9,6 +9,18 @@ namespace elbro
 {
     public static class test_job
     {
+        public static void f_jobTest_Handle()
+        {
+            var jobs = new JobMonitor();
+            IJobHandle handle = new JobHandle(new JobTest(jobs), new System.Threading.AutoResetEvent(false));
+            handle.f_runJob();
+
+            /////////////////////////////////////////////////////
+            Console.WriteLine("Enter to exit...");
+            Console.ReadLine();
+        }
+
+
         public static void f_jobTest_Factory()
         {
             var jobs = new JobMonitor();

@@ -333,6 +333,7 @@ namespace elbro
             //app.f_RUN();
 
             test_job.f_jobTest_Factory();
+            //test_job.f_jobTest_Handle();
         }
     }
 }

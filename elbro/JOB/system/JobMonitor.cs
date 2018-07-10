@@ -15,11 +15,13 @@ namespace elbro
 
     public class JobMonitor : IJobMonitor, IJobAction
     {
+        readonly DictionaryThreadSafe<Guid, Message> ResponseMessages;
         readonly DictionaryThreadSafe<JOB_TYPE, IJobFactory> JobFactories;
         readonly DictionaryThreadSafe<JOB_TYPE, IJobHandle> JobSingletons;
 
         public JobMonitor()
         {
+            this.ResponseMessages = new DictionaryThreadSafe<Guid, Message>();
             this.JobFactories = new DictionaryThreadSafe<JOB_TYPE, IJobFactory>();
             this.JobSingletons = new DictionaryThreadSafe<JOB_TYPE, IJobHandle>();
 
@@ -70,6 +72,10 @@ namespace elbro
         public void f_eventJobHandleChangeState(JOB_HANDLE_STATE state, int jobId)
         {
             System.Tracer.WriteLine("MONITOR J{0} = {1}", jobId, state);
+        }
+
+        public void f_eventJobResponseMessage(int jobId, Message m) {
+            this.ResponseMessages.Add(m.GetMessageId(), m);
         }
 
         public int f_getTotalJob()
