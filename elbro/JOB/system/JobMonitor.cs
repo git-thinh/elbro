@@ -67,7 +67,7 @@ namespace elbro
             return handle;
         }
 
-        public void f_eventJobHandleChangeState(JOB_HANDLE_STATE state, int jobId)
+        public void f_eventJobHandleChangeState(JOB_HANDLE state, int jobId)
         {
             System.Tracer.WriteLine("MONITOR J{0} = {1}", jobId, state);
         }
@@ -81,7 +81,7 @@ namespace elbro
         public void f_removeAll()
         {
             foreach (var kv in this.JobFactories)
-                kv.Value.f_actionJobs(JOB_HANDLE_STATE.REMOVE);
+                kv.Value.f_actionJobs(JOB_HANDLE.REMOVE);
             foreach (var kv in this.JobSingletons)
                 kv.Value.f_removeJob();
         }
@@ -89,7 +89,7 @@ namespace elbro
         public void f_runAll()
         { 
             foreach (var kv in this.JobFactories) 
-                    kv.Value.f_actionJobs(JOB_HANDLE_STATE.RUN);
+                    kv.Value.f_actionJobs(JOB_HANDLE.RUN);
             foreach (var kv in this.JobSingletons)
                 kv.Value.f_runJob();
         }

@@ -7,7 +7,7 @@ namespace elbro
 {
     public interface IJobFactory
     {
-        void f_actionJobs(JOB_HANDLE_STATE action);
+        void f_actionJobs(JOB_HANDLE action);
         int f_count();
 
         IJobHandle f_createNew(IJob job);
@@ -19,22 +19,22 @@ namespace elbro
     {
         static readonly Func<IJobHandle, object, bool> JOB_ACTION = (IJobHandle handle, object para) =>
          {
-             JOB_HANDLE_STATE cmd = (JOB_HANDLE_STATE)para;
+             JOB_HANDLE cmd = (JOB_HANDLE)para;
              switch (cmd)
              {
-                 case JOB_HANDLE_STATE.PAUSE:
+                 case JOB_HANDLE.PAUSE:
                      handle.f_stopJob();
                      break;
-                 case JOB_HANDLE_STATE.REMOVE:
+                 case JOB_HANDLE.REMOVE:
                      handle.f_removeJob();
                      break;
-                 case JOB_HANDLE_STATE.RESET:
+                 case JOB_HANDLE.RESET:
                      handle.f_resetJob();
                      break;
-                 case JOB_HANDLE_STATE.RUN:
+                 case JOB_HANDLE.RUN:
                      handle.f_runJob();
                      break;
-                 case JOB_HANDLE_STATE.STOP:
+                 case JOB_HANDLE.STOP:
                      handle.f_stopJob();
                      break;
              }
@@ -99,7 +99,7 @@ namespace elbro
             return JobHandles.Count;
         }
 
-        public void f_actionJobs(JOB_HANDLE_STATE action)
+        public void f_actionJobs(JOB_HANDLE action)
         {
             this.JobHandles.ExecuteFunc(JOB_ACTION, action);
         }
@@ -111,7 +111,7 @@ namespace elbro
 
         ~JobFactory()
         {
-            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.REMOVE);
+            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE.REMOVE);
         }
     }
 }

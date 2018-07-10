@@ -104,6 +104,7 @@
     <Compile Include="JOB\system\JobMonitor.cs" />
     <Compile Include="JOB\system\JobBase.cs" />
     <Compile Include="JOB\system\JOB_CONST.cs" />
+    <Compile Include="JOB\system\JOB_HANDLE.cs" />
     <Compile Include="JOB\system\JOB_NAME.cs" />
     <Compile Include="JOB\system\JOB_STATE.cs" />
     <Compile Include="JOB\system\JOB_TYPE.cs" />

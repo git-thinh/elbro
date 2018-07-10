@@ -15,22 +15,14 @@ namespace elbro
         void f_removeJob();
         
         IJob f_getJob();
-        JOB_HANDLE_STATE f_getState();
+        JOB_HANDLE f_getState();
 
         void f_receiveMessage(Message m);
         void f_sendMessage(Message m);
         void f_sendMessages(Message[] ms);
+        object f_requestData(Message m);
     }
-
-    public enum JOB_HANDLE_STATE {
-        NONE,
-        PAUSE,
-        STOP,
-        RESET,
-        REMOVE, 
-        CLEAR,
-        RUN,
-    }
+     
 
     public class JobHandle: IJobHandle
     {
@@ -38,11 +30,11 @@ namespace elbro
         readonly AutoResetEvent EvenStopLoop;
         readonly static Random _random = new Random(); 
         RegisteredWaitHandle Handle;
-        JOB_HANDLE_STATE HandleCurrent;
+        JOB_HANDLE HandleCurrent;
 
         public JobHandle(IJob job, AutoResetEvent ev)
         {
-            this.HandleCurrent = JOB_HANDLE_STATE.NONE;
+            this.HandleCurrent = JOB_HANDLE.NONE;
             int id = job.JobAction.f_getTotalJob() + 1;
             job.f_setId(id); 
 
@@ -50,14 +42,14 @@ namespace elbro
             this.EvenStopLoop = ev;
         }
         
-        public JOB_HANDLE_STATE f_getState()
+        public JOB_HANDLE f_getState()
         {
             return this.HandleCurrent;
         }
 
         public void f_runJob()
         {
-            this.HandleCurrent = JOB_HANDLE_STATE.RUN;
+            this.HandleCurrent = JOB_HANDLE.RUN;
             this.Handle = ThreadPool.RegisterWaitForSingleObject(
                 this.EvenStopLoop,
                 new WaitOrTimerCallback(this.Job.f_runLoop),
@@ -81,7 +73,7 @@ namespace elbro
                 false);
         }
 
-        void f_postEventStopLoop(JOB_HANDLE_STATE cmd)
+        void f_postEventStopLoop(JOB_HANDLE cmd)
         {
             if (this.EvenStopLoop != null)
             {
@@ -94,14 +86,14 @@ namespace elbro
         public void f_eventJobStoped()
         {
             switch (this.HandleCurrent) {
-                case JOB_HANDLE_STATE.PAUSE:
+                case JOB_HANDLE.PAUSE:
                     break;
-                case JOB_HANDLE_STATE.STOP:
+                case JOB_HANDLE.STOP:
                     this.f_getJob().JobAction.f_eventJobHandleChangeState(this.HandleCurrent, this.Job.f_getId());
                     break;
-                case JOB_HANDLE_STATE.RESET:
+                case JOB_HANDLE.RESET:
                     break;
-                case JOB_HANDLE_STATE.REMOVE:
+                case JOB_HANDLE.REMOVE:
                     if (this.Handle != null)
                     {
                         this.Handle.Unregister(null);
@@ -114,17 +106,17 @@ namespace elbro
         
         public void f_stopJob()
         { 
-            f_postEventStopLoop(JOB_HANDLE_STATE.STOP);
+            f_postEventStopLoop(JOB_HANDLE.STOP);
         }
 
         public void f_pauseJob()
         {
-            f_postEventStopLoop(JOB_HANDLE_STATE.PAUSE);
+            f_postEventStopLoop(JOB_HANDLE.PAUSE);
         }
 
         public void f_removeJob()
         {
-            f_postEventStopLoop(JOB_HANDLE_STATE.REMOVE);             
+            f_postEventStopLoop(JOB_HANDLE.REMOVE);             
         }
         
         public IJob f_getJob() {
@@ -165,5 +157,9 @@ namespace elbro
 
         public override string ToString() { return this.Job.f_getId().ToString(); }
 
+        public object f_requestData(Message m)
+        {
+            return null;
+        }
     }
 }

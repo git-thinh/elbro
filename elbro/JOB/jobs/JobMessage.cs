@@ -9,12 +9,7 @@ namespace elbro
     {
         void f_eventRequestGroupMessageComplete(Guid groupId);
     }
-
-    public interface IJobMessage
-    {
-        void f_eventRequestGroupMessageComplete(Guid groupId);
-    }
-
+    
     public class JobMessage : JobBase
     {
         public const string REQUEST_MSG_GROUP = "REQUEST_MSG_GROUP";
@@ -45,8 +40,8 @@ namespace elbro
             this.Messages.Enqueue(m);
         }
 
-        public override void f_receiveMessage(Message m)
-        {
+        public override object f_requestData(Message m) {
+            return null;
         }
 
         public override bool f_checkKey(object key)
