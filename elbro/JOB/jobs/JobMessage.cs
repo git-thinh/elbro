@@ -5,7 +5,13 @@ using System.Threading;
 
 namespace elbro
 {
-    public interface IMessageContext {
+    public interface IJobMessageContext
+    {
+        void f_eventRequestGroupMessageComplete(Guid groupId);
+    }
+
+    public interface IJobMessage
+    {
         void f_eventRequestGroupMessageComplete(Guid groupId);
     }
 
@@ -14,24 +20,24 @@ namespace elbro
         public const string REQUEST_MSG_GROUP = "REQUEST_MSG_GROUP";
 
         readonly QueueThreadSafe<Message> Messages;
-        readonly IMessageContext MsgEvent;
+        readonly IJobMessageContext MsgContext;
 
         readonly QueueThreadSafe<Guid> ResponseIds;
         readonly DictionaryThreadSafe<Guid, Message> ResponseMessages;
         readonly DictionaryThreadSafe<Guid, List<Guid>> RequestMessageGroup;
         readonly DictionaryThreadSafe<Guid, int> RequestMessageGroupTotal;
-        readonly DictionaryThreadSafe<Guid, Func<IJobAction, Guid, Guid[], IJobHandle, bool>> RequestMessageGroupAction;
+        readonly DictionaryThreadSafe<Guid, Func<IJobMessageContext, IJobHandle, Guid, bool>> RequestMessageGroupAction
+            = new DictionaryThreadSafe<Guid, Func<IJobMessageContext, IJobHandle, Guid, bool>>();
 
-        public JobMessage(IJobAction jobAction, IMessageContext msgEvent) : base(JOB_TYPE.MESSAGE, jobAction)
+        public JobMessage(IJobAction jobAction, IJobMessageContext msgContext) : base(JOB_TYPE.MESSAGE, jobAction)
         {
             this.Messages = new QueueThreadSafe<Message>();
-            this.MsgEvent = msgEvent;
+            this.MsgContext = msgContext;
 
             this.ResponseIds = new QueueThreadSafe<Guid>();
             this.ResponseMessages = new DictionaryThreadSafe<Guid, Message>();
             this.RequestMessageGroup = new DictionaryThreadSafe<Guid, List<Guid>>();
             this.RequestMessageGroupTotal = new DictionaryThreadSafe<Guid, int>();
-            this.RequestMessageGroupAction = new DictionaryThreadSafe<Guid, Func<IJobAction, Guid, Guid[], IJobHandle, bool>>();
         }
 
         public override void f_sendMessage(Message m)
@@ -51,7 +57,7 @@ namespace elbro
         {
             switch (key) {
                 case REQUEST_MSG_GROUP:
-                    var para = (Tuple<Func<IJobAction, Guid, Guid[], IJobHandle, bool>, Message[]>)data;
+                    var para = (Tuple<Func<IJobMessageContext, IJobHandle, Guid, bool>, Message[]>)data;
                     Message[] ms = para.Item2;
                     Guid groupId = Guid.NewGuid();
 
@@ -89,7 +95,7 @@ namespace elbro
                     if (this.RequestMessageGroup.Count == 0)
                     {
                         System.Tracer.WriteLine("JOB_MESSAGE:  DONE GROUP {0} = {1}", groupId, this.RequestMessageGroupTotal[groupId]);
-                        this.RequestMessageGroupAction[groupId](this.JobAction, groupId, null, null);
+                        this.RequestMessageGroupAction[groupId](this.MsgContext, this.f_getHandle(), groupId);
                     }
                 }
             }

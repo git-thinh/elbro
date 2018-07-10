@@ -19,8 +19,7 @@ namespace elbro
             Console.WriteLine("Enter to exit...");
             Console.ReadLine();
         }
-
-
+        
         public static void f_jobTest_Factory()
         {
             var jobs = new JobMonitor();
@@ -39,15 +38,13 @@ namespace elbro
             Message[] ms = new Message[len];
             for (int i = 0; i < len; i++) ms[i] = new Message() { };
 
-            Func<IJobAction, Guid, Guid[], IJobHandle, bool> FUNC_CALLBACK = (jobAction, groupId, MsgIds, msgHandle) =>
+            Func<IJobMessageContext, IJobHandle, Guid, bool> FUNC_CALLBACK = (jobAction, msgHandle, groupId) =>
              {
                  System.Tracer.WriteLine("TEST_JOB.RUN_TEST(): FINISH ....");
                  return false;
              };
             jobs.f_requestMessages(JOB_TYPE.NONE, ms, FUNC_CALLBACK);
-
-
-
+            
             /////////////////////////////////////////////////////
 
 

@@ -13,7 +13,7 @@ namespace elbro
         void f_runAll();
     }
 
-    public class JobMonitor : IJobMonitor, IJobAction, IMessageContext
+    public class JobMonitor : IJobMonitor, IJobAction, IJobMessageContext
     {
         readonly IJobHandle HandleMessage;
         readonly DictionaryThreadSafe<JOB_TYPE, IJobFactory> JobFactories;
@@ -103,11 +103,13 @@ namespace elbro
             this.HandleMessage.f_sendMessage(m);
         }
 
-        public bool f_requestMessages(JOB_TYPE type, Message[] ms, Func<IJobAction, Guid, Guid[], IJobHandle, bool> actionCallBackDoneAll = null)
+        public bool f_requestMessages(JOB_TYPE type, Message[] ms,
+            Func<IJobMessageContext, IJobHandle, Guid, bool> actionCallBackDoneAll = null)
         {
             if (this.JobFactories.ContainsKey(type)) {
                 if (actionCallBackDoneAll != null)
-                    this.HandleMessage.f_getJob().f_setData(JobMessage.REQUEST_MSG_GROUP, new Tuple<Func<IJobAction, Guid, Guid[], IJobHandle, bool>, Message[]>(actionCallBackDoneAll, ms));
+                    this.HandleMessage.f_getJob().f_setData(JobMessage.REQUEST_MSG_GROUP, 
+                        new Tuple<Func<IJobMessageContext, IJobHandle, Guid, bool>, Message[]>(actionCallBackDoneAll, ms));
                 this.JobFactories[type].f_sendRequestLoadBalancer(ms);
             } else if (this.JobSingletons.ContainsKey(type)) {
                 this.JobSingletons[type].f_sendMessages(ms);

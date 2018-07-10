@@ -114,5 +114,10 @@ namespace elbro
                     break;
             }
         }
+
+        public IJobHandle f_getHandle()
+        {
+            return this.m_Handle;
+        }
     }
 }

@@ -14,7 +14,8 @@ namespace elbro
 
         JOB_STATE f_getState();
         JOB_TYPE f_getType();
-        
+        IJobHandle f_getHandle();
+
         int f_getId();
         int f_getPort();
         bool f_checkKey(object key);
