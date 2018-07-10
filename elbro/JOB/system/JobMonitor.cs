@@ -13,12 +13,13 @@ namespace elbro
         void f_runAll();
     }
 
-    public class JobMonitor: IJobMonitor, IJobAction
+    public class JobMonitor : IJobMonitor, IJobAction
     {
         readonly DictionaryThreadSafe<JOB_TYPE, IJobFactory> JobFactories;
         readonly DictionaryThreadSafe<JOB_TYPE, IJobHandle> JobSingletons;
 
-        public JobMonitor() {
+        public JobMonitor()
+        {
             this.JobFactories = new DictionaryThreadSafe<JOB_TYPE, IJobFactory>();
             this.JobSingletons = new DictionaryThreadSafe<JOB_TYPE, IJobHandle>();
 
@@ -30,30 +31,39 @@ namespace elbro
         {
             IJobHandle handle = null;
             JOB_TYPE type = job.f_getType();
-            switch (job.f_getType()) {
+            switch (job.f_getType())
+            {
                 case JOB_TYPE.NONE:
-                case JOB_TYPE.REQUEST_URL: 
+                case JOB_TYPE.REQUEST_URL:
                     // factory
                     IJobFactory fac;
-                    if (this.JobFactories.ContainsKey(type)) {
+                    if (this.JobFactories.ContainsKey(type))
+                    {
                         fac = this.JobFactories[type];
-                    } else {
+                    }
+                    else
+                    {
                         fac = new JobFactory(type);
                         this.JobFactories.Add(type, fac);
                     }
                     handle = fac.f_createNew(job);
-                    handle.f_runJob();
                     break;
-                default: 
+                default:
                     // singleton
                     if (!this.JobSingletons.ContainsKey(type))
                     {
                         handle = new JobHandle(job, new AutoResetEvent(false));
                         this.JobSingletons.Add(type, handle);
-                        handle.f_runJob();
                     }
                     break;
             }
+
+            if (handle != null)
+            {
+                handle.f_runJob();
+
+            }
+
             return handle;
         }
 
@@ -64,13 +74,14 @@ namespace elbro
 
         public int f_getTotalJob()
         {
-            return this.JobFactories.Values.Sum(x => x.f_count()) + this.JobSingletons.Count;
+            IJobFactory[] facs = this.JobFactories.ValuesArray;
+            return facs.Sum(x => x.f_count()) + this.JobSingletons.Count;
         }
 
         public void f_removeAll()
         {
             foreach (var kv in this.JobFactories)
-                kv.Value.f_removeJobs();
+                kv.Value.f_actionJobs(JOB_HANDLE_STATE.REMOVE);
             foreach (var kv in this.JobSingletons)
                 kv.Value.f_removeJob();
         }
@@ -78,13 +89,23 @@ namespace elbro
         public void f_runAll()
         {
             foreach (var kv in this.JobFactories)
-                kv.Value.f_runJobs();
+                kv.Value.f_actionJobs(JOB_HANDLE_STATE.RUN);
             foreach (var kv in this.JobSingletons)
                 kv.Value.f_runJob();
         }
 
         public bool f_setData(JOB_TYPE type, string key, object data)
         {
+            return false;
+        }
+
+        public bool f_requestMessages(JOB_TYPE type, Message[] ms)
+        {
+            if (this.JobFactories.ContainsKey(type)) {
+                this.JobFactories[type].f_sendRequestLoadBalancer(ms);
+            } else if (this.JobSingletons.ContainsKey(type)) {
+                
+            }
             return false;
         }
     }

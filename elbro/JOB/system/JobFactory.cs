@@ -7,20 +7,17 @@ namespace elbro
 {
     public interface IJobFactory
     {
-        void f_runJobs();
-        void f_stopJobs();
-        void f_resetJobs();
-        void f_pauseJobs();
-
-        void f_removeJobs();
+        void f_actionJobs(JOB_HANDLE_STATE action);
         int f_count();
 
         IJobHandle f_createNew(IJob job);
+
+        void f_sendRequestLoadBalancer(Message[] messages);
     }
 
     public class JobFactory : IJobFactory
     {
-        readonly Func<IJobHandle, object, bool> JOB_ACTION = (IJobHandle handle, object para) =>
+       static readonly Func<IJobHandle, object, bool> JOB_ACTION = (IJobHandle handle, object para) =>
         {
             JOB_HANDLE_STATE cmd = (JOB_HANDLE_STATE)para;
             switch (cmd)
@@ -40,6 +37,28 @@ namespace elbro
                 case JOB_HANDLE_STATE.STOP:
                     handle.f_stopJob();
                     break;
+            }
+            return true;
+        };
+
+        static readonly Func<IJobHandle[], Message[], bool> SEND_MESSAGE_LOAD_BALANCER_TO_JOB = (IJobHandle[] handles, Message[] ms) =>
+        {
+            int count = ms.Length, i = 0, id = 0;
+            while (count > 0) {
+                i = 0;
+                for (i = 0; i < handles.Length; i++)
+                {
+                    handles[i].f_sendMessage(ms[id]);
+
+                    System.Tracer.WriteLine(String.Format("J{0}: message-{1}: {2}", handles[i].f_getJob().f_getId(), id, ms[id].GetMessageId()));
+
+                    id++;
+                    if (id == ms.Length) {
+                        count = 0;
+                        break;
+                    }
+                }
+                count = count - i;
             }
             return true;
         };
@@ -73,39 +92,24 @@ namespace elbro
             return jo;
         }
          
-        public void f_pauseJobs()
-        {
-            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.PAUSE);
-        }
-
-        public void f_resetJobs()
-        {
-            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.RESET);
-        }
-
-        public void f_runJobs()
-        {
-            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.RUN);
-        }
-
-        public void f_stopJobs()
-        {
-            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.STOP);
-        }
-
-        public void f_removeJobs()
-        {
-            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.REMOVE);
-        }
-
         public int f_count()
         {
             return JobHandles.Count;
         }
 
+        public void f_actionJobs(JOB_HANDLE_STATE action)
+        {
+            this.JobHandles.ExecuteFunc(JOB_ACTION, action); 
+        }
+
+        public void f_sendRequestLoadBalancer(Message[] messages)
+        {
+            this.JobHandles.ExecuteFuncLoadBalancer<Message>(SEND_MESSAGE_LOAD_BALANCER_TO_JOB, messages); 
+        }
+
         ~JobFactory()
         {
-            f_removeJobs();
+            this.JobHandles.ExecuteFunc(JOB_ACTION, JOB_HANDLE_STATE.REMOVE);
         }
     }
 }

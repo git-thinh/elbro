@@ -163,10 +163,18 @@ namespace System.Threading
 
         public void ExecuteFunc(Func<TValue, object, bool> func, object paramenter)
         {
-            Lock_Dictionary.PerformUsingWriteLock(() =>
+            Lock_Dictionary.PerformUsingReadLock(() =>
             {
                 foreach (var kv in m_Dictionary)
                     func(kv.Value, paramenter);
+            });
+        }
+
+        public void ExecuteFuncLoadBalancer<T>(Func<TValue[], T[], bool> func, T[] paramenters)
+        {
+            Lock_Dictionary.PerformUsingReadLock(() =>
+            {
+                func(m_Dictionary.Values.ToArray(), paramenters);
             });
         }
 

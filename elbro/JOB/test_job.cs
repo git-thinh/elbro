@@ -19,6 +19,19 @@ namespace elbro
             jobs.f_createNew(new JobTest(jobs));
             jobs.f_createNew(new JobTest(jobs));
 
+            /////////////////////////////////////////////////////
+
+            Console.WriteLine("Enter to send many request to load balancer jobs on factory ...");
+            Console.ReadLine();
+            const int len = 9;
+            Message[] ms = new Message[len];
+            for (int i = 0; i < len; i++) ms[i] = new Message() { };
+            jobs.f_requestMessages(JOB_TYPE.NONE, ms);
+
+
+
+            /////////////////////////////////////////////////////
+
 
             //jobs.OnStopAll += (se, ev) => {
             //    Tracer.WriteLine(">>>>> STOP ALL JOBS: DONE ...");
@@ -34,11 +47,13 @@ namespace elbro
             //    jobs.f_restartAllJob();
             //}
 
+            /////////////////////////////////////////////////////
+
             Console.WriteLine("Enter to stop all JOB...");
             Console.ReadLine();
-
             jobs.f_removeAll();
 
+            /////////////////////////////////////////////////////
             Console.WriteLine("Enter to exit...");
             Console.ReadLine();
         }

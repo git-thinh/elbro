@@ -145,6 +145,7 @@ namespace elbro
             //    if (this.Job.StoreJob != null)
             //        this.Job.StoreJob.f_job_sendMessage(m);
             //}
+            this.Job.f_sendMessage(m);
         }
          
 

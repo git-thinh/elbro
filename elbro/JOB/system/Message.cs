@@ -80,7 +80,13 @@ namespace elbro
         public MessageResult Output { set; get; }
         public object Input { set; get; }
 
-        public Message(int senderId, int[] job_receive_IDs, MESSAGE_ACTION action, object input = null, SENDER_TYPE senderType = SENDER_TYPE.IS_FORM)
+        public Message()
+        {
+            Id = Guid.NewGuid();
+            Output = new MessageResult();
+        }
+
+        public Message(int senderId, int[] job_receive_IDs, MESSAGE_ACTION action, object input = null, SENDER_TYPE senderType = SENDER_TYPE.IS_FORM) : base()
         {
             this.Type = MESSAGE_TYPE.REQUEST;
             Action = action;
@@ -88,11 +94,11 @@ namespace elbro
             SenderId = senderId;
             JobReceiveID = job_receive_IDs;
 
-            Id = Guid.NewGuid();
-            Output = new MessageResult();
+            //Id = Guid.NewGuid();
+            //Output = new MessageResult();
             Input = input;
         }
-        
+
         public Guid GetMessageId()
         {
             return Id;
