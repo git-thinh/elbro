@@ -62,7 +62,6 @@ namespace elbro
             if (handle != null)
             {
                 handle.f_runJob();
-
             }
 
             return handle;
@@ -88,9 +87,9 @@ namespace elbro
         }
 
         public void f_runAll()
-        {
-            foreach (var kv in this.JobFactories)
-                kv.Value.f_actionJobs(JOB_HANDLE_STATE.RUN);
+        { 
+            foreach (var kv in this.JobFactories) 
+                    kv.Value.f_actionJobs(JOB_HANDLE_STATE.RUN);
             foreach (var kv in this.JobSingletons)
                 kv.Value.f_runJob();
         }
