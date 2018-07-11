@@ -100,7 +100,7 @@ namespace elbro
             Tracer.WriteLine("J{0} JOB_MESSAGE: SIGNAL -> INITED", this.f_getId());
         }
 
-        public override void f_processMessage()
+        public override Guid f_processMessage()
         {
             Message m = null;
             m = this.Messages.Dequeue(null);
@@ -127,6 +127,7 @@ namespace elbro
                 //    }
                 //}
             }
+            return Guid.Empty;
         }
 
         #region [ IResponseMessage ]

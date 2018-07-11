@@ -125,5 +125,8 @@
     <Content Include="icon.ico" />
     <Content Include="icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="_Demo\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

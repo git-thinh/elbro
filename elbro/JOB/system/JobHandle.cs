@@ -20,7 +20,12 @@ namespace elbro
             this.EvenStopLoop = new AutoResetEvent(false);
             this.State = JOB_HANDLE.NONE;
 
-            this.f_actionJob(JOB_HANDLE.RUN);
+            //this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
+            //    this.EvenStopLoop,
+            //    new WaitOrTimerCallback(this.Job.f_runLoop),
+            //    this,
+            //    JOB_CONST.JOB_TIMEOUT_RUN,
+            //    false);
         }
 
         public JobHandle(IJob job, IJobFactory factory)
@@ -31,7 +36,12 @@ namespace elbro
             this.EvenStopLoop = new AutoResetEvent(false);
             this.State = JOB_HANDLE.NONE;
 
-            this.f_actionJob(JOB_HANDLE.RUN);
+            this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
+                this.EvenStopLoop,
+                new WaitOrTimerCallback((state, timeOut) => { this.Job.f_runLoop(this); }),
+                this,
+                JOB_CONST.JOB_TIMEOUT_RUN,
+                true); // run once
         }
 
         void f_postEventStopLoop()
@@ -56,12 +66,12 @@ namespace elbro
 
                     this.EvenStopLoop.Reset();
 
-                    this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
-                        this.EvenStopLoop,
-                        new WaitOrTimerCallback(this.Job.f_runLoop),
-                        this,
-                        JOB_CONST.JOB_TIMEOUT_RUN,
-                        false);
+                    //this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
+                    //    this.EvenStopLoop,
+                    //    new WaitOrTimerCallback(this.Job.f_runLoop),
+                    //    this,
+                    //    JOB_CONST.JOB_TIMEOUT_RUN,
+                    //    false);
                     break;
                 case JOB_HANDLE.REMOVE:
                     if (this.HandleJob != null)
@@ -83,12 +93,12 @@ namespace elbro
             {
                 case JOB_HANDLE.RUN:                    
                     this.State = action;
-                    this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
-                        this.EvenStopLoop,
-                        new WaitOrTimerCallback(this.Job.f_runLoop),
-                        this,
-                        JOB_CONST.JOB_TIMEOUT_RUN,
-                        false);
+                    //this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
+                    //    this.EvenStopLoop,
+                    //    new WaitOrTimerCallback(this.Job.f_runLoop),
+                    //    this,
+                    //    JOB_CONST.JOB_TIMEOUT_RUN,
+                    //    false);
                     break;
                 case JOB_HANDLE.PAUSE:
                     this.State = action;

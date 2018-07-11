@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 
 namespace elbro
@@ -7,68 +8,10 @@ namespace elbro
     {
         volatile int m_Id = 0;
         volatile JOB_TYPE m_Type = JOB_TYPE.NONE;
-        volatile byte m_State = 0; // NONE
+        int m_State = 0; //0: NONE 
+        int m_Processing = 0;
 
-        #region [ STATE ]
-
-        bool f_state_PROCESSING_OR_NONE()
-        {
-             return m_State == 3 || m_State == 0;
-        }
-
-        bool f_checkState(JOB_STATE state)
-        {
-            switch (state)
-            {
-                case JOB_STATE.NONE:
-                    return m_State == 0;
-                case JOB_STATE.INIT:
-                    return m_State == 1;
-                case JOB_STATE.RUNNING:
-                    return m_State == 2;
-                case JOB_STATE.PROCESSING:
-                    return m_State == 3;
-                case JOB_STATE.STOPED:
-                    return m_State == 4;
-            }
-            return false;
-        }
-
-        protected void f_setState(JOB_STATE state)
-        {
-            switch (state)
-            {
-                case JOB_STATE.NONE:
-                    m_State = 0;
-                    break;
-                case JOB_STATE.INIT:
-                    m_State = 1;
-                    break;
-                case JOB_STATE.RUNNING:
-                    m_State = 2;
-                    break;
-                case JOB_STATE.PROCESSING:
-                    m_State = 3;
-                    break;
-                case JOB_STATE.STOPED:
-                    m_State = 4;
-                    break;
-            }
-        }
-
-        public JOB_STATE f_getState()
-        {
-            switch (m_State)
-            {
-                case 0: return JOB_STATE.NONE;
-                case 1: return JOB_STATE.RUNNING;
-                case 2: return JOB_STATE.STOPED;
-                case 3: return JOB_STATE.INIT;
-            }
-            return JOB_STATE.NONE;
-        }
-
-        #endregion
+        volatile byte Status = 0; //0: NONE 
 
         public IJobContext JobContext { get; }
         public IJobHandle Handle { get; private set; }
@@ -80,55 +23,76 @@ namespace elbro
         {
             this.JobContext = jobContext;
             this.m_Id = jobContext.f_getTotalJob() + 1;
-            //Interlocked.Add(ref m_Id, jobId);
-
-            f_setState(JOB_STATE.INIT);
+            //Interlocked.Add(ref m_Id, jobId); 
+            this.m_State = 1; //1: INIT
             this.m_Type = type;
+
+            this.Status = 1; //1: INIT
         }
 
         public virtual void f_receiveMessage(Message m) { }
         public virtual void f_receiveMessages(Message[] m) { }
 
         public virtual void f_init() { }
-        public virtual void f_processMessage() { }
+        public virtual Guid f_processMessage() { return Guid.Empty; }
 
-        public void f_runLoop(object state, bool timedOut)
-        {
-            if (this.f_state_PROCESSING_OR_NONE()) return;
+        bool f_lockCheck() { return Interlocked.CompareExchange(ref m_Processing, 1, 1) == 1; }
+        void f_lock() { Interlocked.CompareExchange(ref m_Processing, 1, 99); }
+        void f_unlock() { Interlocked.CompareExchange(ref m_Processing, 0, 99); }
 
-            if (this.f_checkState(JOB_STATE.STOPED))
-            {
-                this.f_setState(JOB_STATE.PROCESSING);
-                this.Handle.f_actionJobCallback();
-                this.f_setState(JOB_STATE.NONE);
-                return;
-            }
+        bool f_stateCheck_isInit() { return Interlocked.CompareExchange(ref m_State, 1, 1) == 1; /* 1: INIT */ }
+        bool f_stateCheck_isRunning() { return Interlocked.CompareExchange(ref m_State, 2, 2) == 2; /* 2: RUNNING */ }
+        void f_state_setRunning() { Interlocked.CompareExchange(ref m_State, 2, 99); /* 2: RUNNING */ }
+        void f_state_setStop() { Interlocked.CompareExchange(ref m_State, 4, 99); /* 4: STOP */ }
+        
+        delegate Guid ProcessMessage();
+        void f_callbackProcessMessage(IAsyncResult asyncRes) {
+            AsyncResult ares = (AsyncResult)asyncRes;
+            ProcessMessage delg = (ProcessMessage)ares.AsyncDelegate;
+            Guid result = delg.EndInvoke(asyncRes);
 
-            if (!timedOut)
-            {
-                f_setState(JOB_STATE.STOPED);
-                System.Tracer.WriteLine("J{0} BASE: SIGNAL -> STOP", this.f_getId());
-                return;
-            }
+            Thread.Sleep(3000);
 
-            switch (this.f_getState())
-            {
-                case JOB_STATE.INIT:
-                    this.f_setState(JOB_STATE.PROCESSING);
-                    //System.Tracer.WriteLine("J{0} BASE: SIGNAL -> INITED", this.f_getId());
-                    this.Handle = (IJobHandle)state;
-                    this.f_init();
-                    this.f_setState(JOB_STATE.RUNNING);
-                    break;
-                case JOB_STATE.RUNNING:
-                    this.f_setState(JOB_STATE.PROCESSING);
-                    //Tracer.WriteLine("J{0} BASE: Do something ...", this.f_getId());
-                    this.f_processMessage();
-                    this.f_setState(JOB_STATE.RUNNING);
-                    break;
-            }
+            f_runLoop(this.Handle);
         }
 
+        public void f_runLoop(IJobHandle handle)
+        {            
+            //if (f_lockCheck())
+            //    return;
+            //f_lock();
+            
+            //if (!timedOut)
+            //{
+            //    System.Tracer.WriteLine("J{0} BASE: STOP ...", this.f_getId());
+            //    this.Handle.f_actionJobCallback();
 
+            //    f_state_setStop();
+            //    // do not unlock until call f_Restart();
+            //    return;
+            //}
+
+            /* 1: init */
+            if (this.Status == 1)  
+            {
+                System.Tracer.WriteLine("J{0} BASE: INITED ...", this.f_getId());
+                this.Handle = handle;
+                this.f_init();
+
+                this.Status = 2; /* 2: running */
+
+                f_runLoop(handle);
+            }
+
+            /* 2: running */
+            if (this.Status == 2) {
+                Tracer.WriteLine("J{0} BASE: RUNNING ...", this.f_getId());
+                ProcessMessage fun = this.f_processMessage;
+                IAsyncResult ars = fun.BeginInvoke(new AsyncCallback(f_callbackProcessMessage), null);
+            }
+            
+            /// end function
+            ///////////////////////
+        }
     }
 }

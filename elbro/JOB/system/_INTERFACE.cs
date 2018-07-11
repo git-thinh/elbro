@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace elbro
 {
@@ -42,13 +43,13 @@ namespace elbro
         IJobHandle Handle { get; }
         IJobContext JobContext { get; }
 
-        JOB_STATE f_getState();
+        //JOB_STATE f_getState();
         JOB_TYPE f_getType();
 
         void f_receiveMessage(Message m);
         void f_receiveMessages(Message[] ms);
         
-        void f_runLoop(object state, bool timedOut);
+        void f_runLoop(IJobHandle handle);
     }
     
     public interface IMessageContext
