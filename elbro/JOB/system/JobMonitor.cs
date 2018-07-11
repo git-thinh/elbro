@@ -25,8 +25,8 @@ namespace elbro
         public IJobHandle f_createNew(IJob job)
         {
             IJobHandle handle = null;
-            JOB_TYPE type = job.f_getType();
-            switch (job.f_getType())
+            JOB_TYPE type = job.Type;
+            switch (type)
             {
                 case JOB_TYPE.NONE:
                 case JOB_TYPE.REQUEST_URL:

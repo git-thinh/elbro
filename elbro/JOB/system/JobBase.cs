@@ -6,16 +6,23 @@ namespace elbro
 {
     public class JobBase : IJob
     {
-        volatile int m_Id = 0;
-        volatile JOB_TYPE m_Type = JOB_TYPE.NONE;
-        int m_State = 0; //0: NONE 
-        int m_Processing = 0;
+        volatile int m_Id = 0; 
+        volatile byte Status = 0; /* 0: none */
 
-        volatile byte Status = 0; //0: NONE 
-
+        public JOB_STATE State {
+            get {
+                switch (this.Status) {
+                    case 1: return JOB_STATE.INIT;
+                    case 2: return JOB_STATE.RUNNING;
+                    case 3: return JOB_STATE.PROCESSING;
+                    case 4: return JOB_STATE.STOPED;
+                }
+                return JOB_STATE.NONE;
+            }
+        }
         public IJobContext JobContext { get; }
         public IJobHandle Handle { get; private set; }
-        public JOB_TYPE f_getType() { return m_Type; }
+        public JOB_TYPE Type { get; }
 
         public int f_getId() { return m_Id; }
 
@@ -23,11 +30,8 @@ namespace elbro
         {
             this.JobContext = jobContext;
             this.m_Id = jobContext.f_getTotalJob() + 1;
-            //Interlocked.Add(ref m_Id, jobId); 
-            this.m_State = 1; //1: INIT
-            this.m_Type = type;
-
-            this.Status = 1; //1: INIT
+            this.Type = type;
+            this.Status = 1; /* 1: init */
         }
 
         public virtual void f_receiveMessage(Message m) { }
@@ -35,15 +39,6 @@ namespace elbro
 
         public virtual void f_init() { }
         public virtual Guid f_processMessage(Message m) { return Guid.Empty; }
-
-        bool f_lockCheck() { return Interlocked.CompareExchange(ref m_Processing, 1, 1) == 1; }
-        void f_lock() { Interlocked.CompareExchange(ref m_Processing, 1, 99); }
-        void f_unlock() { Interlocked.CompareExchange(ref m_Processing, 0, 99); }
-
-        bool f_stateCheck_isInit() { return Interlocked.CompareExchange(ref m_State, 1, 1) == 1; /* 1: INIT */ }
-        bool f_stateCheck_isRunning() { return Interlocked.CompareExchange(ref m_State, 2, 2) == 2; /* 2: RUNNING */ }
-        void f_state_setRunning() { Interlocked.CompareExchange(ref m_State, 2, 99); /* 2: RUNNING */ }
-        void f_state_setStop() { Interlocked.CompareExchange(ref m_State, 4, 99); /* 4: STOP */ }
         
         delegate Guid ProcessMessage(Message m);
         void f_callbackProcessMessage(IAsyncResult asyncRes) {

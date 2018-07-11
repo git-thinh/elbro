@@ -40,11 +40,11 @@ namespace elbro
     public interface IJob
     {
         int f_getId();
+
         IJobHandle Handle { get; }
         IJobContext JobContext { get; }
-
-        //JOB_STATE f_getState();
-        JOB_TYPE f_getType();
+        JOB_STATE State { get; }
+        JOB_TYPE Type { get; }
 
         void f_receiveMessage(Message m);
         void f_receiveMessages(Message[] ms);
