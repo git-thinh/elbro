@@ -9,6 +9,8 @@ namespace elbro
         void f_eventJobResponseMessage(int jobId, Message m);
         void f_eventJobHandleChangeState(JOB_HANDLE state, int jobId);
 
+        IMessage f_getIMessage();
+
         bool f_setData(JOB_TYPE type, string key, object data);
         int f_getTotalJob();
     }

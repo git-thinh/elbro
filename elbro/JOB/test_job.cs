@@ -40,6 +40,8 @@ namespace elbro
             {
                 ms[i] = new Message() { Input = i };
                 if (i == 0) ms[i].f_setTimeOut(3000);
+                if (i == 5) ms[i].f_setTimeOut(5000);
+                if (i == 7) ms[i].f_setTimeOut(7000);
             }
 
             Func<IJobMessageContext, IJobHandle, Guid, bool> FUNC_CALLBACK = (jobAction, msgHandle, groupId) =>

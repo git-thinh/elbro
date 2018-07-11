@@ -7,6 +7,8 @@ namespace elbro
 {
     public interface IJobHandle
     {
+        IMessage Messages { get; }
+
         void f_runJob();
         void f_stopJob();
         void f_eventJobStoped();
@@ -20,7 +22,7 @@ namespace elbro
         void f_receiveMessage(Message m);
         void f_sendMessage(Message m);
         void f_sendMessages(Message[] ms);
-        object f_requestData(Message m);
+        object f_requestData(object m);
     }
      
 
@@ -32,11 +34,15 @@ namespace elbro
         RegisteredWaitHandle Handle;
         JOB_HANDLE HandleCurrent;
 
+        public IMessage Messages { get; }
+
         public JobHandle(IJob job, AutoResetEvent ev)
         {
             this.HandleCurrent = JOB_HANDLE.NONE;
             int id = job.JobAction.f_getTotalJob() + 1;
-            job.f_setId(id); 
+            job.f_setId(id);
+
+            this.Messages = job.JobAction.f_getIMessage();
 
             this.Job = job;
             this.EvenStopLoop = ev;
@@ -122,7 +128,11 @@ namespace elbro
         public IJob f_getJob() {
             return this.Job;
         }
-
+        
+        public object f_requestData(object m)
+        {
+            return this.Job.f_requestData(m);
+        }
 
         public void f_receiveMessage(Message m)
         {
@@ -146,20 +156,13 @@ namespace elbro
         {
             this.Job.f_sendMessages(ms);
         }
-
-
-
-
+        
         public AutoResetEvent f_getEvent() { return EvenStopLoop; }
         
         public string f_getGroupName() { return this.Job.f_getGroupName(); }
 
 
         public override string ToString() { return this.Job.f_getId().ToString(); }
-
-        public object f_requestData(Message m)
-        {
-            return null;
-        }
+        
     }
 }

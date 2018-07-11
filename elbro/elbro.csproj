@@ -73,6 +73,7 @@
     <Compile Include="API\GooTranslateService_v1.cs" />
     <Compile Include="API\GooTranslateService_v2.cs" />
     <Compile Include="API\IFORM.cs" />
+    <Compile Include="API\ListDoubleThreadSafe.cs" />
     <Compile Include="API\ListThreadSafe.cs" />
     <Compile Include="API\QueueThreadSafe.cs" />
     <Compile Include="API\StackThreadSafe.cs" />

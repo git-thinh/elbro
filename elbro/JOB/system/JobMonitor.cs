@@ -122,6 +122,19 @@ namespace elbro
 
         }
 
+        public void f_eventRequestMessageTimeOut(Guid[] IdsExpired)
+        {
+            foreach (var id in IdsExpired)
+                System.Tracer.WriteLine("MSG EXPRIED: {0}", id);
+        }
+
+        public IMessage f_getIMessage()
+        {
+            if (this.HandleMessage != null)
+                return this.HandleMessage.Messages;
+            return null;
+        }
+
         ~JobMonitor()
         {
             f_removeAll();

@@ -49,6 +49,9 @@ namespace elbro
             m = this.Messages.Dequeue(null);
             if (m != null)
             {
+                if (m.f_getTimeOut() > 0)
+                    Thread.Sleep(m.f_getTimeOut() + 3000);
+
                 Tracer.WriteLine("J{0} TEST: Do something: {1} ", this.f_getId(), m.GetMessageId());
                 
                 m.Output = new MessageResult()

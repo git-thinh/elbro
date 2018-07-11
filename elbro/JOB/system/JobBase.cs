@@ -74,6 +74,7 @@ namespace elbro
         public JobBase(JOB_TYPE type, IJobAction jobAction)
         {
             f_setState(JOB_STATE.INIT);
+
             this.m_Type = type;
             this.JobAction = jobAction;
         }
@@ -85,7 +86,7 @@ namespace elbro
         public virtual void f_sendMessage(Message m) { }
         public virtual void f_receiveMessage(Message m) { }
         public virtual void f_sendMessages(Message[] ms) { }
-        public virtual object f_requestData(Message m) { return null; }
+        public virtual object f_requestData(object m) { return null; }
 
         public virtual void f_Init() { }
         public virtual void f_processMessage() { }
