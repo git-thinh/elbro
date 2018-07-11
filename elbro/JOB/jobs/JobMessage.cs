@@ -100,33 +100,33 @@ namespace elbro
             Tracer.WriteLine("J{0} JOB_MESSAGE: SIGNAL -> INITED", this.f_getId());
         }
 
-        public override Guid f_processMessage()
+        public override Guid f_processMessage(Message m)
         {
-            Message m = null;
-            m = this.Messages.Dequeue(null);
-            if (m != null)
-            {
-                //Guid id = m.GetMessageId();
-                //if (this.MsgTimeOutExpire.Count > 0 && this.MsgTimeOutExpire.IndexOf(id) != -1)
-                //{
-                //    this.MsgTimeOutExpire.Remove(id);
-                //    return;
-                //}
+            //Message m = null;
+            //m = this.Messages.Dequeue(null);
+            //if (m != null)
+            //{
+            //    //Guid id = m.GetMessageId();
+            //    //if (this.MsgTimeOutExpire.Count > 0 && this.MsgTimeOutExpire.IndexOf(id) != -1)
+            //    //{
+            //    //    this.MsgTimeOutExpire.Remove(id);
+            //    //    return;
+            //    //}
 
-                //this.ResponseIds.Enqueue(id);
-                //this.ResponseMessages.Add(id, m);
+            //    //this.ResponseIds.Enqueue(id);
+            //    //this.ResponseMessages.Add(id, m);
 
-                //Guid groupId = m.GetGroupId();
-                //if (this.RequestMessageGroup.ContainsKey(groupId))
-                //{
-                //    this.RequestMessageGroup.Remove(groupId);
-                //    if (this.RequestMessageGroup.Count == 0)
-                //    {
-                //        System.Tracer.WriteLine("JOB_MESSAGE:  DONE GROUP {0} = {1}", groupId, this.RequestMessageGroupTotal[groupId]);
-                //        this.RequestMessageGroupAction[groupId](this.MsgContext, this.Handle, groupId);
-                //    }
-                //}
-            }
+            //    //Guid groupId = m.GetGroupId();
+            //    //if (this.RequestMessageGroup.ContainsKey(groupId))
+            //    //{
+            //    //    this.RequestMessageGroup.Remove(groupId);
+            //    //    if (this.RequestMessageGroup.Count == 0)
+            //    //    {
+            //    //        System.Tracer.WriteLine("JOB_MESSAGE:  DONE GROUP {0} = {1}", groupId, this.RequestMessageGroupTotal[groupId]);
+            //    //        this.RequestMessageGroupAction[groupId](this.MsgContext, this.Handle, groupId);
+            //    //    }
+            //    //}
+            //}
             return Guid.Empty;
         }
 

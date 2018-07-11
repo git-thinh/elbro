@@ -34,7 +34,7 @@ namespace elbro
         public virtual void f_receiveMessages(Message[] m) { }
 
         public virtual void f_init() { }
-        public virtual Guid f_processMessage() { return Guid.Empty; }
+        public virtual Guid f_processMessage(Message m) { return Guid.Empty; }
 
         bool f_lockCheck() { return Interlocked.CompareExchange(ref m_Processing, 1, 1) == 1; }
         void f_lock() { Interlocked.CompareExchange(ref m_Processing, 1, 99); }
@@ -45,7 +45,7 @@ namespace elbro
         void f_state_setRunning() { Interlocked.CompareExchange(ref m_State, 2, 99); /* 2: RUNNING */ }
         void f_state_setStop() { Interlocked.CompareExchange(ref m_State, 4, 99); /* 4: STOP */ }
         
-        delegate Guid ProcessMessage();
+        delegate Guid ProcessMessage(Message m);
         void f_callbackProcessMessage(IAsyncResult asyncRes) {
             AsyncResult ares = (AsyncResult)asyncRes;
             ProcessMessage delg = (ProcessMessage)ares.AsyncDelegate;
@@ -88,7 +88,20 @@ namespace elbro
             if (this.Status == 2) {
                 Tracer.WriteLine("J{0} BASE: RUNNING ...", this.f_getId());
                 ProcessMessage fun = this.f_processMessage;
-                IAsyncResult ars = fun.BeginInvoke(new AsyncCallback(f_callbackProcessMessage), null);
+                Message m = new Message();
+                IAsyncResult asyncRes = fun.BeginInvoke(m, new AsyncCallback(f_callbackProcessMessage), null);
+
+                ///// check timeout ...
+                //IAsyncResult asyncRes = fun.BeginInvoke(m, null, null);
+                //// Poll IAsyncResult.IsCompleted
+                //while (asyncRes.IsCompleted == false)
+                //{
+                //    Console.WriteLine("Square Number still processing");
+                //    Thread.Sleep(1000);  // emulate that method is busy
+                //}
+                //Console.WriteLine("Square Number processing completed");
+                //Guid res = fun.EndInvoke(asyncRes);
+
             }
             
             /// end function

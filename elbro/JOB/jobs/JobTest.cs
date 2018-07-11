@@ -20,7 +20,7 @@ namespace elbro
             Tracer.WriteLine("J{0} TEST: SIGNAL -> INITED", this.f_getId());
         }
 
-        public override Guid f_processMessage()
+        public override Guid f_processMessage(Message m)
         {
             //Message m = null;
             //m = this.Messages.Dequeue(null);
