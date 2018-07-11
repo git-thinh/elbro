@@ -5,31 +5,29 @@ using System.Threading;
 
 namespace elbro
 {
-    public interface IJobMessageContext
+    public class JobMessage : JobBase, IMessageContext
     {
-        void f_eventRequestGroupMessageComplete(Guid groupId);
-        void f_eventRequestMessageTimeOut(Guid[] IdsExpired);
-    }
+        readonly QueueThreadSafe<Guid> ResponseIds;
+        readonly DictionaryThreadSafe<Guid, Message> ResponseMessages;
 
-    public interface IMessage
-    {
-        void f_sendResponseMessage(int jobResponseID, Message m);
-        Message f_getMessage(Guid id);
-    }
+        readonly DictionaryThreadSafe<Guid, Message> RequestMessages;
 
-    public class JobMessage : JobBase, IMessage
-    {
+
+
+
+
+
+
+
+
         public const string REQUEST_MSG_GROUP = "REQUEST_MSG_GROUP";
 
         readonly QueueThreadSafe<Message> Messages;
-        readonly IJobMessageContext MsgContext;
 
-        readonly QueueThreadSafe<Guid> ResponseIds;
-        readonly DictionaryThreadSafe<Guid, Message> ResponseMessages;
         readonly DictionaryThreadSafe<Guid, List<Guid>> RequestMessageGroup;
         readonly DictionaryThreadSafe<Guid, int> RequestMessageGroupTotal;
-        readonly DictionaryThreadSafe<Guid, Func<IJobMessageContext, IJobHandle, Guid, bool>> RequestMessageGroupAction
-            = new DictionaryThreadSafe<Guid, Func<IJobMessageContext, IJobHandle, Guid, bool>>();
+        readonly DictionaryThreadSafe<Guid, Func<IJobHandle, Guid, bool>> RequestMessageGroupAction
+            = new DictionaryThreadSafe<Guid, Func<IJobHandle, Guid, bool>>();
 
         readonly ListThreadSafe<Guid> MsgTimeOutExpire;
         readonly ListDoubleThreadSafe<long, Guid> MsgTimeOut;
@@ -41,12 +39,12 @@ namespace elbro
             return ls.ToArray();
         };
 
-        public JobMessage(IJobAction jobAction, IJobMessageContext msgContext) : base(JOB_TYPE.MESSAGE, jobAction)
+        public JobMessage(IJobContext jobContext) : base(jobContext, JOB_TYPE.MESSAGE)
         {
             this.MsgTimeOutExpire = new ListThreadSafe<Guid>();
             this.MsgTimeOut = new ListDoubleThreadSafe<long, Guid>();
             this.Messages = new QueueThreadSafe<Message>();
-            this.MsgContext = msgContext;
+            //this.RequestMessage = man;
 
             this.ResponseIds = new QueueThreadSafe<Guid>();
             this.ResponseMessages = new DictionaryThreadSafe<Guid, Message>();
@@ -64,60 +62,40 @@ namespace elbro
                         Tracer.WriteLine("RESPONSE TIME_OUT: {0}", t);
 
                     this.MsgTimeOutExpire.AddRange(ids);
-                    this.MsgContext.f_eventRequestMessageTimeOut(ids);
                 }
             }), this.MsgTimeOut, 1000, 1000);
         }
 
-        public override void f_sendMessage(Message m)
-        {
-            if (m.f_getTimeOut() > 0)
-            {
-                long timeOut = DateTime.Now.Ticks / 1000 + m.f_getTimeOut();
-                this.MsgTimeOut.Add(timeOut, m.GetMessageId());
-            }
-            this.Messages.Enqueue(m);
-        }
+        //public override bool f_setData(string key, object data)
+        //{
+        //    switch (key)
+        //    {
+        //        case REQUEST_MSG_GROUP:
+        //            var para = (Tuple<Func<IRequestMessage, IJobHandle, Guid, bool>, Message[]>)data;
+        //            Message[] ms = para.Item2;
+        //            Guid groupId = Guid.NewGuid();
 
-        public override object f_requestData(object m)
-        {
-            return null;
-        }
+        //            ms = ms.Select(x => x.SetGroupId(groupId)).ToArray();
+        //            var ids = ms.Select(x => x.GetMessageId()).ToList();
 
-        public override bool f_checkKey(object key)
-        {
-            return false;
-        }
-        public override bool f_setData(string key, object data)
-        {
-            switch (key)
-            {
-                case REQUEST_MSG_GROUP:
-                    var para = (Tuple<Func<IJobMessageContext, IJobHandle, Guid, bool>, Message[]>)data;
-                    Message[] ms = para.Item2;
-                    Guid groupId = Guid.NewGuid();
+        //            long timeStart = DateTime.Now.Ticks / 1000;
+        //            Tuple<long, Guid>[] ts = ms.Where(x => x.f_getTimeOut() > 0)
+        //                .Select(x => new Tuple<long, Guid>(timeStart + x.f_getTimeOut(), x.GetMessageId()))
+        //                .ToArray();
+        //            this.MsgTimeOut.AddRange(ts);
+        //            foreach (var t in ts)
+        //                Tracer.WriteLine("REQUEST TIME_OUT: {0} = {1}", t.Item2, t.Item1);
 
-                    ms = ms.Select(x => x.SetGroupId(groupId)).ToArray();
-                    var ids = ms.Select(x => x.GetMessageId()).ToList();
+        //            this.RequestMessageGroup.Add(groupId, ids);
+        //            this.RequestMessageGroupTotal.Add(groupId, ids.Count);
+        //            this.RequestMessageGroupAction.Add(groupId, para.Item1);
 
-                    long timeStart = DateTime.Now.Ticks / 1000;
-                    Tuple<long, Guid>[] ts = ms.Where(x => x.f_getTimeOut() > 0)
-                        .Select(x => new Tuple<long, Guid>(timeStart + x.f_getTimeOut(), x.GetMessageId()))
-                        .ToArray();
-                    this.MsgTimeOut.AddRange(ts);
-                    foreach (var t in ts)
-                        Tracer.WriteLine("REQUEST TIME_OUT: {0} = {1}", t.Item2, t.Item1);
+        //            break;
+        //    }
+        //    return false;
+        //}
 
-                    this.RequestMessageGroup.Add(groupId, ids);
-                    this.RequestMessageGroupTotal.Add(groupId, ids.Count);
-                    this.RequestMessageGroupAction.Add(groupId, para.Item1);
-
-                    break;
-            }
-            return false;
-        }
-
-        public override void f_Init()
+        public override void f_init()
         {
             Tracer.WriteLine("J{0} JOB_MESSAGE: SIGNAL -> INITED", this.f_getId());
         }
@@ -128,38 +106,60 @@ namespace elbro
             m = this.Messages.Dequeue(null);
             if (m != null)
             {
-                Guid id = m.GetMessageId();
-                if (this.MsgTimeOutExpire.Count > 0 && this.MsgTimeOutExpire.IndexOf(id) != -1)
-                {
-                    this.MsgTimeOutExpire.Remove(id);
-                    return;
-                }
-                
-                this.ResponseIds.Enqueue(id);
-                this.ResponseMessages.Add(id, m);
+                //Guid id = m.GetMessageId();
+                //if (this.MsgTimeOutExpire.Count > 0 && this.MsgTimeOutExpire.IndexOf(id) != -1)
+                //{
+                //    this.MsgTimeOutExpire.Remove(id);
+                //    return;
+                //}
 
-                Guid groupId = m.GetGroupId();
-                if (this.RequestMessageGroup.ContainsKey(groupId))
-                {
-                    this.RequestMessageGroup.Remove(groupId);
-                    if (this.RequestMessageGroup.Count == 0)
-                    {
-                        System.Tracer.WriteLine("JOB_MESSAGE:  DONE GROUP {0} = {1}", groupId, this.RequestMessageGroupTotal[groupId]);
-                        this.RequestMessageGroupAction[groupId](this.MsgContext, this.f_getHandle(), groupId);
-                    }
-                }
+                //this.ResponseIds.Enqueue(id);
+                //this.ResponseMessages.Add(id, m);
+
+                //Guid groupId = m.GetGroupId();
+                //if (this.RequestMessageGroup.ContainsKey(groupId))
+                //{
+                //    this.RequestMessageGroup.Remove(groupId);
+                //    if (this.RequestMessageGroup.Count == 0)
+                //    {
+                //        System.Tracer.WriteLine("JOB_MESSAGE:  DONE GROUP {0} = {1}", groupId, this.RequestMessageGroupTotal[groupId]);
+                //        this.RequestMessageGroupAction[groupId](this.MsgContext, this.Handle, groupId);
+                //    }
+                //}
             }
         }
 
-        public void f_sendResponseMessage(int jobResponseID, Message m)
+        #region [ IResponseMessage ]
+
+        public void f_responseMessage(Message m)
         {
-            
+            Guid id = m.GetMessageId();
+            this.ResponseIds.Enqueue(id);
+            this.ResponseMessages.Add(id, m);
         }
 
-        public Message f_getMessage(Guid id)
+        public Message f_responseMessageGet(Guid id)
         {
+            if (this.ResponseMessages.ContainsKey(id))
+                return this.ResponseMessages[id];
             return null;
         }
+
+        public void f_sendRequestMessages(JOB_TYPE type, Message[] messages)
+        {
+            foreach (Message m in messages)
+            {
+                Guid id = m.GetMessageId();
+                if (m.f_getTimeOut() > 0)
+                {
+                    long timeOut = DateTime.Now.Ticks / 1000 + m.f_getTimeOut();
+                    this.MsgTimeOut.Add(timeOut, id);
+                }
+                this.RequestMessages.Add(id, m);
+            }
+        }
+
+        #endregion
 
         ~JobMessage()
         {

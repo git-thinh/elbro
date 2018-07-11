@@ -49,7 +49,7 @@ namespace elbro
         }
 
         static JobMonitor jom;
-        static fBase main;
+        //static fBase main;
 
         public static void f_INIT()
         {
@@ -88,8 +88,8 @@ namespace elbro
             //Application.Run(new fBrowser());
             //Application.Run(new fGeckFX());
             //main = new fApp(jobs);
-            main = new fNone(jom);
-            Application.Run(main);
+            //main = new fNone(jom);
+            //Application.Run(main);
             f_Exit();
         }
 

@@ -5,39 +5,13 @@ using System.Threading;
 
 namespace elbro
 {
-    public interface IJobFactory
-    {
-        void f_actionJobs(JOB_HANDLE action);
-        int f_count();
-
-        IJobHandle f_createNew(IJob job);
-
-        void f_sendRequestLoadBalancer(Message[] messages);
-    }
 
     public class JobFactory : IJobFactory
     {
         static readonly Func<IJobHandle, object, bool> JOB_ACTION = (IJobHandle handle, object para) =>
          {
              JOB_HANDLE cmd = (JOB_HANDLE)para;
-             switch (cmd)
-             {
-                 case JOB_HANDLE.PAUSE:
-                     handle.f_stopJob();
-                     break;
-                 case JOB_HANDLE.REMOVE:
-                     handle.f_removeJob();
-                     break;
-                 case JOB_HANDLE.RESET:
-                     handle.f_resetJob();
-                     break;
-                 case JOB_HANDLE.RUN:
-                     handle.f_runJob();
-                     break;
-                 case JOB_HANDLE.STOP:
-                     handle.f_stopJob();
-                     break;
-             }
+             handle.f_actionJob(cmd);
              return true;
          };
 
@@ -49,9 +23,9 @@ namespace elbro
                 i = 0;
                 for (i = 0; i < handles.Length; i++)
                 {
-                    ms[id].f_setJobExecuteId(handles[i].f_getJob().f_getId());
-                    handles[i].f_sendMessage(ms[id]);
-                    System.Tracer.WriteLine(String.Format("J{0}: message-{1}: {2}", handles[i].f_getJob().f_getId(), id, ms[id].GetMessageId()));
+                    ms[id].f_setJobExecuteId(handles[i].Job.f_getId());
+                    handles[i].f_receiveMessage(ms[id]);
+                    System.Tracer.WriteLine(String.Format("J{0}: message-{1}: {2}", handles[i].Job.f_getId(), id, ms[id].GetMessageId()));
 
                     id++;
                     if (id == ms.Length)
@@ -66,11 +40,11 @@ namespace elbro
         };
 
         readonly DictionaryThreadSafe<int, IJobHandle> JobHandles;
-        readonly JOB_TYPE JobType;
+        readonly JOB_TYPE Type;
 
-        public JobFactory(JOB_TYPE jobType)
+        public JobFactory(JOB_TYPE type)
         {
-            this.JobType = jobType;
+            this.Type = type;
             JobHandles = new DictionaryThreadSafe<int, IJobHandle>();
         }
 
@@ -87,7 +61,7 @@ namespace elbro
             //      – Set: chuyển trạng thái của event thành signaled.
             //      – WaitOne([parameters]): Chặn thread hiện tại cho đến khi trạng thái của event được chuyển sang signaled.
 
-            IJobHandle jo = new JobHandle(job, new AutoResetEvent(false));
+            IJobHandle jo = new JobHandle(job, this);
             int id = job.f_getId();
             JobHandles.Add(id, jo);
 
@@ -107,6 +81,11 @@ namespace elbro
         public void f_sendRequestLoadBalancer(Message[] messages)
         {
             this.JobHandles.ExecuteFuncLoadBalancer<Message>(SEND_MESSAGE_LOAD_BALANCER_TO_JOB, messages);
+        }
+
+        public void f_jobFactoryStateChanged(int jobId, JOB_HANDLE state)
+        {
+            Tracer.WriteLine("JOB_FACTORY STATE CHANGED: {0} = {1}", jobId, state);
         }
 
         ~JobFactory()

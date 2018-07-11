@@ -9,7 +9,7 @@ namespace elbro
         NONE = 0,
         INIT = 1,
         RUNNING = 2,
-        PENDING = 3,
-        STOPED = 4,
+        PROCESSING = 3,
+        STOPED = 4, 
     }
 }

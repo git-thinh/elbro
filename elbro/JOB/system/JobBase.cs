@@ -8,11 +8,13 @@ namespace elbro
         volatile int m_Id = 0;
         volatile JOB_TYPE m_Type = JOB_TYPE.NONE;
         volatile byte m_State = 0; // NONE
-        volatile IJobHandle m_Handle;
-
-        readonly string m_groupName = string.Empty;
 
         #region [ STATE ]
+
+        bool f_state_PROCESSING_OR_NONE()
+        {
+             return m_State == 3 || m_State == 0;
+        }
 
         bool f_checkState(JOB_STATE state)
         {
@@ -20,12 +22,14 @@ namespace elbro
             {
                 case JOB_STATE.NONE:
                     return m_State == 0;
-                case JOB_STATE.RUNNING:
-                    return m_State == 1;
-                case JOB_STATE.STOPED:
-                    return m_State == 2;
                 case JOB_STATE.INIT:
+                    return m_State == 1;
+                case JOB_STATE.RUNNING:
+                    return m_State == 2;
+                case JOB_STATE.PROCESSING:
                     return m_State == 3;
+                case JOB_STATE.STOPED:
+                    return m_State == 4;
             }
             return false;
         }
@@ -37,19 +41,23 @@ namespace elbro
                 case JOB_STATE.NONE:
                     m_State = 0;
                     break;
-                case JOB_STATE.RUNNING:
+                case JOB_STATE.INIT:
                     m_State = 1;
                     break;
-                case JOB_STATE.STOPED:
+                case JOB_STATE.RUNNING:
                     m_State = 2;
                     break;
-                case JOB_STATE.INIT:
+                case JOB_STATE.PROCESSING:
                     m_State = 3;
+                    break;
+                case JOB_STATE.STOPED:
+                    m_State = 4;
                     break;
             }
         }
 
-        public JOB_STATE f_getState() {
+        public JOB_STATE f_getState()
+        {
             switch (m_State)
             {
                 case 0: return JOB_STATE.NONE;
@@ -62,64 +70,65 @@ namespace elbro
 
         #endregion
 
+        public IJobContext JobContext { get; }
+        public IJobHandle Handle { get; private set; }
         public JOB_TYPE f_getType() { return m_Type; }
 
-        public IJobAction JobAction { get; }
-
         public int f_getId() { return m_Id; }
-        public string f_getGroupName() { return m_groupName; }
 
-        public void f_setId(int id) { Interlocked.Add(ref m_Id, id); }
-
-        public JobBase(JOB_TYPE type, IJobAction jobAction)
+        public JobBase(IJobContext jobContext, JOB_TYPE type)
         {
+            this.JobContext = jobContext;
+            this.m_Id = jobContext.f_getTotalJob() + 1;
+            //Interlocked.Add(ref m_Id, jobId);
+
             f_setState(JOB_STATE.INIT);
-
             this.m_Type = type;
-            this.JobAction = jobAction;
         }
-         
-        public virtual int f_getPort() { return 0; }
-        public virtual bool f_checkKey(object key) { return false; }
-        public virtual bool f_setData(string key, object data) { return false; }
 
-        public virtual void f_sendMessage(Message m) { }
         public virtual void f_receiveMessage(Message m) { }
-        public virtual void f_sendMessages(Message[] ms) { }
-        public virtual object f_requestData(object m) { return null; }
+        public virtual void f_receiveMessages(Message[] m) { }
 
-        public virtual void f_Init() { }
+        public virtual void f_init() { }
         public virtual void f_processMessage() { }
 
         public void f_runLoop(object state, bool timedOut)
         {
-            if (this.f_checkState(JOB_STATE.STOPED)) return;
+            if (this.f_state_PROCESSING_OR_NONE()) return;
+
+            if (this.f_checkState(JOB_STATE.STOPED))
+            {
+                this.f_setState(JOB_STATE.PROCESSING);
+                this.Handle.f_actionJobCallback();
+                this.f_setState(JOB_STATE.NONE);
+                return;
+            }
 
             if (!timedOut)
+            {
                 f_setState(JOB_STATE.STOPED);
+                System.Tracer.WriteLine("J{0} BASE: SIGNAL -> STOP", this.f_getId());
+                return;
+            }
 
             switch (this.f_getState())
             {
                 case JOB_STATE.INIT:
+                    this.f_setState(JOB_STATE.PROCESSING);
                     //System.Tracer.WriteLine("J{0} BASE: SIGNAL -> INITED", this.f_getId());
-                    this.m_Handle = (IJobHandle)state;
+                    this.Handle = (IJobHandle)state;
+                    this.f_init();
                     this.f_setState(JOB_STATE.RUNNING);
-                    this.f_Init();
-                    break;
-                case JOB_STATE.STOPED:
-                    //System.Tracer.WriteLine("J{0} BASE: SIGNAL -> STOP", this.f_getId());
-                    this.m_Handle.f_eventJobStoped();
                     break;
                 case JOB_STATE.RUNNING:
+                    this.f_setState(JOB_STATE.PROCESSING);
                     //Tracer.WriteLine("J{0} BASE: Do something ...", this.f_getId());
                     this.f_processMessage();
+                    this.f_setState(JOB_STATE.RUNNING);
                     break;
             }
         }
 
-        public IJobHandle f_getHandle()
-        {
-            return this.m_Handle;
-        }
+
     }
 }

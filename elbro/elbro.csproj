@@ -80,26 +80,9 @@
     <Compile Include="API\Tracer.cs" />
     <Compile Include="API\UrlService.cs" />
     <Compile Include="app.cs" />
-    <Compile Include="FORM\fApp.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FORM\fBase.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FORM\fGeckFX.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FORM\fMedia.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FORM\fNone.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FORM\Prompt.cs" />
     <Compile Include="JOB\jobs\JobMessage.cs" />
     <Compile Include="JOB\jobs\JobTest.cs" />
-    <Compile Include="JOB\system\IJob.cs" />
-    <Compile Include="JOB\system\IJobAction.cs" />
+    <Compile Include="JOB\system\_INTERFACE.cs" />
     <Compile Include="JOB\system\JobFactory.cs" />
     <Compile Include="JOB\system\JobHandle.cs" />
     <Compile Include="JOB\system\JobMonitor.cs" />

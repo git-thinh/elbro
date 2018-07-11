@@ -5,164 +5,115 @@ using System.Threading;
 
 namespace elbro
 {
-    public interface IJobHandle
+    public class JobHandle : IJobHandle
     {
-        IMessage Messages { get; }
+        public IJob Job { get; }
+        public IJobFactory Factory { get; }
+        public JOB_HANDLE State { get; private set; }
 
-        void f_runJob();
-        void f_stopJob();
-        void f_eventJobStoped();
-        void f_resetJob();
-        void f_pauseJob();
-        void f_removeJob();
-        
-        IJob f_getJob();
-        JOB_HANDLE f_getState();
-
-        void f_receiveMessage(Message m);
-        void f_sendMessage(Message m);
-        void f_sendMessages(Message[] ms);
-        object f_requestData(object m);
-    }
-     
-
-    public class JobHandle: IJobHandle
-    {
-        readonly IJob Job;
         readonly AutoResetEvent EvenStopLoop;
-        readonly static Random _random = new Random(); 
-        RegisteredWaitHandle Handle;
-        JOB_HANDLE HandleCurrent;
+        RegisteredWaitHandle HandleJob;
 
-        public IMessage Messages { get; }
-
-        public JobHandle(IJob job, AutoResetEvent ev)
+        public JobHandle(IJob job)
         {
-            this.HandleCurrent = JOB_HANDLE.NONE;
-            int id = job.JobAction.f_getTotalJob() + 1;
-            job.f_setId(id);
+            this.Job = job;
+            this.EvenStopLoop = new AutoResetEvent(false);
+            this.State = JOB_HANDLE.NONE;
 
-            this.Messages = job.JobAction.f_getIMessage();
+            this.f_actionJob(JOB_HANDLE.RUN);
+        }
+
+        public JobHandle(IJob job, IJobFactory factory)
+        {
+            this.Factory = factory;
 
             this.Job = job;
-            this.EvenStopLoop = ev;
-        }
-        
-        public JOB_HANDLE f_getState()
-        {
-            return this.HandleCurrent;
+            this.EvenStopLoop = new AutoResetEvent(false);
+            this.State = JOB_HANDLE.NONE;
+
+            this.f_actionJob(JOB_HANDLE.RUN);
         }
 
-        public void f_runJob()
-        {
-            this.HandleCurrent = JOB_HANDLE.RUN;
-            this.Handle = ThreadPool.RegisterWaitForSingleObject(
-                this.EvenStopLoop,
-                new WaitOrTimerCallback(this.Job.f_runLoop),
-                this,
-                JOB_CONST.JOB_TIMEOUT_RUN,
-                false);
-        }
-
-        public void f_resetJob()
-        { 
-            if (this.Handle != null)
-                this.Handle.Unregister(null);
-
-            this.EvenStopLoop.Reset();
-
-            this.Handle = ThreadPool.RegisterWaitForSingleObject(
-                this.EvenStopLoop,
-                new WaitOrTimerCallback(this.Job.f_runLoop),
-                this,
-                JOB_CONST.JOB_TIMEOUT_RUN,
-                false);
-        }
-
-        void f_postEventStopLoop(JOB_HANDLE cmd)
+        void f_postEventStopLoop()
         {
             if (this.EvenStopLoop != null)
-            {
-                this.HandleCurrent = cmd;
-                if (this.EvenStopLoop != null)
-                    this.EvenStopLoop.Set();
-            }
+                this.EvenStopLoop.Set();
         }
-
-        public void f_eventJobStoped()
+        public void f_actionJobCallback()
         {
-            switch (this.HandleCurrent) {
+            switch (this.State)
+            {
                 case JOB_HANDLE.PAUSE:
                     break;
                 case JOB_HANDLE.STOP:
-                    this.f_getJob().JobAction.f_eventJobHandleChangeState(this.HandleCurrent, this.Job.f_getId());
                     break;
                 case JOB_HANDLE.RESET:
+                    if (this.HandleJob != null)
+                    {
+                        this.HandleJob.Unregister(null);
+                        this.HandleJob = null;
+                    }
+
+                    this.EvenStopLoop.Reset();
+
+                    this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
+                        this.EvenStopLoop,
+                        new WaitOrTimerCallback(this.Job.f_runLoop),
+                        this,
+                        JOB_CONST.JOB_TIMEOUT_RUN,
+                        false);
                     break;
                 case JOB_HANDLE.REMOVE:
-                    if (this.Handle != null)
+                    if (this.HandleJob != null)
                     {
-                        this.Handle.Unregister(null);
-                        this.Handle = null;
-                    }               
-                    this.f_getJob().JobAction.f_eventJobHandleChangeState(this.HandleCurrent, this.Job.f_getId());
+                        this.HandleJob.Unregister(null);
+                        this.HandleJob = null;
+                    }
+                    if (this.Factory != null)
+                        this.Factory.f_jobFactoryStateChanged(this.Job.f_getId(), this.State);
+                    else
+                        this.Job.JobContext.f_jobSingletonStateChanged(this.Job.f_getId(), this.State);
+                    break;
+            }
+        }
+        public void f_actionJob(JOB_HANDLE action)
+        {
+            if (this.State == action) return;
+            switch (action)
+            {
+                case JOB_HANDLE.RUN:                    
+                    this.State = action;
+                    this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
+                        this.EvenStopLoop,
+                        new WaitOrTimerCallback(this.Job.f_runLoop),
+                        this,
+                        JOB_CONST.JOB_TIMEOUT_RUN,
+                        false);
+                    break;
+                case JOB_HANDLE.PAUSE:
+                    this.State = action;
+                    f_postEventStopLoop();
+                    break;
+                case JOB_HANDLE.STOP:
+                    this.State = action;
+                    f_postEventStopLoop();
+                    break;
+                case JOB_HANDLE.RESET:
+                    f_postEventStopLoop();
+                    this.State = action;
+                    break;
+                case JOB_HANDLE.REMOVE:
+                    f_postEventStopLoop();
+                    this.State = action;
+                    break;
+                case JOB_HANDLE.CLEAR:
                     break;
             }
         }
         
-        public void f_stopJob()
-        { 
-            f_postEventStopLoop(JOB_HANDLE.STOP);
-        }
-
-        public void f_pauseJob()
-        {
-            f_postEventStopLoop(JOB_HANDLE.PAUSE);
-        }
-
-        public void f_removeJob()
-        {
-            f_postEventStopLoop(JOB_HANDLE.REMOVE);             
-        }
-        
-        public IJob f_getJob() {
-            return this.Job;
-        }
-        
-        public object f_requestData(object m)
-        {
-            return this.Job.f_requestData(m);
-        }
-
-        public void f_receiveMessage(Message m)
-        {
-            if (Job != null)
-                Job.f_receiveMessage(m);
-        }
-
-        public void f_sendMessage(Message m)
-        {
-            //if (this.Job.f_getGroupName() == JOB_NAME.SYS_MESSAGE)
-            //    f_receiveMessage(m);
-            //else
-            //{
-            //    if (this.Job.StoreJob != null)
-            //        this.Job.StoreJob.f_job_sendMessage(m);
-            //}
-            this.Job.f_sendMessage(m);
-        }
-
-        public void f_sendMessages(Message[] ms)
-        {
-            this.Job.f_sendMessages(ms);
-        }
-        
-        public AutoResetEvent f_getEvent() { return EvenStopLoop; }
-        
-        public string f_getGroupName() { return this.Job.f_getGroupName(); }
-
+        public void f_receiveMessage(Message m) => this.Job.f_receiveMessage(m);
+        public void f_receiveMessages(Message[] ms) => this.Job.f_receiveMessages(ms);
 
         public override string ToString() { return this.Job.f_getId().ToString(); }
-        
     }
 }

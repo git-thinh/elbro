@@ -7,38 +7,15 @@ namespace elbro
     {
         readonly QueueThreadSafe<Message> Messages;
 
-        public JobTest(IJobAction jobAction) : base(JOB_TYPE.NONE, jobAction)
+        public JobTest(IJobContext jobContext) : base(jobContext, JOB_TYPE.NONE)
         {
             this.Messages = new QueueThreadSafe<Message>();
         }
 
-        public override void f_sendMessage(Message m)
-        {
-            this.Messages.Enqueue(m);
-        }
+        public override void f_receiveMessage(Message m) { }
+        public override void f_receiveMessages(Message[] ms) { }
 
-        public override void f_receiveMessage(Message m)
-        {
-        }
-
-        public override void f_sendMessages(Message[] ms)
-        {
-        }
-
-        public override int f_getPort()
-        {
-            return 0;
-        }
-        public override bool f_checkKey(object key)
-        {
-            return false;
-        }
-        public override bool f_setData(string key, object data)
-        {
-            return false;
-        }
-
-        public override void f_Init()
+        public override void f_init()
         {
             Tracer.WriteLine("J{0} TEST: SIGNAL -> INITED", this.f_getId());
         }
@@ -53,15 +30,16 @@ namespace elbro
                     Thread.Sleep(m.f_getTimeOut() + 3000);
 
                 Tracer.WriteLine("J{0} TEST: Do something: {1} ", this.f_getId(), m.GetMessageId());
-                
+
                 m.Output = new MessageResult()
                 {
                     Ok = true,
                     MessageText = string.Format("J{0} TEST: Done {1} ", this.f_getId(), m.GetMessageId())
                 };
-                this.JobAction.f_eventJobResponseMessage(this.f_getId(), m);
+                //this.JobAction.f_eventJobResponseMessage(this.f_getId(), m);
+                this.JobContext.MessageContext.f_responseMessage(m);
             }
-            //else Tracer.WriteLine("J{0} TEST: waiting message to execute that ...", this.f_getId());
+            else Tracer.WriteLine("J{0} TEST: waiting message to execute that ...", this.f_getId());
         }
 
     }
