@@ -7,18 +7,11 @@ namespace elbro
 {
     public class JobMessage : JobBase, IMessageContext
     {
+        #region [ VARIABLE ]
+
         readonly QueueThreadSafe<Guid> ResponseIds;
         readonly DictionaryThreadSafe<Guid, Message> ResponseMessages;
-
         readonly DictionaryThreadSafe<Guid, Message> RequestMessages;
-
-
-
-
-
-
-
-
 
         public const string REQUEST_MSG_GROUP = "REQUEST_MSG_GROUP";
 
@@ -38,6 +31,8 @@ namespace elbro
 
             return ls.ToArray();
         };
+
+        #endregion
 
         public JobMessage(IJobContext jobContext) : base(jobContext, JOB_TYPE.MESSAGE)
         {
@@ -65,41 +60,15 @@ namespace elbro
                 }
             }), this.MsgTimeOut, 1000, 1000);
         }
-
-        //public override bool f_setData(string key, object data)
-        //{
-        //    switch (key)
-        //    {
-        //        case REQUEST_MSG_GROUP:
-        //            var para = (Tuple<Func<IRequestMessage, IJobHandle, Guid, bool>, Message[]>)data;
-        //            Message[] ms = para.Item2;
-        //            Guid groupId = Guid.NewGuid();
-
-        //            ms = ms.Select(x => x.SetGroupId(groupId)).ToArray();
-        //            var ids = ms.Select(x => x.GetMessageId()).ToList();
-
-        //            long timeStart = DateTime.Now.Ticks / 1000;
-        //            Tuple<long, Guid>[] ts = ms.Where(x => x.f_getTimeOut() > 0)
-        //                .Select(x => new Tuple<long, Guid>(timeStart + x.f_getTimeOut(), x.GetMessageId()))
-        //                .ToArray();
-        //            this.MsgTimeOut.AddRange(ts);
-        //            foreach (var t in ts)
-        //                Tracer.WriteLine("REQUEST TIME_OUT: {0} = {1}", t.Item2, t.Item1);
-
-        //            this.RequestMessageGroup.Add(groupId, ids);
-        //            this.RequestMessageGroupTotal.Add(groupId, ids.Count);
-        //            this.RequestMessageGroupAction.Add(groupId, para.Item1);
-
-        //            break;
-        //    }
-        //    return false;
-        //}
-
+        
         public override void f_init()
         {
             Tracer.WriteLine("J{0} JOB_MESSAGE: SIGNAL -> INITED", this.f_getId());
         }
-
+        public override void f_processMessageCallbackResult(Guid messageId)
+        {
+            Thread.Sleep(1000);
+        }
         public override Guid f_processMessage(Message m)
         {
             //Message m = null;
@@ -130,7 +99,7 @@ namespace elbro
             return Guid.Empty;
         }
 
-        #region [ IResponseMessage ]
+        #region [ IMessageContext ]
 
         public void f_responseMessage(Message m)
         {

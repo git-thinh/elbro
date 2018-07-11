@@ -10,22 +10,20 @@ namespace elbro
         public IJob Job { get; }
         public IJobFactory Factory { get; }
         public JOB_HANDLE State { get; private set; }
-
-        readonly AutoResetEvent EvenStopLoop;
+         
         RegisteredWaitHandle HandleJob;
 
         public JobHandle(IJob job)
         {
-            this.Job = job;
-            this.EvenStopLoop = new AutoResetEvent(false);
-            this.State = JOB_HANDLE.NONE;
+            this.Job = job; 
+            this.State = JOB_HANDLE.RUN;
 
-            //this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
-            //    this.EvenStopLoop,
-            //    new WaitOrTimerCallback(this.Job.f_runLoop),
-            //    this,
-            //    JOB_CONST.JOB_TIMEOUT_RUN,
-            //    false);
+            this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
+                new AutoResetEvent(false),
+                new WaitOrTimerCallback((state, timeOut) => { this.Job.f_runLoop(this); }),
+                this,
+                JOB_CONST.JOB_TIMEOUT_RUN,
+                true); /* true: run once; false: repeate */
         }
 
         public JobHandle(IJob job, IJobFactory factory)
@@ -33,22 +31,22 @@ namespace elbro
             this.Factory = factory;
 
             this.Job = job;
-            this.EvenStopLoop = new AutoResetEvent(false);
-            this.State = JOB_HANDLE.NONE;
+            this.State = JOB_HANDLE.RUN;
 
             this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
-                this.EvenStopLoop,
+                new AutoResetEvent(false),
                 new WaitOrTimerCallback((state, timeOut) => { this.Job.f_runLoop(this); }),
                 this,
                 JOB_CONST.JOB_TIMEOUT_RUN,
-                true); // run once
+                true); /* true: run once; false: repeate */
         }
 
         void f_postEventStopLoop()
         {
-            if (this.EvenStopLoop != null)
-                this.EvenStopLoop.Set();
+            this.Job.f_stop();
+            // new AutoResetEvent(false) ----> call: if (this.EvenStopLoop != null) this.EvenStopLoop.Set();
         }
+
         public void f_actionJobCallback()
         {
             switch (this.State)
@@ -58,13 +56,13 @@ namespace elbro
                 case JOB_HANDLE.STOP:
                     break;
                 case JOB_HANDLE.RESET:
-                    if (this.HandleJob != null)
-                    {
-                        this.HandleJob.Unregister(null);
-                        this.HandleJob = null;
-                    }
+                    //if (this.HandleJob != null)
+                    //{
+                    //    this.HandleJob.Unregister(null);
+                    //    this.HandleJob = null;
+                    //}
 
-                    this.EvenStopLoop.Reset();
+                    //this.EvenStopLoop.Reset();
 
                     //this.HandleJob = ThreadPool.RegisterWaitForSingleObject(
                     //    this.EvenStopLoop,
@@ -86,6 +84,7 @@ namespace elbro
                     break;
             }
         }
+
         public void f_actionJob(JOB_HANDLE action)
         {
             if (this.State == action) return;
@@ -109,12 +108,12 @@ namespace elbro
                     f_postEventStopLoop();
                     break;
                 case JOB_HANDLE.RESET:
-                    f_postEventStopLoop();
                     this.State = action;
+                    f_postEventStopLoop();
                     break;
                 case JOB_HANDLE.REMOVE:
-                    f_postEventStopLoop();
                     this.State = action;
+                    f_postEventStopLoop();
                     break;
                 case JOB_HANDLE.CLEAR:
                     break;

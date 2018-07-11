@@ -25,32 +25,32 @@ namespace elbro
             var jobs = new JobMonitor();
 
             jobs.f_createNew(new JobTest(jobs));
-            //jobs.f_createNew(new JobTest(jobs));
-            //jobs.f_createNew(new JobTest(jobs));
-            //jobs.f_createNew(new JobTest(jobs));
-            //jobs.f_createNew(new JobTest(jobs));
-             
+            jobs.f_createNew(new JobTest(jobs));
+            jobs.f_createNew(new JobTest(jobs));
+            jobs.f_createNew(new JobTest(jobs));
+            jobs.f_createNew(new JobTest(jobs));
+
 
             /////////////////////////////////////////////////////
 
-            //Console.WriteLine("Enter to send many request to load balancer jobs on factory ...");
-            //Console.ReadLine();
-            //const int len = 9;
-            //Message[] ms = new Message[len];
-            //for (int i = 0; i < len; i++)
-            //{
-            //    ms[i] = new Message() { Input = i };
-            //    if (i == 0) ms[i].f_setTimeOut(3000);
-            //    if (i == 5) ms[i].f_setTimeOut(5000);
-            //    if (i == 7) ms[i].f_setTimeOut(7000);
-            //}
+            Console.WriteLine("Enter to send many request to load balancer jobs on factory ...");
+            Console.ReadLine();
+            const int len = 9;
+            Message[] ms = new Message[len];
+            for (int i = 0; i < len; i++)
+            {
+                ms[i] = new Message() { Input = i };
+                if (i == 0) ms[i].f_setTimeOut(3000);
+                if (i == 5) ms[i].f_setTimeOut(5000);
+                if (i == 7) ms[i].f_setTimeOut(7000);
+            }
 
-            //Func<IJobHandle, Guid, bool> FUNC_CALLBACK = (msgHandle, groupId) =>
-            // {
-            //     System.Tracer.WriteLine("TEST_JOB.RUN_TEST(): FINISH ....");
-            //     return false;
-            // };
-            //jobs.f_requestMessages(JOB_TYPE.NONE, ms, FUNC_CALLBACK);
+            Func<IJobHandle, Guid, bool> FUNC_CALLBACK = (msgHandle, groupId) =>
+             {
+                 System.Tracer.WriteLine("TEST_JOB.RUN_TEST(): FINISH ....");
+                 return false;
+             };
+            jobs.f_requestMessages(JOB_TYPE.NONE, ms, FUNC_CALLBACK);
 
             /////////////////////////////////////////////////////
 
@@ -71,10 +71,9 @@ namespace elbro
 
             /////////////////////////////////////////////////////
 
-            Console.WriteLine("Enter to stop all JOB...");
-            Console.ReadLine();
-
-            jobs.f_removeAll();
+            //Console.WriteLine("Enter to stop all JOB...");
+            //Console.ReadLine();
+            //jobs.f_removeAll();
 
             /////////////////////////////////////////////////////
             Console.WriteLine("Enter to exit...");

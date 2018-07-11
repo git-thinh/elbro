@@ -6,7 +6,8 @@ namespace elbro
 {
     public class JobBase : IJob
     {
-        volatile int m_Id = 0; 
+        readonly QueueThreadSafe<Message> Messages;
+        volatile int Id = 0; 
         volatile byte Status = 0; /* 0: none */
 
         public JOB_STATE State {
@@ -24,20 +25,34 @@ namespace elbro
         public IJobHandle Handle { get; private set; }
         public JOB_TYPE Type { get; }
 
-        public int f_getId() { return m_Id; }
+        public int f_getId() { return Id; }
 
         public JobBase(IJobContext jobContext, JOB_TYPE type)
         {
+            this.Messages = new QueueThreadSafe<Message>();
+
             this.JobContext = jobContext;
-            this.m_Id = jobContext.f_getTotalJob() + 1;
+            this.Id = jobContext.f_getTotalJob() + 1;
             this.Type = type;
             this.Status = 1; /* 1: init */
         }
 
-        public virtual void f_receiveMessage(Message m) { }
-        public virtual void f_receiveMessages(Message[] m) { }
+        public void f_receiveMessage(Message m) {
+            this.Messages.Enqueue(m);
+        }
+        public void f_receiveMessages(Message[] ms) {
+            for (int i = 0; i < ms.Length; i++)
+                this.Messages.Enqueue(ms[i]);
+        }
+        public void f_stop()
+        {
+            this.Status = 4; /* 4: stop */
+            System.Tracer.WriteLine("J{0} BASE: STOP ...", this.Id);
+            this.Handle.f_actionJobCallback();
+        }
 
         public virtual void f_init() { }
+        public virtual void f_processMessageCallbackResult(Guid messageId) { }
         public virtual Guid f_processMessage(Message m) { return Guid.Empty; }
         
         delegate Guid ProcessMessage(Message m);
@@ -45,32 +60,23 @@ namespace elbro
             AsyncResult ares = (AsyncResult)asyncRes;
             ProcessMessage delg = (ProcessMessage)ares.AsyncDelegate;
             Guid result = delg.EndInvoke(asyncRes);
-
-            Thread.Sleep(3000);
-
+            this.f_processMessageCallbackResult(result);
+            //Thread.Sleep(1000);
             f_runLoop(this.Handle);
         }
 
         public void f_runLoop(IJobHandle handle)
-        {            
-            //if (f_lockCheck())
-            //    return;
-            //f_lock();
-            
-            //if (!timedOut)
-            //{
-            //    System.Tracer.WriteLine("J{0} BASE: STOP ...", this.f_getId());
-            //    this.Handle.f_actionJobCallback();
-
-            //    f_state_setStop();
-            //    // do not unlock until call f_Restart();
-            //    return;
-            //}
+        {
+            /* 4: stop */
+            if (this.Status == 4) {
+                Thread.Sleep(JOB_CONST.JOB_TIMEOUT_RUN);
+                f_runLoop(handle);
+            }
 
             /* 1: init */
             if (this.Status == 1)  
             {
-                System.Tracer.WriteLine("J{0} BASE: INITED ...", this.f_getId());
+                System.Tracer.WriteLine("J{0} BASE: INITED ...", this.Id);
                 this.Handle = handle;
                 this.f_init();
 
@@ -81,26 +87,39 @@ namespace elbro
 
             /* 2: running */
             if (this.Status == 2) {
-                Tracer.WriteLine("J{0} BASE: RUNNING ...", this.f_getId());
-                ProcessMessage fun = this.f_processMessage;
-                Message m = new Message();
-                IAsyncResult asyncRes = fun.BeginInvoke(m, new AsyncCallback(f_callbackProcessMessage), null);
+                Message m = this.Messages.Dequeue(null);
+                if (m == null)
+                {
+                    Tracer.WriteLine("J{0} BASE: WAITING ...", this.Id);
+                    // WAITING TO RECEIVED MESSAGE ...
+                    Thread.Sleep(JOB_CONST.JOB_TIMEOUT_RUN);
+                    f_runLoop(handle);
+                }
+                else
+                {
+                    Tracer.WriteLine("J{0} BASE: PROCESSING ...", this.Id);
+                    // PROCESSING MESSAGE
+                    ProcessMessage fun = this.f_processMessage;
+                    IAsyncResult asyncRes = fun.BeginInvoke(m, new AsyncCallback(f_callbackProcessMessage), null);
 
-                ///// check timeout ...
-                //IAsyncResult asyncRes = fun.BeginInvoke(m, null, null);
-                //// Poll IAsyncResult.IsCompleted
-                //while (asyncRes.IsCompleted == false)
-                //{
-                //    Console.WriteLine("Square Number still processing");
-                //    Thread.Sleep(1000);  // emulate that method is busy
-                //}
-                //Console.WriteLine("Square Number processing completed");
-                //Guid res = fun.EndInvoke(asyncRes);
-
-            }
-            
+                    ///// check timeout ...
+                    //IAsyncResult asyncRes = fun.BeginInvoke(m, null, null);
+                    //// Poll IAsyncResult.IsCompleted
+                    //while (asyncRes.IsCompleted == false)
+                    //{
+                    //    Console.WriteLine("Square Number still processing");
+                    //    Thread.Sleep(1000);  // emulate that method is busy
+                    //}
+                    //Console.WriteLine("Square Number processing completed");
+                    //Guid res = fun.EndInvoke(asyncRes);
+                }
+            }            
             /// end function
             ///////////////////////
+        }
+
+        ~JobBase() {
+            this.Messages.Clear();
         }
     }
 }

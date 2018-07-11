@@ -49,6 +49,7 @@ namespace elbro
         void f_receiveMessage(Message m);
         void f_receiveMessages(Message[] ms);
         
+        void f_stop();
         void f_runLoop(IJobHandle handle);
     }
     

@@ -16,9 +16,9 @@ namespace elbro
 
         public JobMonitor()
         {
-            //var m = new JobMessage();
-            //this.MessageContext = m;
-            //this.MessageHandle = f_createNew(m);
+            var m = new JobMessage(this);
+            this.MessageContext = m;
+            this.MessageHandle = f_createNew(m);
             //f_createNew(new JobLink(this));
         }
 
@@ -80,12 +80,15 @@ namespace elbro
         public bool f_requestMessages(JOB_TYPE type, Message[] ms,
             Func<IJobHandle, Guid, bool> callBackDoneAll = null)
         {
-            //if (this.JobFactories.ContainsKey(type)) {
+            //if (this.JobFactories.ContainsKey(type))
+            //{
             //    if (callBackDoneAll != null)
-            //        this.HandleMessage.f_getJob().f_setData(JobMessage.REQUEST_MSG_GROUP, 
+            //        this.HandleMessage.f_getJob().f_setData(JobMessage.REQUEST_MSG_GROUP,
             //            new Tuple<Func<IRequestMessage, IJobHandle, Guid, bool>, Message[]>(callBackDoneAll, ms));
             //    this.JobFactories[type].f_sendRequestLoadBalancer(ms);
-            //} else if (this.JobSingletons.ContainsKey(type)) {
+            //}
+            //else if (this.JobSingletons.ContainsKey(type))
+            //{
             //    this.JobSingletons[type].f_sendMessages(ms);
             //}
             return false;

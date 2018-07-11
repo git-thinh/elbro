@@ -5,21 +5,17 @@ namespace elbro
 {
     public class JobTest : JobBase
     {
-        readonly QueueThreadSafe<Message> Messages;
-
         public JobTest(IJobContext jobContext) : base(jobContext, JOB_TYPE.NONE)
         {
-            this.Messages = new QueueThreadSafe<Message>();
         }
-
-        public override void f_receiveMessage(Message m) { }
-        public override void f_receiveMessages(Message[] ms) { }
-
+        
         public override void f_init()
         {
             Tracer.WriteLine("J{0} TEST: SIGNAL -> INITED", this.f_getId());
         }
-
+        public override void f_processMessageCallbackResult(Guid messageId) {
+            Thread.Sleep(1000);
+        }
         public override Guid f_processMessage(Message m)
         {
             //Message m = null;
