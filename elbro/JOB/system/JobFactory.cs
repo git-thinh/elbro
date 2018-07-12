@@ -41,9 +41,12 @@ namespace elbro
 
         readonly DictionaryThreadSafe<int, IJobHandle> JobHandles;
         readonly JOB_TYPE Type;
+        readonly QueueThreadSafe<Message> Messages;
 
         public JobFactory(JOB_TYPE type)
         {
+            this.Messages = new QueueThreadSafe<Message>();
+
             this.Type = type;
             JobHandles = new DictionaryThreadSafe<int, IJobHandle>();
         }
@@ -78,9 +81,16 @@ namespace elbro
             this.JobHandles.ExecuteFunc(JOB_ACTION, action);
         }
 
-        public void f_sendRequestLoadBalancer(Message[] messages)
+        public void f_sendRequestLoadBalancer(Message[] ms)
         {
-            this.JobHandles.ExecuteFuncLoadBalancer<Message>(SEND_MESSAGE_LOAD_BALANCER_TO_JOB, messages);
+            //this.JobHandles.ExecuteFuncLoadBalancer<Message>(SEND_MESSAGE_LOAD_BALANCER_TO_JOB, messages);
+            for (int i = 0; i < ms.Length; i++) {
+                this.Messages.Enqueue(ms[i]);
+            }
+        }
+
+        public Message f_getMessage(Message msgDefault) {
+            return this.Messages.Dequeue(msgDefault);
         }
 
         public void f_jobFactoryStateChanged(IJob job, JOB_HANDLE state)

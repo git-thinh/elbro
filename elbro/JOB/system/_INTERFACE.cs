@@ -23,6 +23,8 @@ namespace elbro
 
         IJobHandle f_createNew(IJob job);
 
+        Message f_getMessage(Message msgDefault);
+
         void f_sendRequestLoadBalancer(Message[] messages);
 
         void f_jobFactoryStateChanged(IJob job, JOB_HANDLE state);

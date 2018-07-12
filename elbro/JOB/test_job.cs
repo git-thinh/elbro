@@ -29,11 +29,6 @@ namespace elbro
             jc.f_createNew(new JobTest(jc));
             jc.f_createNew(new JobTest(jc));
             jc.f_createNew(new JobTest(jc));
-            jc.f_createNew(new JobTest(jc));
-            jc.f_createNew(new JobTest(jc));
-            jc.f_createNew(new JobTest(jc));
-            //jc.f_createNew(new JobTest(jc));
-
 
             /////////////////////////////////////////////////////
 
@@ -46,7 +41,7 @@ namespace elbro
                 ms[i] = new Message() { Input = i };
                 if (i == 0) ms[i].f_setTimeOut(30000);
                 if (i == 5) ms[i].f_setTimeOut(7000);
-                if (i == 8) ms[i].f_setTimeOut(17000);
+                if (i == 8) ms[i].f_setTimeOut(5000);
             }
 
             Func<IJobHandle, Guid, bool> responseCallbackDoneAll = (msgHandle, groupId) =>

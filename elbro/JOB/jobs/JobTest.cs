@@ -14,13 +14,13 @@ namespace elbro
             Tracer.WriteLine("J{0} TEST: SIGNAL -> INITED", this.f_getId());
         }
         public override void f_processMessageCallbackResult(Message m) {
-            Tracer.WriteLine("J{0} TEST DONE: {1}-{2} ",this.f_getId(), m.Input,  m.GetMessageId());
+            Tracer.WriteLine("J{0} DONE: {1}-{2} ",this.f_getId(), m.Input,  m.GetMessageId());
             this.JobContext.MessageContext.f_responseMessage(m);            
         }
         public override Message f_processMessage(Message m)
         { 
             m.Output = new MessageResult() { Ok = true };
-            //Thread.Sleep(2000);
+            Thread.Sleep(2000);
 
             //Message m = null;
             //m = this.Messages.Dequeue(null);

@@ -71,14 +71,15 @@ namespace elbro
             f_runLoop(this.Handle);
         }
 
+        void f_sleepAfterLoop(IJobHandle handle) {
+                Thread.Sleep(JOB_CONST.JOB_TIMEOUT_RUN);
+                f_runLoop(handle);
+        }
+
         public void f_runLoop(IJobHandle handle)
         {
             /* 4: stop */
-            if (this.Status == 4)
-            {
-                Thread.Sleep(JOB_CONST.JOB_TIMEOUT_RUN);
-                f_runLoop(handle);
-            }
+            if (this.Status == 4) f_sleepAfterLoop(handle);
 
             /* 1: init */
             if (this.Status == 1)
@@ -95,7 +96,13 @@ namespace elbro
             /* 2: running */
             if (this.Status == 2)
             {
-                Message m = this.Messages.Dequeue(null);
+                Message m = null;
+
+                if (this.Handle.Factory == null)
+                    m = this.Messages.Dequeue(null);
+                else
+                    m = this.Handle.Factory.f_getMessage(null);
+
                 if (m == null)
                 {
                     //Tracer.WriteLine("J{0} BASE: WAITING ...", this.Id);
