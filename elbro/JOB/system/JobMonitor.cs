@@ -77,26 +77,26 @@ namespace elbro
                 kv.Value.f_actionJob(JOB_HANDLE.RUN);
         }
         
-        public bool f_requestMessages(JOB_TYPE type, Message[] ms,
-            Func<IJobHandle, Guid, bool> callBackDoneAll = null)
+        public bool f_sendRequestMessages(JOB_TYPE type, Message[] ms,
+            Func<IJobHandle, Guid, bool> responseCallbackDoneAll)
         {
-            //if (this.JobFactories.ContainsKey(type))
-            //{
-            //    if (callBackDoneAll != null)
-            //        this.HandleMessage.f_getJob().f_setData(JobMessage.REQUEST_MSG_GROUP,
-            //            new Tuple<Func<IRequestMessage, IJobHandle, Guid, bool>, Message[]>(callBackDoneAll, ms));
-            //    this.JobFactories[type].f_sendRequestLoadBalancer(ms);
-            //}
-            //else if (this.JobSingletons.ContainsKey(type))
-            //{
-            //    this.JobSingletons[type].f_sendMessages(ms);
-            //}
+            if (this.JobFactories.ContainsKey(type))
+            {
+                if (responseCallbackDoneAll != null)
+                    if (this.MessageContext != null)
+                        this.MessageContext.f_sendRequestMessages(type, ms, responseCallbackDoneAll);
+                this.JobFactories[type].f_sendRequestLoadBalancer(ms);
+            }
+            else if (this.JobSingletons.ContainsKey(type))
+            {
+                //this.JobSingletons[type].f_sendMessages(ms);
+            }
             return false;
         }
 
-        public void f_jobSingletonStateChanged(int jobId, JOB_HANDLE state)
+        public void f_jobSingletonStateChanged(IJob job, JOB_HANDLE state)
         {
-            Tracer.WriteLine("JOB_SINGLETON STATE CHANGED: {0} = {1}", jobId, state);
+            Tracer.WriteLine("JOB_SINGLETON STATE CHANGED: {0}.{1} = {2}", job.Type, job.f_getId(), state);
         }
 
         ~JobMonitor()

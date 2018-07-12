@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace elbro
 {
-    public class JobTest : JobBase
+    public class JobTest : JobWorker
     {
         public JobTest(IJobContext jobContext) : base(jobContext, JOB_TYPE.NONE)
         {
@@ -13,11 +13,15 @@ namespace elbro
         {
             Tracer.WriteLine("J{0} TEST: SIGNAL -> INITED", this.f_getId());
         }
-        public override void f_processMessageCallbackResult(Guid messageId) {
-            Thread.Sleep(1000);
+        public override void f_processMessageCallbackResult(Message m) {
+            Tracer.WriteLine("J{0} TEST DONE: {1}-{2} ",this.f_getId(), m.Input,  m.GetMessageId());
+            this.JobContext.MessageContext.f_responseMessage(m);            
         }
-        public override Guid f_processMessage(Message m)
-        {
+        public override Message f_processMessage(Message m)
+        { 
+            m.Output = new MessageResult() { Ok = true };
+            //Thread.Sleep(2000);
+
             //Message m = null;
             //m = this.Messages.Dequeue(null);
             //if (m != null)
@@ -36,7 +40,7 @@ namespace elbro
             //    this.JobContext.MessageContext.f_responseMessage(m);
             //}
             //else Tracer.WriteLine("J{0} TEST: waiting message to execute that ...", this.f_getId());
-            return Guid.Empty;
+            return m;
         }
 
     }

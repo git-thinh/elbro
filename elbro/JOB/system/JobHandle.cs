@@ -78,9 +78,9 @@ namespace elbro
                         this.HandleJob = null;
                     }
                     if (this.Factory != null)
-                        this.Factory.f_jobFactoryStateChanged(this.Job.f_getId(), this.State);
+                        this.Factory.f_jobFactoryStateChanged(this.Job, this.State);
                     else
-                        this.Job.JobContext.f_jobSingletonStateChanged(this.Job.f_getId(), this.State);
+                        this.Job.JobContext.f_jobSingletonStateChanged(this.Job, this.State);
                     break;
             }
         }

@@ -1061,6 +1061,8 @@ namespace System.Threading
                     List<T2> ls = new List<T2>();
                     for (int i = 0; i < ids.Length; i++)
                         ls.Add(m_TList2[ids[i]]);
+
+                    ids = ids.OrderByDescending(x => x).ToArray();
                     for (int i = 0; i < ids.Length; i++)
                     {
                         m_TList1.RemoveAt(ids[i]);
@@ -1449,6 +1451,25 @@ namespace System.Threading
             {
                 LockList.ExitReadLock();
             }
+        }
+
+        public bool RemoveItem1AndItem2_byItem2(T2 item2)
+        {
+            LockList.EnterWriteLock();
+            try
+            {
+                int id = m_TList2.IndexOf(item2);
+                if (id != -1) {
+                    m_TList2.RemoveAt(id);
+                    m_TList1.RemoveAt(id);
+                    return true;
+                }
+            }
+            finally
+            {
+                LockList.ExitWriteLock();
+            }
+            return false;
         }
 
         /// <summary>

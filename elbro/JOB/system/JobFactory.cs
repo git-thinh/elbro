@@ -25,7 +25,7 @@ namespace elbro
                 {
                     ms[id].f_setJobExecuteId(handles[i].Job.f_getId());
                     handles[i].f_receiveMessage(ms[id]);
-                    System.Tracer.WriteLine(String.Format("J{0}: message-{1}: {2}", handles[i].Job.f_getId(), id, ms[id].GetMessageId()));
+                    System.Tracer.WriteLine("J{0}: {1} = {2}", handles[i].Job.f_getId(), id, ms[id].GetMessageId());
 
                     id++;
                     if (id == ms.Length)
@@ -83,9 +83,9 @@ namespace elbro
             this.JobHandles.ExecuteFuncLoadBalancer<Message>(SEND_MESSAGE_LOAD_BALANCER_TO_JOB, messages);
         }
 
-        public void f_jobFactoryStateChanged(int jobId, JOB_HANDLE state)
+        public void f_jobFactoryStateChanged(IJob job, JOB_HANDLE state)
         {
-            Tracer.WriteLine("JOB_FACTORY STATE CHANGED: {0} = {1}", jobId, state);
+            Tracer.WriteLine("JOB_FACTORY STATE CHANGED: {0}.{1} = {2}", job.Type, job.f_getId(), state);
         }
 
         ~JobFactory()

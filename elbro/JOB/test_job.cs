@@ -11,8 +11,8 @@ namespace elbro
     {
         public static void f_jobTest_Handle()
         {
-            var jobs = new JobMonitor();
-            IJob jo = new JobTest(jobs);
+            IJobContext jc = new JobMonitor();
+            IJob jo = new JobTest(jc);
             IJobHandle handle = new JobHandle(jo);
 
             /////////////////////////////////////////////////////
@@ -22,13 +22,17 @@ namespace elbro
         
         public static void f_jobTest_Factory()
         {
-            var jobs = new JobMonitor();
+            IJobContext jc = new JobMonitor();
 
-            jobs.f_createNew(new JobTest(jobs));
-            jobs.f_createNew(new JobTest(jobs));
-            jobs.f_createNew(new JobTest(jobs));
-            jobs.f_createNew(new JobTest(jobs));
-            jobs.f_createNew(new JobTest(jobs));
+            jc.f_createNew(new JobTest(jc));
+            jc.f_createNew(new JobTest(jc));
+            jc.f_createNew(new JobTest(jc));
+            jc.f_createNew(new JobTest(jc));
+            jc.f_createNew(new JobTest(jc));
+            jc.f_createNew(new JobTest(jc));
+            jc.f_createNew(new JobTest(jc));
+            jc.f_createNew(new JobTest(jc));
+            //jc.f_createNew(new JobTest(jc));
 
 
             /////////////////////////////////////////////////////
@@ -40,17 +44,17 @@ namespace elbro
             for (int i = 0; i < len; i++)
             {
                 ms[i] = new Message() { Input = i };
-                if (i == 0) ms[i].f_setTimeOut(3000);
-                if (i == 5) ms[i].f_setTimeOut(5000);
-                if (i == 7) ms[i].f_setTimeOut(7000);
+                if (i == 0) ms[i].f_setTimeOut(30000);
+                if (i == 5) ms[i].f_setTimeOut(7000);
+                if (i == 8) ms[i].f_setTimeOut(17000);
             }
 
-            Func<IJobHandle, Guid, bool> FUNC_CALLBACK = (msgHandle, groupId) =>
+            Func<IJobHandle, Guid, bool> responseCallbackDoneAll = (msgHandle, groupId) =>
              {
                  System.Tracer.WriteLine("TEST_JOB.RUN_TEST(): FINISH ....");
                  return false;
              };
-            jobs.f_requestMessages(JOB_TYPE.NONE, ms, FUNC_CALLBACK);
+            jc.f_sendRequestMessages(JOB_TYPE.NONE, ms, responseCallbackDoneAll);
 
             /////////////////////////////////////////////////////
 
@@ -71,9 +75,9 @@ namespace elbro
 
             /////////////////////////////////////////////////////
 
-            //Console.WriteLine("Enter to stop all JOB...");
-            //Console.ReadLine();
-            //jobs.f_removeAll();
+            Console.WriteLine("Enter to stop all JOB...");
+            Console.ReadLine();
+            jc.f_removeAll();
 
             /////////////////////////////////////////////////////
             Console.WriteLine("Enter to exit...");

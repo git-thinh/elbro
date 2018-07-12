@@ -9,7 +9,11 @@ namespace elbro
         int f_getTotalJob();
         IMessageContext MessageContext { get; }
 
-        void f_jobSingletonStateChanged(int jobId, JOB_HANDLE state);
+        IJobHandle f_createNew(IJob job);
+        bool f_sendRequestMessages(JOB_TYPE type, Message[] ms, Func<IJobHandle, Guid, bool> responseCallbackDoneAll);
+        void f_jobSingletonStateChanged(IJob job, JOB_HANDLE state);
+
+        void f_removeAll();
     }
     
     public interface IJobFactory
@@ -21,7 +25,7 @@ namespace elbro
 
         void f_sendRequestLoadBalancer(Message[] messages);
 
-        void f_jobFactoryStateChanged(int jobId, JOB_HANDLE state);
+        void f_jobFactoryStateChanged(IJob job, JOB_HANDLE state);
     }
 
     public interface IJobHandle
@@ -58,7 +62,7 @@ namespace elbro
         void f_responseMessage(Message m);
         Message f_responseMessageGet(Guid id);
 
-        void f_sendRequestMessages(JOB_TYPE type, Message[] messages);
+        void f_sendRequestMessages(JOB_TYPE type, Message[] ms, Func<IJobHandle, Guid, bool> responseCallbackDoneAll);
 
         //void f_eventRequestGroupMessageComplete(Guid groupId);
         //void f_eventRequestMessageTimeOut(Guid[] IdsExpired);

@@ -4,15 +4,18 @@ using System.Threading;
 
 namespace elbro
 {
-    public class JobBase : IJob
+    public class JobWorker : IJob
     {
         readonly QueueThreadSafe<Message> Messages;
-        volatile int Id = 0; 
+        volatile int Id = 0;
         volatile byte Status = 0; /* 0: none */
 
-        public JOB_STATE State {
-            get {
-                switch (this.Status) {
+        public JOB_STATE State
+        {
+            get
+            {
+                switch (this.Status)
+                {
                     case 1: return JOB_STATE.INIT;
                     case 2: return JOB_STATE.RUNNING;
                     case 3: return JOB_STATE.PROCESSING;
@@ -27,7 +30,7 @@ namespace elbro
 
         public int f_getId() { return Id; }
 
-        public JobBase(IJobContext jobContext, JOB_TYPE type)
+        public JobWorker(IJobContext jobContext, JOB_TYPE type)
         {
             this.Messages = new QueueThreadSafe<Message>();
 
@@ -37,10 +40,12 @@ namespace elbro
             this.Status = 1; /* 1: init */
         }
 
-        public void f_receiveMessage(Message m) {
+        public void f_receiveMessage(Message m)
+        {
             this.Messages.Enqueue(m);
         }
-        public void f_receiveMessages(Message[] ms) {
+        public void f_receiveMessages(Message[] ms)
+        {
             for (int i = 0; i < ms.Length; i++)
                 this.Messages.Enqueue(ms[i]);
         }
@@ -52,14 +57,15 @@ namespace elbro
         }
 
         public virtual void f_init() { }
-        public virtual void f_processMessageCallbackResult(Guid messageId) { }
-        public virtual Guid f_processMessage(Message m) { return Guid.Empty; }
-        
-        delegate Guid ProcessMessage(Message m);
-        void f_callbackProcessMessage(IAsyncResult asyncRes) {
+        public virtual void f_processMessageCallbackResult(Message m) { }
+        public virtual Message f_processMessage(Message m) { return m; }
+
+        delegate Message ProcessMessage(Message m);
+        void f_callbackProcessMessage(IAsyncResult asyncRes)
+        {
             AsyncResult ares = (AsyncResult)asyncRes;
             ProcessMessage delg = (ProcessMessage)ares.AsyncDelegate;
-            Guid result = delg.EndInvoke(asyncRes);
+            Message result = delg.EndInvoke(asyncRes);
             this.f_processMessageCallbackResult(result);
             //Thread.Sleep(1000);
             f_runLoop(this.Handle);
@@ -68,13 +74,14 @@ namespace elbro
         public void f_runLoop(IJobHandle handle)
         {
             /* 4: stop */
-            if (this.Status == 4) {
+            if (this.Status == 4)
+            {
                 Thread.Sleep(JOB_CONST.JOB_TIMEOUT_RUN);
                 f_runLoop(handle);
             }
 
             /* 1: init */
-            if (this.Status == 1)  
+            if (this.Status == 1)
             {
                 System.Tracer.WriteLine("J{0} BASE: INITED ...", this.Id);
                 this.Handle = handle;
@@ -86,18 +93,19 @@ namespace elbro
             }
 
             /* 2: running */
-            if (this.Status == 2) {
+            if (this.Status == 2)
+            {
                 Message m = this.Messages.Dequeue(null);
                 if (m == null)
                 {
-                    Tracer.WriteLine("J{0} BASE: WAITING ...", this.Id);
+                    //Tracer.WriteLine("J{0} BASE: WAITING ...", this.Id);
                     // WAITING TO RECEIVED MESSAGE ...
                     Thread.Sleep(JOB_CONST.JOB_TIMEOUT_RUN);
                     f_runLoop(handle);
                 }
                 else
                 {
-                    Tracer.WriteLine("J{0} BASE: PROCESSING ...", this.Id);
+                    //Tracer.WriteLine("J{0} BASE: PROCESSING ...", this.Id);
                     // PROCESSING MESSAGE
                     ProcessMessage fun = this.f_processMessage;
                     IAsyncResult asyncRes = fun.BeginInvoke(m, new AsyncCallback(f_callbackProcessMessage), null);
@@ -113,12 +121,13 @@ namespace elbro
                     //Console.WriteLine("Square Number processing completed");
                     //Guid res = fun.EndInvoke(asyncRes);
                 }
-            }            
+            }
             /// end function
             ///////////////////////
         }
 
-        ~JobBase() {
+        ~JobWorker()
+        {
             this.Messages.Clear();
         }
     }
