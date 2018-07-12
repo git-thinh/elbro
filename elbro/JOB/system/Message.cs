@@ -70,6 +70,7 @@ namespace elbro
     public class Message
     {
         Guid GroupId = Guid.Empty;
+
         int TimeOut = 0;
         public void f_setTimeOut(int timeOut) { this.TimeOut = timeOut; }
         public int f_getTimeOut() { return this.TimeOut; }

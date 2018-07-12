@@ -9,3 +9,17 @@ System.Linq.Async.dll
 System.Reactive.Testing.dll
 System.Reactive.ClientProfile.dll
 System.Reactive.ExtendedProfile.dll
+
+------------------------------------------------------------
+
+TaskParallelLibrary 1.0.2856
+
+Task Parallel Library for .NET 3.5; The package includes:
+
+	* Task<T> for executing asynchronous operations.
+	* Concurrent Collections such as ConcurrentStack, ConcurentQueue ad ConcurrentDictionary.
+	* PLINQ for writing parallel queries.
+	* additional Threading operations such as Barrier,SpinLock and SpinWait.
+
+
+

@@ -71,13 +71,17 @@ namespace elbro
             f_runLoop(this.Handle);
         }
 
-        void f_sleepAfterLoop(IJobHandle handle) {
-                Thread.Sleep(JOB_CONST.JOB_TIMEOUT_RUN);
-                f_runLoop(handle);
+        void f_sleepAfterLoop(IJobHandle handle)
+        {
+            Thread.Sleep(JOB_CONST.JOB_TIMEOUT_RUN);
+            f_runLoop(handle);
         }
 
         public void f_runLoop(IJobHandle handle)
         {
+            // Create the token source.
+            CancellationTokenSource cts = new CancellationTokenSource();
+
             /* 4: stop */
             if (this.Status == 4) f_sleepAfterLoop(handle);
 
@@ -87,9 +91,7 @@ namespace elbro
                 System.Tracer.WriteLine("J{0} BASE: INITED ...", this.Id);
                 this.Handle = handle;
                 this.f_init();
-
                 this.Status = 2; /* 2: running */
-
                 f_runLoop(handle);
             }
 
@@ -107,8 +109,7 @@ namespace elbro
                 {
                     //Tracer.WriteLine("J{0} BASE: WAITING ...", this.Id);
                     // WAITING TO RECEIVED MESSAGE ...
-                    Thread.Sleep(JOB_CONST.JOB_TIMEOUT_RUN);
-                    f_runLoop(handle);
+                    f_sleepAfterLoop(handle);
                 }
                 else
                 {
