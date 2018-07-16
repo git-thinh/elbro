@@ -20,7 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>CS3021, CS0649</NoWarn>
+    <NoWarn>CS3021, CS0649, CS0414</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -585,6 +585,14 @@
     <Compile Include="lib\NHTTP\LogManager.cs" />
     <Compile Include="lib\NHTTP\NHttpException.cs" />
     <Compile Include="lib\NHTTP\ProtocolException.cs" />
+    <Compile Include="lib\Pipe\PipeStreamReader.cs" />
+    <Compile Include="lib\Pipe\PipeStreamWrapper.cs" />
+    <Compile Include="lib\Pipe\PipeStreamWriter.cs" />
+    <Compile Include="lib\Pipe\NamedPipeClient.cs" />
+    <Compile Include="lib\Pipe\NamedPipeConnection.cs" />
+    <Compile Include="lib\Pipe\NamedPipeServer.cs" />
+    <Compile Include="lib\Pipe\PipeExceptionEventHandler.cs" />
+    <Compile Include="lib\Pipe\Worker.cs" />
     <Compile Include="lib\Rpc\Check.cs" />
     <Compile Include="lib\Rpc\Enums.cs" />
     <Compile Include="lib\Rpc\Interop\RpcApi.cs" />
@@ -760,6 +768,7 @@
     <Content Include="lib\Fleck\ReadMe.txt" />
     <Content Include="lib\IpcChannel\ReadMe.txt" />
     <Content Include="lib\NAudio\Changes.xml" />
+    <Content Include="lib\Pipe\ReadMe.txt" />
     <Content Include="lib\Rpc\ReadMe.txt" />
     <Content Include="lib\Serialization\Salar.Bois\TODO.txt" />
     <EmbeddedResource Include="dll\System.Threading.dll" />
