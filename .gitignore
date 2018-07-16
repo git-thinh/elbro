@@ -88,3 +88,13 @@ elapi/obj/Debug/elapi.csproj.FileListAbsolute.txt
 elplay/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
 run/bin/ellib.pdb
 run/bin/PdfiumViewer.pdb
+run/elplay.vshost.exe.manifest
+run/elplay.vshost.exe
+run/elplay.pdb
+run/elplay.exe
+elplay/obj/Debug/elplay.pdb
+elplay/obj/Debug/elplay.exe
+elplay/obj/Debug/elplay.csprojResolveAssemblyReference.cache
+elplay/obj/Debug/elplay.csproj.FileListAbsolute.txt
+elplay/bin/Debug/elplay.vshost.exe.manifest
+.vs/elplay/v14/.suo
