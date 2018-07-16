@@ -53,8 +53,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
-      <HintPath>..\run\bin\System.Core.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>DLL\TaskParallelLibrary\System.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -129,6 +128,11 @@
     <Content Include="icon.ico" />
     <Content Include="icon.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\ellib\ellib.csproj">
+      <Project>{a24a595a-6cfd-4ad6-92b1-b8daabeb893a}</Project>
+      <Name>ellib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

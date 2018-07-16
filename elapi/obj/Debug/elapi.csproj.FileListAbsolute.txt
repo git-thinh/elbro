@@ -4,10 +4,3 @@ C:\elbro\elapi\obj\Debug\elapi.csprojResolveAssemblyReference.cache
 C:\elbro\elapi\obj\Debug\elapi.csproj.CoreCompileInputs.cache
 C:\elbro\elapi\obj\Debug\elapi.exe
 C:\elbro\elapi\obj\Debug\elapi.pdb
-C:\elbro\elapi\obj\Debug\NAudio.Gui.Fader.resources
-C:\elbro\elapi\obj\Debug\NAudio.Gui.PanSlider.resources
-C:\elbro\elapi\obj\Debug\NAudio.Gui.Pot.resources
-C:\elbro\elapi\obj\Debug\NAudio.Gui.VolumeSlider.resources
-C:\elbro\elapi\obj\Debug\NAudio.Gui.WaveViewer.resources
-C:\elbro\elapi\obj\Debug\NAudio.Utils.ProgressLog.resources
-C:\elbro\elapi\obj\Debug\elapi.csproj.GenerateResource.Cache

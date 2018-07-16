@@ -114,8 +114,8 @@ namespace elbro
 
         public static void f_MediaMP3Stream_Demo()
         {
-            Application.EnableVisualStyles();
-            Application.Run(new fMediaMP3Stream_Demo());
+            //Application.EnableVisualStyles();
+            //Application.Run(new fMediaMP3Stream_Demo());
         }
 
         public static void f_jobWebClient()

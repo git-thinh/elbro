@@ -9,7 +9,7 @@ namespace conso1
     {
         static void Main(string[] args)
         {
-            //IpcChannel._test_IpcChannel.RUN();
+            IpcChannel._test_IpcChannel.RUN();
             //Rpc._test_Rpc.RUN();
             //Google.ProtocolBuffers._test.RUN_1();
             //Google.ProtocolBuffers._test.RUN_2();
