@@ -85,3 +85,6 @@ elapi/obj/Debug/elapi.csproj.FileListAbsolute.txt
 /elapi/obj/Debug/elapi.csproj.CopyComplete
 /elapi/obj/Debug/elapi.csproj.CoreCompileInputs.cache
 /elapi/obj/Debug/elapi.csproj.FileListAbsolute.txt
+elplay/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+run/bin/ellib.pdb
+run/bin/PdfiumViewer.pdb

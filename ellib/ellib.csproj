@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\run\</OutputPath>
+    <OutputPath>..\run\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -3056,6 +3056,66 @@
     <Compile Include="lib\Serialization\Salar.Bois\EnBoisMemberType.cs" />
     <Compile Include="lib\Serialization\Salar.Bois\PrimitivesConvertion.cs" />
     <Compile Include="lib\Serialization\Salar.Bois\ReflectionHelper.cs" />
+    <Compile Include="lib\SimpleBrowser\BasicAuthenticationToken.cs" />
+    <Compile Include="lib\SimpleBrowser\Browser.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\AnchorElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\ButtonInputElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\CheckboxInputElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\FileUploadElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\FormElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\FormElementElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\FrameElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\IHasRawPostData.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\ImageInputElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\InputElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\LabelElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\OptionElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\RadioInputElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\SelectableInputElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\SelectElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Elements\TextAreaElement.cs" />
+    <Compile Include="lib\SimpleBrowser\Enumerations.cs" />
+    <Compile Include="lib\SimpleBrowser\HtmlElement.cs" />
+    <Compile Include="lib\SimpleBrowser\HtmlLogFormatter.cs" />
+    <Compile Include="lib\SimpleBrowser\HtmlResult.cs" />
+    <Compile Include="lib\SimpleBrowser\HttpRequestLog.cs" />
+    <Compile Include="lib\SimpleBrowser\Internal\ApacheMimeTypes.cs" />
+    <Compile Include="lib\SimpleBrowser\Internal\CollectionExtensions.cs" />
+    <Compile Include="lib\SimpleBrowser\Internal\ObjectExtensions.cs" />
+    <Compile Include="lib\SimpleBrowser\Internal\SetCookieHeaderParser.cs" />
+    <Compile Include="lib\SimpleBrowser\Internal\StringExtensions.cs" />
+    <Compile Include="lib\SimpleBrowser\Internal\StringUtil.cs" />
+    <Compile Include="lib\SimpleBrowser\Internal\XmlExtensions.cs" />
+    <Compile Include="lib\SimpleBrowser\KeyStateOption.cs" />
+    <Compile Include="lib\SimpleBrowser\NavigationState.cs" />
+    <Compile Include="lib\SimpleBrowser\Network\IHttpWebRequest.cs" />
+    <Compile Include="lib\SimpleBrowser\Network\IHttpWebResponse.cs" />
+    <Compile Include="lib\SimpleBrowser\Network\IWebRequestFactory.cs" />
+    <Compile Include="lib\SimpleBrowser\Network\WebRequestWrapper.cs" />
+    <Compile Include="lib\SimpleBrowser\Network\WebResponseWrapper.cs" />
+    <Compile Include="lib\SimpleBrowser\Parser\DocumentBuilder.cs" />
+    <Compile Include="lib\SimpleBrowser\Parser\DocumentCleaner.cs" />
+    <Compile Include="lib\SimpleBrowser\Parser\ElementPositioningRule.cs" />
+    <Compile Include="lib\SimpleBrowser\Parser\HtmlParser.cs" />
+    <Compile Include="lib\SimpleBrowser\Parser\HtmlTokenizer.cs" />
+    <Compile Include="lib\SimpleBrowser\Parser\PositioningRules\A.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\ExpressionUtil.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\SelectorParserCatalog.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\Selectors\AllSelector.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\Selectors\AttributeSelector.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\Selectors\ChildSelector.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\Selectors\ClassSelector.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\Selectors\CommaSelector.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\Selectors\DescendentSelector.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\Selectors\ElementSelector.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\Selectors\IdSelector.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\Selectors\NeighbourSelector.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\XQuery.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\XQueryException.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\XQueryParserContext.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\XQueryResultsContext.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\XQuerySelector.cs" />
+    <Compile Include="lib\SimpleBrowser\Query\XQuerySelectorCreator.cs" />
     <Compile Include="lib\System.Linq\System.Linq.Dynamic\LinqDynamicMultiSortingUtility.cs" />
     <Compile Include="lib\System.Linq\System.Linq.Dynamic\MoreLinq\Acquire.cs" />
     <Compile Include="lib\System.Linq\System.Linq.Dynamic\MoreLinq\Assert.cs" />
@@ -3365,6 +3425,7 @@
     <Compile Include="lib\___\Processes\ProcessRunner.cs" />
     <Compile Include="lib\___\Processes\ScriptEngine.cs" />
     <Compile Include="lib\___\Processes\ScriptRunner.cs" />
+    <Compile Include="lib\___\StringExt.cs" />
     <Compile Include="lib\___\_Core\ArgumentList.cs" />
     <Compile Include="lib\___\_Core\ObjectKeepAlive.cs" />
     <Compile Include="lib\___\_Core\ReadOnlyList.cs" />
@@ -3409,6 +3470,7 @@
     <Content Include="lib\UI\Gma.System.MouseKeyHook\HotKeys\ReadMe.txt" />
     <None Include="lib\Geckofx\v45\Core\DOM\Events\DomEvents.cd" />
     <None Include="lib\Geckofx\v45\Core\Firefox\omni.ja" />
+    <None Include="lib\SimpleBrowser\Resources\HtmlLogTemplate.cshtml" />
     <None Include="lib\System.Linq\System.Linq.Dynamic\MoreLinq\ToDelimitedString.g.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>ToDelimitedString.g.cs</LastGenOutput>
