@@ -37,6 +37,11 @@
     <ApplicationIcon>ico.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ellib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\run\ellib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>dll\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -81,12 +86,6 @@
     <Compile Include="job\test\JobWebSocketServerTest.cs" />
     <Compile Include="job\test_job.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ellib\ellib.csproj">
-      <Project>{a24a595a-6cfd-4ad6-92b1-b8daabeb893a}</Project>
-      <Name>ellib</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

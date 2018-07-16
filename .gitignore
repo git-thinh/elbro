@@ -38,3 +38,11 @@ elbro/obj/Debug/elbro.pdb
 elbro/obj/Debug/elbro.Properties.Resources.resources
 run/elbro.exe
 run/elbro.pdb
+run/elapi.exe
+run/elapi.pdb
+run/elapi.exe
+.vs/elapi/v15/.suo
+.vs/elapi/v15/Server/sqlite3/db.lock
+.vs/elapi/v15/Server/sqlite3/storage.ide
+run/elapi.pdb
+elapi/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
