@@ -942,6 +942,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="dll\ReadMe.txt" />
+    <Content Include="lib\BigArray\ReadMe.txt" />
     <Content Include="lib\Fleck\ReadMe.txt" />
     <Content Include="lib\IpcChannel\ReadMe.txt" />
     <Content Include="lib\NAudio\Changes.xml" />
