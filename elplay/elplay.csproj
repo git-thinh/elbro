@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{46646F34-99C0-4AA9-A0D1-D62ACCB8494F}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>elplay</RootNamespace>
     <AssemblyName>elplay</AssemblyName>
@@ -31,10 +31,25 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>favicon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>elplay.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AxInterop.WMPLib">
+      <HintPath>..\run\bin\AxInterop.WMPLib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="ellib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\run\bin\ellib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Interop.WMPLib">
+      <HintPath>..\run\bin\Interop.WMPLib.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -43,6 +58,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Speech">
       <HintPath>..\run\bin\System.Speech.dll</HintPath>
       <Private>False</Private>
@@ -51,11 +67,29 @@
       <HintPath>..\run\bin\System.Threading.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="app.cs" />
+    <Compile Include="fPlayer.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="favicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

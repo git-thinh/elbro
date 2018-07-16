@@ -1,15 +1,78 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
 using System.Reflection;
-using System.Text;
+using System.Security.Permissions;
 using System.Threading;
 using System.Windows.Forms;
 
 namespace elplay
 {
+    [PermissionSet(SecurityAction.LinkDemand, Name = "Everything"),
+    PermissionSet(SecurityAction.InheritanceDemand, Name = "FullTrust")]
     public class app
     {
+        #region [ VARIABLE ]
+
+        public const int m_item_width = 120;
+        public const int m_item_height = 90;
+
+        public const int m_box_width = 320;
+        public const int m_box_height = 180;
+
+        public const int m_app_width = m_box_width * 2 + 29;
+        public const int m_app_height = 569;
+
+        public const int m_player_width = 640;
+        public const int m_player_height = 360;
+        
+        static fPlayer media;
+
+        #endregion
+         
+        static void f_player_init()
+        {
+            media = new fPlayer();
+            media.FormBorderStyle = FormBorderStyle.None;
+            media.ShowInTaskbar = false;
+            media.StartPosition = FormStartPosition.Manual;
+            media.Shown += (se, ev) =>
+            {
+                media.f_active();
+            };
+            media.Width = app.m_app_width;
+            //media.Width = 1;
+            //media.Location = new System.Drawing.Point(-2000, -2000);
+            //media.Show();
+            //media.Hide();
+
+            Application.EnableVisualStyles();
+            Application.Run(media);
+        }
+
+        public static void f_player_Open(string url, string title)
+        {
+            media.Invoke((Action)(() =>
+            {
+                media.Show();
+                media.ShowInTaskbar = true;
+                media.open(url, title);
+            }));
+        }
+
+        public static void f_player_Hide()
+        {
+            media.ShowInTaskbar = false;
+            media.Hide();
+        }
+
+        public static void f_player_Close()
+        {
+            f_EXIT();
+        }
+         
+        
         static app()
         {
             AppDomain.CurrentDomain.AssemblyResolve += (se, ev) =>
@@ -17,11 +80,11 @@ namespace elplay
                 Assembly asm = null;
                 string comName = ev.Name.Split(',')[0];
 
-                string resourceName = @"dll\" + comName + ".dll";
-                var assembly = Assembly.GetExecutingAssembly();
-                resourceName = typeof(app).Namespace + "." + resourceName.Replace(" ", "_").Replace("\\", ".").Replace("/", ".");
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                //using (Stream stream = File.OpenRead("bin/" + comName + ".dll"))
+                //string resourceName = @"dll\" + comName + ".dll";
+                //var assembly = Assembly.GetExecutingAssembly();
+                //resourceName = typeof(app).Namespace + "." + resourceName.Replace(" ", "_").Replace("\\", ".").Replace("/", ".");
+                //using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                using (Stream stream = File.OpenRead("bin/" + comName + ".dll"))
                 {
                     if (stream == null)
                     {
@@ -43,8 +106,6 @@ namespace elplay
                 return asm;
             };
         }
-
-        //static JobMonitor jom; 
 
         public static void f_INIT()
         {
@@ -70,60 +131,30 @@ namespace elplay
         }
 
         public static void f_RUN()
-        { 
-            //jom = new JobMonitor();
-            //Application.EnableVisualStyles();
-
-
-            //Application.Run(new fMedia());
-            //Application.Run(new fMain());
-            //Application.Run(new fEdit());
-            //Application.Run(new fBrowser());
-            //Application.Run(new fGeckFX());
-            //main = new fApp(jobs);
-            //main = new fNone(jom);
-            //Application.Run(main);
-            f_Exit();
-        }
-
-
-        //public static IFORM get_Main() {
-        //    return null;
-        //}
-
-        static void f_Exit()
         {
-            //jom.f_removeAll();
-
-            //if (Xpcom.IsInitialized)
-            //    Xpcom.Shutdown();
-            //Application.ExitThread();
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            //Application.Exit();
+            f_player_init();
         }
-         
+
+        public static void f_EXIT()
+        {
+            media.f_form_freeResource();
+            media.Close();
+
+            Application.ExitThread();
+            // wait for complete threads, free resource
+            //Thread.Sleep(30);
+            Application.Exit();
+        }
     }
 
     class Program
-    {
+    { 
         [STAThread]
         static void Main(string[] args)
         {
             app.f_INIT();
-            //app.f_RUN();
-
-            //test_job.f_rpc_Handle();
-            //test_job.f_websocket_Handle();
-            //test_job.f_JobTestRequestUrl();
-            //test_job.f_handle_HTTP_FILE();
-            //test_job.f_jobTest_Handle();
-            //test_job.f_jobTest_Factory();
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            app.f_RUN();
+            app.f_EXIT();
         }
     }
 }

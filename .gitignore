@@ -98,3 +98,7 @@ elplay/obj/Debug/elplay.csprojResolveAssemblyReference.cache
 elplay/obj/Debug/elplay.csproj.FileListAbsolute.txt
 elplay/bin/Debug/elplay.vshost.exe.manifest
 .vs/elplay/v14/.suo
+ellib/obj/Debug/DesignTimeResolveAssemblyReferences.cache
+elplay/obj/Debug/elplay.csproj.GenerateResource.Cache
+elplay/obj/Debug/elplay.Resources.resources
+elplay/obj/Debug/TempPE/Resources.Designer.cs.dll

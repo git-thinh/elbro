@@ -368,11 +368,11 @@ namespace ellib
             //Assembly asm = null;
             string comName = fontName.Split(',')[0];
 
-            string resourceName = @"lib\UI\Fonts\" + comName + ".dll";
-            var assembly = Assembly.GetExecutingAssembly();
-            resourceName = typeof(IconButton).Namespace + "." + resourceName.Replace(" ", "_").Replace("\\", ".").Replace("/", ".");
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            //using (Stream stream = File.OpenRead("bin/" + comName + ".dll"))
+            //string resourceName = @"lib\UI\Fonts\" + comName + ".ttf";
+            //var assembly = Assembly.GetExecutingAssembly();
+            //resourceName = typeof(IconButton).Namespace + "." + resourceName.Replace(" ", "_").Replace("\\", ".").Replace("/", ".");
+            //using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (Stream stream = File.OpenRead("bin/ionicons.ttf"))
             {
                 if (stream == null)
                 {
