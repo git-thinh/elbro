@@ -80,3 +80,5 @@ run/elbro.vshost.exe
 .vs/System.Core/v14/.suo
 .vs/elbro/v14/.suo
 .vs/ellib/v14/.suo
+elapi/obj/Debug/elapi.csproj.FileListAbsolute.txt
+.vs/elapi/v14/.suo
