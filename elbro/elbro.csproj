@@ -42,6 +42,11 @@
       <HintPath>DLL\AxInterop.WMPLib.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ellib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\run\ellib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Interop.WMPLib">
       <HintPath>DLL\Interop.WMPLib.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
