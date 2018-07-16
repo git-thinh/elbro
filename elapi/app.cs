@@ -8,44 +8,17 @@ using System.Windows.Forms;
 
 namespace corel
 {
+    class Program
+    {
+        [STAThread]
+        static void Main(string[] args)
+        {
+            app.f_INIT();
+            app.f_RUN();
+        }
+    }
     public class app
     {
-        static app()
-        {
-            AppDomain.CurrentDomain.AssemblyResolve += (se, ev) =>
-            {
-                Assembly asm = null;
-                string comName = ev.Name.Split(',')[0];
-
-                string resourceName = @"dll\" + comName + ".dll";
-                var assembly = Assembly.GetExecutingAssembly();
-                resourceName = typeof(app).Namespace + "." + resourceName.Replace(" ", "_").Replace("\\", ".").Replace("/", ".");
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                //using (Stream stream = File.OpenRead("bin/" + comName + ".dll"))
-                {
-                    if (stream == null)
-                    {
-                        //Debug.WriteLine(resourceName);
-                    }
-                    else
-                    {
-                        byte[] buffer = new byte[stream.Length];
-                        using (MemoryStream ms = new MemoryStream())
-                        {
-                            int read;
-                            while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
-                                ms.Write(buffer, 0, read);
-                            buffer = ms.ToArray();
-                        }
-                        asm = Assembly.Load(buffer);
-                    }
-                }
-                return asm;
-            };
-        }
-
-        //static JobMonitor jom; 
-
         public static void f_INIT()
         {
             ThreadPool.SetMaxThreads(25, 25);
@@ -70,60 +43,29 @@ namespace corel
         }
 
         public static void f_RUN()
-        { 
-            //jom = new JobMonitor();
-            //Application.EnableVisualStyles();
-
-
-            //Application.Run(new fMedia());
-            //Application.Run(new fMain());
-            //Application.Run(new fEdit());
-            //Application.Run(new fBrowser());
-            //Application.Run(new fGeckFX());
-            //main = new fApp(jobs);
-            //main = new fNone(jom);
-            //Application.Run(main);
-            f_Exit();
-        }
-
-
-        //public static IFORM get_Main() {
-        //    return null;
-        //}
-
-        static void f_Exit()
         {
-            //jom.f_removeAll();
-
-            //if (Xpcom.IsInitialized)
-            //    Xpcom.Shutdown();
-            //Application.ExitThread();
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            //Application.Exit();
-        }
-         
-    }
-
-    class Program
-    {
-        [STAThread]
-        static void Main(string[] args)
-        {
-            app.f_INIT();
-            //app.f_RUN();
-
-            test_job.f_rpc_Handle();
+            //test_job.f_rpc_Handle();
             //test_job.f_websocket_Handle();
             //test_job.f_JobTestRequestUrl();
             //test_job.f_handle_HTTP_FILE();
             //test_job.f_jobTest_Handle();
             //test_job.f_jobTest_Factory();
 
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            //IpcChannel._test_IpcChannel.RUN();
+            //Rpc._test_Rpc.RUN();
+            //Google.ProtocolBuffers._test.RUN_1();
+            //Google.ProtocolBuffers._test.RUN_2();
+
+            f_EXIT();            
         }
+        
+        static void f_EXIT()
+        {
+            Console.WriteLine("Enter to EXIT...");
+            Console.ReadLine();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();            
+        }         
     }
+
 }

@@ -1,6 +1,0 @@
-C:\elbro\run\elapi.exe
-C:\elbro\run\elapi.pdb
-C:\elbro\elapi\obj\Debug\elapi.csprojResolveAssemblyReference.cache
-C:\elbro\elapi\obj\Debug\elapi.csproj.CoreCompileInputs.cache
-C:\elbro\elapi\obj\Debug\elapi.exe
-C:\elbro\elapi\obj\Debug\elapi.pdb

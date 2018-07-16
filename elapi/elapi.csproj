@@ -56,6 +56,7 @@
     <Compile Include="api\ListDoubleThreadSafe.cs" />
     <Compile Include="api\ListThreadSafe.cs" />
     <Compile Include="api\Tracer.cs" />
+    <Compile Include="app.cs" />
     <Compile Include="job\jobs\JobFileHttp.cs" />
     <Compile Include="job\jobs\JobMessage.cs" />
     <Compile Include="job\system\JobBase.cs" />
@@ -79,7 +80,6 @@
     <Compile Include="job\test\JobWebSocketClientTest.cs" />
     <Compile Include="job\test\JobWebSocketServerTest.cs" />
     <Compile Include="job\test_job.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

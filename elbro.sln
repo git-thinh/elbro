@@ -5,10 +5,6 @@ VisualStudioVersion = 15.0.27130.2003
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "elbro", "elbro\elbro.csproj", "{EC0FD3E4-741F-48F7-A56F-D5D13810C991}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "elapi", "elapi\elapi.csproj", "{CFD28A06-93A3-454F-9D48-F4D77E119690}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ellib", "ellib\ellib.csproj", "{A24A595A-6CFD-4AD6-92B1-B8DAABEB893A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,22 +21,6 @@ Global
 		{EC0FD3E4-741F-48F7-A56F-D5D13810C991}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EC0FD3E4-741F-48F7-A56F-D5D13810C991}.Release|x86.ActiveCfg = Release|Any CPU
 		{EC0FD3E4-741F-48F7-A56F-D5D13810C991}.Release|x86.Build.0 = Release|Any CPU
-		{CFD28A06-93A3-454F-9D48-F4D77E119690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CFD28A06-93A3-454F-9D48-F4D77E119690}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CFD28A06-93A3-454F-9D48-F4D77E119690}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CFD28A06-93A3-454F-9D48-F4D77E119690}.Debug|x86.Build.0 = Debug|Any CPU
-		{CFD28A06-93A3-454F-9D48-F4D77E119690}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CFD28A06-93A3-454F-9D48-F4D77E119690}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CFD28A06-93A3-454F-9D48-F4D77E119690}.Release|x86.ActiveCfg = Release|Any CPU
-		{CFD28A06-93A3-454F-9D48-F4D77E119690}.Release|x86.Build.0 = Release|Any CPU
-		{A24A595A-6CFD-4AD6-92B1-B8DAABEB893A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A24A595A-6CFD-4AD6-92B1-B8DAABEB893A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A24A595A-6CFD-4AD6-92B1-B8DAABEB893A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A24A595A-6CFD-4AD6-92B1-B8DAABEB893A}.Debug|x86.Build.0 = Debug|Any CPU
-		{A24A595A-6CFD-4AD6-92B1-B8DAABEB893A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A24A595A-6CFD-4AD6-92B1-B8DAABEB893A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A24A595A-6CFD-4AD6-92B1-B8DAABEB893A}.Release|x86.ActiveCfg = Release|Any CPU
-		{A24A595A-6CFD-4AD6-92B1-B8DAABEB893A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
