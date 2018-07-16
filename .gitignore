@@ -82,3 +82,6 @@ run/elbro.vshost.exe
 .vs/ellib/v14/.suo
 elapi/obj/Debug/elapi.csproj.FileListAbsolute.txt
 .vs/elapi/v14/.suo
+/elapi/obj/Debug/elapi.csproj.CopyComplete
+/elapi/obj/Debug/elapi.csproj.CoreCompileInputs.cache
+/elapi/obj/Debug/elapi.csproj.FileListAbsolute.txt
