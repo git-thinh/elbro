@@ -74,7 +74,6 @@ namespace elplay
         {
             f_EXIT();
         }
-         
         
         static app()
         {

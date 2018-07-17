@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -70,6 +71,61 @@
     <Compile Include="fPlayer.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="lib\UI\ControlTransparent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="lib\UI\Fonts\IconButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="lib\UI\Fonts\IconType.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Class1.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Combination.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Hook.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\HotKeys\HotKeyArgs.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\HotKeys\HotKeySet.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\HotKeys\HotKeySetCollection.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\HotKeys\HotKeySetsListener.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\IKeyboardEvents.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\IKeyboardMouseEvents.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\IMouseEvents.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\AppEventFacade.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\AppKeyListener.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\AppMouseListener.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\BaseListener.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\ButtonSet.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\Callback.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\Chord.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\EventFacade.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\GlobalEventFacade.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\GlobalKeyListener.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\GlobalMouseListener.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\KeyboardState.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\KeyListener.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\KeysExtensions.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\MouseListener.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Implementation\Subscribe.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\KeyCombinationExtensions.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\KeyEventArgsExt.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\KeyPressEventArgsExt.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\MouseEventExtArgs.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\Sequence.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\SequenceBase.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\AppMouseStruct.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\CallbackData.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\HookHelper.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\HookIds.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\HookNativeMethods.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\HookProcedure.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\HookProcedureHandle.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\HookResult.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\HotkeysNativeMethods.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\KeyboardHookStruct.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\KeyboardNativeMethods.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\Messages.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\MouseNativeMethods.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\MouseStruct.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\Point.cs" />
+    <Compile Include="lib\UI\Gma.System.MouseKeyHook\WinApi\ThreadNativeMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -79,19 +135,13 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
+    <Content Include="lib\UI\Gma.System.MouseKeyHook\HotKeys\ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ellib\ellib.csproj">
-      <Project>{a24a595a-6cfd-4ad6-92b1-b8daabeb893a}</Project>
-      <Name>ellib</Name>
-      <Private>False</Private>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
