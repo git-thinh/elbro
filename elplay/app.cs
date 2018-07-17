@@ -39,6 +39,9 @@ namespace elplay
             media.StartPosition = FormStartPosition.Manual;
             media.Shown += (se, ev) =>
             {
+                media.Top = (Screen.PrimaryScreen.WorkingArea.Height - app.m_player_height) / 2;
+                media.Left = (Screen.PrimaryScreen.WorkingArea.Width - app.m_player_width) / 2;
+
                 media.f_active();
             };
             media.Width = app.m_app_width;

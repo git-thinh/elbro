@@ -13,7 +13,7 @@ namespace ellib
     /// Win Forms icon button. Clickable, with hover colour & tooltip.
     /// </summary>
     public class IconButton : PictureBox
-    {
+    { 
         #region Constructors 
         /// <summary>
         /// Initializes a new instance of the <see cref="IconButton" /> class using default values - star icon, normal color = gray, hover color = black.
@@ -314,6 +314,10 @@ namespace ellib
             InitialiseFont();
         }
 
+        public IconButton() {
+            _initFont();
+        }
+
         [System.Runtime.InteropServices.DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont,
            IntPtr pdv, [System.Runtime.InteropServices.In] ref uint pcFonts);
@@ -344,7 +348,7 @@ namespace ellib
             ////////{
             ////////    // log?
             ////////}
-            _initFont("ionicons.ttf");
+            _initFont();
             try
             {
                 unsafe
@@ -363,10 +367,12 @@ namespace ellib
             }
         }
         static byte[] bufferFont;
-        private static void _initFont(string fontName)
-        { 
+        private static void _initFont(string fontName = null)
+        {
+            if (bufferFont != null && bufferFont.Length > 0) return;
+
             //Assembly asm = null;
-            string comName = fontName.Split(',')[0];
+            //string comName = fontName.Split(',')[0];
 
             //string resourceName = @"lib\UI\Fonts\" + comName + ".ttf";
             //var assembly = Assembly.GetExecutingAssembly();

@@ -42,11 +42,6 @@
       <HintPath>..\run\bin\AxInterop.WMPLib.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="ellib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\run\bin\ellib.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Interop.WMPLib">
       <HintPath>..\run\bin\Interop.WMPLib.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -90,6 +85,13 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ellib\ellib.csproj">
+      <Project>{a24a595a-6cfd-4ad6-92b1-b8daabeb893a}</Project>
+      <Name>ellib</Name>
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

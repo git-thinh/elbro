@@ -102,3 +102,7 @@ ellib/obj/Debug/DesignTimeResolveAssemblyReferences.cache
 elplay/obj/Debug/elplay.csproj.GenerateResource.Cache
 elplay/obj/Debug/elplay.Resources.resources
 elplay/obj/Debug/TempPE/Resources.Designer.cs.dll
+elplay/obj/Debug/elplay.csproj.CoreCompileInputs.cache
+.vs/elplay/v15/.suo
+.vs/elplay/v15/Server/sqlite3/db.lock
+.vs/elplay/v15/Server/sqlite3/storage.ide
