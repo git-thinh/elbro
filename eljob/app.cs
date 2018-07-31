@@ -98,16 +98,21 @@ namespace eljob
             //Application.Run(main);
             //f_Exit();
 
+            f_publish_Init();
+        }
+        
+        #region [ PUBLISH ]
 
-            server = new NamedPipeServer<MyMessage>("ELJOB");
-            server.ClientConnected += OnClientConnected;
-            server.ClientDisconnected += OnClientDisconnected;
-            server.ClientMessage += OnClientMessage;
-            server.Error += OnError;
+        static void f_publish_Init() {
+            server = new NamedPipeServer<MyMessage>("EL_JOB");
+            server.ClientConnected += f_publish_OnClientConnected;
+            server.ClientDisconnected += f_publish_OnClientDisconnected;
+            server.ClientMessage += f_publish_OnClientMessage;
+            server.Error += f_publish_OnError;
             server.Start();
         }
 
-        static void OnClientConnected(NamedPipeConnection<MyMessage, MyMessage> connection)
+        static void f_publish_OnClientConnected(NamedPipeConnection<MyMessage, MyMessage> connection)
         {
             Console.WriteLine("Client {0} is now connected!", connection.Id);
             connection.PushMessage(new MyMessage
@@ -117,20 +122,22 @@ namespace eljob
             });
         }
 
-        static void OnClientDisconnected(NamedPipeConnection<MyMessage, MyMessage> connection)
+        static void f_publish_OnClientDisconnected(NamedPipeConnection<MyMessage, MyMessage> connection)
         {
             Console.WriteLine("Client {0} disconnected", connection.Id);
         }
 
-        static void OnClientMessage(NamedPipeConnection<MyMessage, MyMessage> connection, MyMessage message)
+        static void f_publish_OnClientMessage(NamedPipeConnection<MyMessage, MyMessage> connection, MyMessage message)
         {
             Console.WriteLine("Client {0} says: {1}", connection.Id, message);
         }
 
-        static void OnError(Exception exception)
+        static void f_publish_OnError(Exception exception)
         {
             Console.Error.WriteLine("ERROR: {0}", exception);
         }
+        
+        #endregion
 
         //public static IFORM get_Main() {
         //    return null;

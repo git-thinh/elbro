@@ -51,8 +51,8 @@ namespace System.IO.Pipes
 
         private int _nextPipeId;
 
-        private volatile bool _shouldKeepRunning;
         private volatile bool _isRunning;
+        private volatile bool _shouldKeepRunning;
 
         /// <summary>
         /// Constructs a new <c>NamedPipeServer</c> object that listens for client connections on the given <paramref name="pipeName"/>.
@@ -61,7 +61,6 @@ namespace System.IO.Pipes
         public Server(string pipeName)
         {
             _pipeName = pipeName;
-            _isRunning = false;
         }
 
         /// <summary>
@@ -69,7 +68,7 @@ namespace System.IO.Pipes
         /// This method returns immediately.
         /// </summary>
         public void Start()
-        {
+        { 
             _shouldKeepRunning = true;
             var worker = new Worker();
             worker.Error += OnError;
