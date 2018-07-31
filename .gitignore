@@ -106,3 +106,12 @@ elplay/obj/Debug/elplay.csproj.CoreCompileInputs.cache
 .vs/elplay/v15/.suo
 .vs/elplay/v15/Server/sqlite3/db.lock
 .vs/elplay/v15/Server/sqlite3/storage.ide
+eljob/eljob.csproj.user
+eljob/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+eljob/obj/Debug/eljob.csproj.FileListAbsolute.txt
+eljob/obj/Debug/eljob.csprojResolveAssemblyReference.cache
+eljob/obj/Debug/eljob.exe
+eljob/obj/Debug/eljob.pdb
+debug/eljob.vshost.exe
+debug/eljob.pdb
+debug/eljob.exe
