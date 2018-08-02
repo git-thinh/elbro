@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto">
+      <HintPath>dll\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>dll\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
@@ -51,6 +54,7 @@
       <HintPath>dll\System.Threading.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq">
       <HintPath>dll\System.Xml.Linq.dll</HintPath>
@@ -59,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="app.cs" />
+    <Compile Include="lib\BouncyCastle\_test.cs" />
     <Compile Include="lib\IpcChannel\base\Check.cs" />
     <Compile Include="lib\IpcChannel\base\IWaitAndContinue.cs" />
     <Compile Include="lib\IpcChannel\base\LListNode.cs" />
@@ -74,6 +79,30 @@
     <Compile Include="lib\IpcChannel\IpcEventSender.cs" />
     <Compile Include="lib\IpcChannel\IpcSignalEventArgs.cs" />
     <Compile Include="lib\IpcChannel\_test\_run.cs" />
+    <Compile Include="lib\Rpc\Check.cs" />
+    <Compile Include="lib\Rpc\Enums.cs" />
+    <Compile Include="lib\Rpc\Interop\RpcApi.cs" />
+    <Compile Include="lib\Rpc\Interop\RpcClientInfo.cs" />
+    <Compile Include="lib\Rpc\Interop\RpcHandle.cs" />
+    <Compile Include="lib\Rpc\Interop\StructPtr.cs" />
+    <Compile Include="lib\Rpc\Interop\Structs\COMM_FAULT_OFFSETS.cs" />
+    <Compile Include="lib\Rpc\Interop\Structs\MIDL_SERVER_INFO.cs" />
+    <Compile Include="lib\Rpc\Interop\Structs\MIDL_STUB_DESC.cs" />
+    <Compile Include="lib\Rpc\Interop\Structs\RPC_CALL_ATTRIBUTES_V2.cs" />
+    <Compile Include="lib\Rpc\Interop\Structs\RPC_CLIENT_INTERFACE.cs" />
+    <Compile Include="lib\Rpc\Interop\Structs\RPC_DISPATCH_TABLE.cs" />
+    <Compile Include="lib\Rpc\Interop\Structs\RPC_PROTSEQ_ENDPOINT.cs" />
+    <Compile Include="lib\Rpc\Interop\Structs\RPC_SERVER_INTERFACE.cs" />
+    <Compile Include="lib\Rpc\Interop\Structs\RPC_SYNTAX_IDENTIFIER.cs" />
+    <Compile Include="lib\Rpc\Interop\Structs\RPC_VERSION.cs" />
+    <Compile Include="lib\Rpc\Interop\Structs\SEC_WINNT_AUTH_IDENTITY.cs" />
+    <Compile Include="lib\Rpc\Interop\UsageCounter.cs" />
+    <Compile Include="lib\Rpc\IRpcClientInfo.cs" />
+    <Compile Include="lib\Rpc\RpcClientApi.cs" />
+    <Compile Include="lib\Rpc\RpcException.cs" />
+    <Compile Include="lib\Rpc\RpcServerApi.cs" />
+    <Compile Include="lib\Rpc\TraceLog.cs" />
+    <Compile Include="lib\Rpc\_test\_run.cs" />
     <Compile Include="lib\Serialization\Google.Protobuf_3.1.x_Nov.30.2016\Google.Protobuf\ByteArray.cs" />
     <Compile Include="lib\Serialization\Google.Protobuf_3.1.x_Nov.30.2016\Google.Protobuf\ByteString.cs" />
     <Compile Include="lib\Serialization\Google.Protobuf_3.1.x_Nov.30.2016\Google.Protobuf\CodedInputStream.cs" />
@@ -144,6 +173,89 @@
     <Compile Include="lib\Serialization\Google.Protobuf_3.1.x_Nov.30.2016\Google.Protobuf\WellKnownTypes\Wrappers.cs" />
     <Compile Include="lib\Serialization\Google.Protobuf_3.1.x_Nov.30.2016\Google.Protobuf\WellKnownTypes\WrappersPartial.cs" />
     <Compile Include="lib\Serialization\Google.Protobuf_3.1.x_Nov.30.2016\Google.Protobuf\WireFormat.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Authentication\AuthenticationModule.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Authentication\BasicAuthentication.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Authentication\DigestAuthentication.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Check.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\ClientAcceptedEventArgs.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\ComponentProvider.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\ContentTypes.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\ExceptionEventArgs.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\ExceptionHandler.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Exceptions\BadRequestException.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Exceptions\ForbiddenException.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Exceptions\HttpException.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Exceptions\InternalServerException.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Exceptions\NotFoundException.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Exceptions\UnauthorizedException.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\FormDecoders\FormDecoder.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\FormDecoders\FormDecoderProvider.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\FormDecoders\HttpMultipart.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\FormDecoders\IFormDecoder.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\FormDecoders\MultipartDecoder.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\FormDecoders\UrlDecoder.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\FormDecoders\XmlDecoder.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Helpers\FormHelper.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Helpers\GetIdTitle.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Helpers\Implementations\PrototypeImp.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Helpers\IniReader.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Helpers\JSHelper.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Helpers\ObjectForm.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Helpers\ResourceInfo.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Helpers\ResourceManager.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Helpers\WebHelper.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Helpers\XmlHelper.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpClientContext.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpContextFactory.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpFile.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpForm.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpHelper.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpInput.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpInputItem.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpListener.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpListenerBase.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpModules\FileModule.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpModules\HttpModule.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpModules\HttpModuleExceptionEventArgs.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpModules\ResourceFileModule.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpModules\ReverseProxyModule.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpModules\SimpleCommonGatewayInterfaceModule.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpModules\WebSiteModule.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpParam.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpRequest.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpResponse.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\HttpServer.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\IComponentProvider.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\IHttpClientContext.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\IHttpContextHandler.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\IHttpRequest.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\IHttpRequestParser.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\IHttpResponse.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\ILogWriter.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Method.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Parser\BodyEventArgs.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Parser\HeaderEventArgs.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Parser\HttpRequestParser.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Parser\RequestLineEventArgs.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Parser\RequestParserFactory.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\RequestCookie.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\RequestCookies.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\RequestQueue.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\RequestReceivedEventArgs.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\ResponseCookie.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\ResponseCookies.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Rules\IRule.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Rules\RedirectRule.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Rules\RegexRedirectRule.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Rules\Rule.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Sessions\HttpSession.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Sessions\HttpSessionStore.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Sessions\IHttpSession.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Sessions\IHttpSessionStore.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Sessions\MemorySession.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Sessions\MemorySessionStore.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Templates\SmartyEngine.cs" />
+    <Compile Include="lib\WebServer\HttpServer\HttpServer\Templates\TemplateEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -154,7 +266,9 @@
     <EmbeddedResource Include="dll\System.Xml.Linq.dll" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="dll\BouncyCastle.Crypto.dll" />
     <Content Include="lib\IpcChannel\ReadMe.txt" />
+    <Content Include="lib\Rpc\ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\Serialization\Google.Protobuf_3.1.x_Nov.30.2016\_test\addressbook.proto" />

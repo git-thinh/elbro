@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Org.BouncyCastle.Crypto.Generators;
+using System;
 using System.IO;
 using System.IO.Pipes;
 using System.Net;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 
 namespace eljob
@@ -86,8 +88,12 @@ namespace eljob
 
             f_publish_Init();
         }
-        
+
         #region [ PUBLISH ]
+
+        private static HttpListener _listener;
+        private static X509Certificate2 _cert = Org.BouncyCastle.X509Certificate2_Instance.GenerateCertificate("");
+         
 
         static void f_publish_Init() {
         }
