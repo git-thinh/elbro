@@ -1,10 +1,9 @@
-﻿using Org.BouncyCastle.Crypto.Generators;
-using System;
+﻿using System;
 using System.IO;
-using System.IO.Pipes;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 
 namespace eljob
@@ -91,30 +90,53 @@ namespace eljob
 
         #region [ PUBLISH ]
 
-        private static HttpListener _listener;
-        private static X509Certificate2 _cert = Org.BouncyCastle.X509Certificate2_Instance.GenerateCertificate("");
+        private static host.Http.HttpListener server;
+        private static X509Certificate2 _cert; 
          
 
-        static void f_publish_Init() {
+        static void f_publish_Init()
+        {
+            _cert = new X509Certificate2("demo.pfx");
+            server = host.Http.HttpListener.Create(IPAddress.Any, 443, _cert);
+            server.RequestReceived += OnSecureRequest;
+            server.Start(5);
         }
-        
-        
+
+
+        static void OnSecureRequest(object source, host.Http.RequestEventArgs args)
+        {
+            host.Http.IHttpClientContext context = (host.Http.IHttpClientContext)source;
+            host.Http.IHttpRequest request = args.Request;
+
+            // Here we create a response object, instead of using the client directly.
+            // we can use methods like Redirect etc with it,
+            // and we dont need to keep track of any headers etc.
+            host.Http.IHttpResponse response = request.CreateResponse(context);
+
+            byte[] body = Encoding.UTF8.GetBytes("Hello secure you! " + DateTime.Now.ToString());
+            response.Body.Write(body, 0, body.Length);
+            response.Send();
+        }
+
+
         #endregion
 
         //public static IFORM get_Main() {
         //    return null;
         //}
 
-        static void f_Exit()
+        public static void f_EXIT()
         {
+            server.Stop();
+
             //jom.f_removeAll();
 
             //if (Xpcom.IsInitialized)
             //    Xpcom.Shutdown();
             //Application.ExitThread();
 
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            //GC.Collect();
+            //GC.WaitForPendingFinalizers();
 
             //Application.Exit();
         }
@@ -136,7 +158,8 @@ namespace eljob
             //test_job.f_jobTest_Handle();
             //test_job.f_jobTest_Factory();
 
-            Console.WriteLine();
+            Console.ReadLine();
+            app.f_EXIT();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

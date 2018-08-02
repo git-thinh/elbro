@@ -33,9 +33,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BouncyCastle.Crypto">
-      <HintPath>dll\BouncyCastle.Crypto.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>dll\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
@@ -63,7 +60,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="app.cs" />
-    <Compile Include="lib\BouncyCastle\_test.cs" />
     <Compile Include="lib\IpcChannel\base\Check.cs" />
     <Compile Include="lib\IpcChannel\base\IWaitAndContinue.cs" />
     <Compile Include="lib\IpcChannel\base\LListNode.cs" />
@@ -266,7 +262,6 @@
     <EmbeddedResource Include="dll\System.Xml.Linq.dll" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="dll\BouncyCastle.Crypto.dll" />
     <Content Include="lib\IpcChannel\ReadMe.txt" />
     <Content Include="lib\Rpc\ReadMe.txt" />
   </ItemGroup>
