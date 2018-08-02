@@ -91,12 +91,48 @@ namespace eljob
         #region [ PUBLISH ]
 
         private static host.Http.HttpListener server;
-        private static X509Certificate2 _cert; 
-         
+        private static X509Certificate2 _cert;
+
 
         static void f_publish_Init()
         {
-            _cert = new X509Certificate2("demo.pfx");
+            //using (var context = new Pluralsight.Crypto.CryptContext())
+            //{
+            //    context.Open();
+
+            //    var properties = new Pluralsight.Crypto.SelfSignedCertProperties()
+            //    {
+            //        IsPrivateKeyExportable = true,
+            //        KeyBitLength = 2048,
+            //        Name = new X500DistinguishedName("cn=localhost"),
+            //        ValidFrom = DateTime.Today.AddDays(-1),
+            //        ValidTo = DateTime.Today.AddYears(1)
+            //    };
+
+            //    _cert = context.CreateSelfSignedCertificate(properties);
+            //}
+            //_cert = new X509Certificate2("demo.pfx");
+
+            byte[] buffer = null;
+            string resourceName = @"dll\demo.pfx";
+            var assembly = Assembly.GetExecutingAssembly();
+            resourceName = typeof(app).Namespace + "." + resourceName.Replace(" ", "_").Replace("\\", ".").Replace("/", ".");
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName)) 
+            {
+                if (stream != null) 
+                {
+                    buffer = new byte[stream.Length];
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        int read;
+                        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                            ms.Write(buffer, 0, read);
+                        buffer = ms.ToArray();
+                    } 
+                }
+            }
+            _cert = new X509Certificate2(buffer);
+
             server = host.Http.HttpListener.Create(IPAddress.Any, 443, _cert);
             server.RequestReceived += OnSecureRequest;
             server.Start(5);

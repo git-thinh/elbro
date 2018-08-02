@@ -60,6 +60,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="app.cs" />
+    <Compile Include="lib\Crypto\CertProperties.cs" />
+    <Compile Include="lib\Crypto\CryptContext.cs" />
+    <Compile Include="lib\Crypto\CryptKey.cs" />
+    <Compile Include="lib\Crypto\DisposableObject.cs" />
+    <Compile Include="lib\Crypto\KeyExchangeKey.cs" />
+    <Compile Include="lib\Crypto\KeyType.cs" />
+    <Compile Include="lib\Crypto\SignatureKey.cs" />
+    <Compile Include="lib\Crypto\Win32ErrorHelper.cs" />
+    <Compile Include="lib\Crypto\Win32Native.cs" />
     <Compile Include="lib\IpcChannel\base\Check.cs" />
     <Compile Include="lib\IpcChannel\base\IWaitAndContinue.cs" />
     <Compile Include="lib\IpcChannel\base\LListNode.cs" />
@@ -266,6 +275,7 @@
     <Content Include="lib\Rpc\ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="dll\demo.pfx" />
     <None Include="lib\Serialization\Google.Protobuf_3.1.x_Nov.30.2016\_test\addressbook.proto" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
