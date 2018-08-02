@@ -7,22 +7,8 @@ using System.Threading;
 
 namespace eljob
 {
-    [Serializable]
-    class MyMessage
-    {
-        public int Id;
-        public string Text;
-
-        public override string ToString()
-        {
-            return string.Format("\"{0}\" (message ID = {1})", Text, Id);
-        }
-    }
-
     public class app
     {
-        static NamedPipeServer<MyMessage> server;
-
         static app()
         {
             AppDomain.CurrentDomain.AssemblyResolve += (se, ev) =>
@@ -104,38 +90,8 @@ namespace eljob
         #region [ PUBLISH ]
 
         static void f_publish_Init() {
-            server = new NamedPipeServer<MyMessage>("EL_JOB");
-            server.ClientConnected += f_publish_OnClientConnected;
-            server.ClientDisconnected += f_publish_OnClientDisconnected;
-            server.ClientMessage += f_publish_OnClientMessage;
-            server.Error += f_publish_OnError;
-            server.Start();
         }
-
-        static void f_publish_OnClientConnected(NamedPipeConnection<MyMessage, MyMessage> connection)
-        {
-            Console.WriteLine("Client {0} is now connected!", connection.Id);
-            connection.PushMessage(new MyMessage
-            {
-                Id = new Random().Next(),
-                Text = "Welcome!"
-            });
-        }
-
-        static void f_publish_OnClientDisconnected(NamedPipeConnection<MyMessage, MyMessage> connection)
-        {
-            Console.WriteLine("Client {0} disconnected", connection.Id);
-        }
-
-        static void f_publish_OnClientMessage(NamedPipeConnection<MyMessage, MyMessage> connection, MyMessage message)
-        {
-            Console.WriteLine("Client {0} says: {1}", connection.Id, message);
-        }
-
-        static void f_publish_OnError(Exception exception)
-        {
-            Console.Error.WriteLine("ERROR: {0}", exception);
-        }
+        
         
         #endregion
 
