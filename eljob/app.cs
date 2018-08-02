@@ -90,7 +90,8 @@ namespace eljob
 
         #region [ PUBLISH ]
 
-        private static host.Http.HttpListener server;
+        //private static host.Http.HttpListener server;
+        private static host.Http.HttpServer server;
         private static X509Certificate2 _cert;
 
 
@@ -133,9 +134,25 @@ namespace eljob
             }
             _cert = new X509Certificate2(buffer);
 
-            server = host.Http.HttpListener.Create(IPAddress.Any, 443, _cert);
-            server.RequestReceived += OnSecureRequest;
-            server.Start(5);
+            //server = host.Http.HttpListener.Create(IPAddress.Any, 443, _cert);
+            //server = host.Http.HttpListener.Create(IPAddress.Any, 443, _cert);
+            server = new host.Http.HttpServer();
+
+            // simple example of an regexp redirect rule. Go to http://localhost:8081/profile/arne to get redirected.
+            server.Add(new host.Http.Rules.RegexRedirectRule("/profile/(?<first>[a-zA-Z0-9]+)", "/user/view/${first}"));
+
+            //// add file module, to be able to handle files
+            //host.Http.HttpModules.ResourceFileModule fileModule = new host.Http.HttpModules.ResourceFileModule();
+            //fileModule.AddResources("/", Assembly.GetExecutingAssembly(), "Tutorial.Tutorial5.public");
+            //server.Add(fileModule);
+
+            server.Add(new host.Http.HttpModules.FileModule("/", AppDomain.CurrentDomain.BaseDirectory));
+
+            //server.RequestReceived += OnSecureRequest;
+            //server.Start(5);
+
+            // and start the server.
+            server.Start(IPAddress.Any, 443, _cert, System.Security.Authentication.SslProtocols.Default, null, false);
         }
 
 

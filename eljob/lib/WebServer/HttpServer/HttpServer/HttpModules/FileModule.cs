@@ -37,6 +37,8 @@ namespace host.Http.HttpModules
 			if (!_basePath.EndsWith(PathSeparator))
 				_basePath += PathSeparator;
             ForbiddenChars = DefaultForbiddenChars;
+
+            if (_mimeTypes.Count == 0) AddDefaultMimeTypes();
         }
 
         /// <summary>
