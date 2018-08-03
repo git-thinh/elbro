@@ -50,7 +50,10 @@ namespace eljob
         {
             ThreadPool.SetMaxThreads(25, 25);
 
-            System.Net.ServicePointManager.DefaultConnectionLimit = 1000;
+            //System.Net.ServicePointManager.DefaultConnectionLimit = 1000;
+            ServicePointManager.DefaultConnectionLimit = 500;
+            ServicePointManager.Expect100Continue = false;
+            ServicePointManager.MaxServicePoints = 500;
             try
             {
                 // active SSL 1.1, 1.2, 1.3 for WebClient request HTTPS
@@ -152,7 +155,7 @@ namespace eljob
             //server.Start(5);
 
             // and start the server.
-            server.Start(IPAddress.Any, 443, _cert, System.Security.Authentication.SslProtocols.Default, null, false);
+            server.Start(IPAddress.Any, 8443, _cert, System.Security.Authentication.SslProtocols.Default, null, false);
         }
 
 
