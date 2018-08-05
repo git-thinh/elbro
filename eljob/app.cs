@@ -10,6 +10,8 @@ namespace eljob
 {
     public class app
     {
+        const int PORT_HTTP = 443;
+
         static app()
         {
             AppDomain.CurrentDomain.AssemblyResolve += (se, ev) =>
@@ -155,7 +157,7 @@ namespace eljob
             //server.Start(5);
 
             // and start the server.
-            server.Start(IPAddress.Any, 8443, _cert, System.Security.Authentication.SslProtocols.Default, null, false);
+            server.Start(IPAddress.Any, PORT_HTTP, _cert, System.Security.Authentication.SslProtocols.Default, null, false);
         }
 
 

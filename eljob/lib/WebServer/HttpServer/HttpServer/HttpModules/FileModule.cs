@@ -4,6 +4,8 @@ using System.IO;
 using System.Net;
 using host.Http.Exceptions;
 using host.Http.Sessions;
+using System.Text;
+using System.Linq;
 
 namespace host.Http.HttpModules
 {
@@ -14,11 +16,11 @@ namespace host.Http.HttpModules
     {
         private readonly string _baseUri;
         private readonly string _basePath;
-    	private readonly bool _useLastModifiedHeader;
+        private readonly bool _useLastModifiedHeader;
         private readonly IDictionary<string, string> _mimeTypes = new Dictionary<string, string>();
-        private static readonly string[] DefaultForbiddenChars = new string[]{ "\\", "..", ":" };
+        private static readonly string[] DefaultForbiddenChars = new string[] { "\\", "..", ":" };
         private string[] _forbiddenChars;
-    	private static readonly string PathSeparator = Path.DirectorySeparatorChar.ToString();
+        private static readonly string PathSeparator = Path.DirectorySeparatorChar.ToString();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileModule"/> class.
@@ -31,11 +33,11 @@ namespace host.Http.HttpModules
             Check.Require(baseUri, "baseUri");
             Check.Require(basePath, "basePath");
 
-        	_useLastModifiedHeader = useLastModifiedHeader;
+            _useLastModifiedHeader = useLastModifiedHeader;
             _baseUri = baseUri;
             _basePath = basePath;
-			if (!_basePath.EndsWith(PathSeparator))
-				_basePath += PathSeparator;
+            if (!_basePath.EndsWith(PathSeparator))
+                _basePath += PathSeparator;
             ForbiddenChars = DefaultForbiddenChars;
 
             if (_mimeTypes.Count == 0) AddDefaultMimeTypes();
@@ -48,7 +50,7 @@ namespace host.Http.HttpModules
         /// <param name="basePath">Path on hard drive where we should start looking for files</param>
         public FileModule(string baseUri, string basePath)
             : this(baseUri, basePath, false)
-		{}
+        { }
 
         /// <summary>
         /// List with all mime-type that are allowed. 
@@ -79,6 +81,7 @@ namespace host.Http.HttpModules
         {
             MimeTypes.Add("default", "application/octet-stream");
             MimeTypes.Add("txt", "text/plain");
+            MimeTypes.Add("json", "application/json");
             MimeTypes.Add("html", "text/html");
             MimeTypes.Add("htm", "text/html");
             MimeTypes.Add("jpg", "image/jpg");
@@ -86,8 +89,14 @@ namespace host.Http.HttpModules
             MimeTypes.Add("bmp", "image/bmp");
             MimeTypes.Add("gif", "image/gif");
             MimeTypes.Add("png", "image/png");
+            
+            MimeTypes.Add("woff2", "font/woff2");
+            MimeTypes.Add("woff", "application/font-woff");
+            MimeTypes.Add("ttf", "font/truetype");
+            MimeTypes.Add("eot", "application/vnd.ms-fontobject");
+            MimeTypes.Add("otf", "font/opentype");
 
-			MimeTypes.Add("ico", "image/vnd.microsoft.icon");
+            MimeTypes.Add("ico", "image/vnd.microsoft.icon");
             MimeTypes.Add("css", "text/css");
             MimeTypes.Add("gzip", "application/x-gzip");
             MimeTypes.Add("zip", "multipart/x-zip");
@@ -130,15 +139,15 @@ namespace host.Http.HttpModules
                 (File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0; // Not a symlink
         }
 
-    	/// <exception cref="BadRequestException">Illegal path</exception>
-    	private string GetPath(Uri uri)
+        /// <exception cref="BadRequestException">Illegal path</exception>
+        private string GetPath(Uri uri)
         {
             if (Contains(uri.AbsolutePath, _forbiddenChars))
                 throw new BadRequestException("Illegal path");
 
             string path = Uri.UnescapeDataString(uri.LocalPath);
             path = _basePath + path.Substring(_baseUri.Length);
-			return path.Replace('/', Path.DirectorySeparatorChar);
+            return path.Replace('/', Path.DirectorySeparatorChar);
         }
 
         /// <summary>
@@ -168,11 +177,37 @@ namespace host.Http.HttpModules
         /// <exception cref="ForbiddenException">File type is forbidden.</exception>
         public override bool Process(IHttpRequest request, IHttpResponse response, IHttpSession session)
         {
-            if (!CanHandle(request.Uri))
-                return false;
-
             try
             {
+                if (request.Uri.LocalPath.EndsWith("/"))
+                {
+                    StringBuilder biHome = new StringBuilder();
+                    string pathLocal = GetPath(request.Uri);
+                    string[] folders = Directory.GetDirectories(pathLocal);
+                    string[] files = Directory.GetFiles(pathLocal).Where(x =>
+                        x.ToLower().EndsWith(".txt") ||
+                        x.ToLower().EndsWith(".json") ||
+                        x.ToLower().EndsWith(".html") ||
+                        x.ToLower().EndsWith(".htm")
+                    ).ToArray();
+
+                    string subPath = pathLocal.Replace(this._basePath, string.Empty).Trim();
+                    if (subPath.Length > 0) subPath = subPath.Replace("\\", "/");
+
+                    foreach (string pi in folders) biHome.Append(string.Format("<a href=/{0}{1}/>{1}</a><br>", subPath, Path.GetFileName(pi)));
+                    biHome.Append("<br>");
+                    foreach (string pi in files) biHome.Append(string.Format("<a href=/{0}{1}>{1}</a><br>", subPath, Path.GetFileName(pi)));
+
+                    byte[] body = Encoding.UTF8.GetBytes(string.Format("<h1>{0}</h1>{1}<br><hr>{2}", request.Uri.LocalPath, biHome.ToString(), DateTime.Now.ToString()));
+                    response.Body.Write(body, 0, body.Length);
+                    response.Send();
+
+                    return true;
+                }
+
+                if (!CanHandle(request.Uri))
+                    return false;
+
                 string path = GetPath(request.Uri);
                 string extension = GetFileExtension(path);
                 if (extension == null)
@@ -183,38 +218,38 @@ namespace host.Http.HttpModules
                 else
                     throw new ForbiddenException("Forbidden file type: " + extension);
 
-				using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-				{	
-					if (!string.IsNullOrEmpty(request.Headers["if-Modified-Since"]))
-					{
-						DateTime since = DateTime.Parse(request.Headers["if-Modified-Since"]).ToUniversalTime();
+                using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    if (!string.IsNullOrEmpty(request.Headers["if-Modified-Since"]))
+                    {
+                        DateTime since = DateTime.Parse(request.Headers["if-Modified-Since"]).ToUniversalTime();
                         DateTime modified = File.GetLastWriteTime(path).ToUniversalTime();
 
                         // Truncate the subsecond portion of the time stamp (if present)
-                        modified = new DateTime(modified.Year, modified.Month, modified.Day, modified.Hour, 
+                        modified = new DateTime(modified.Year, modified.Month, modified.Day, modified.Hour,
                             modified.Minute, modified.Second, DateTimeKind.Utc);
 
                         if (modified > since)
                             response.Status = HttpStatusCode.NotModified;
-					}
+                    }
 
-					// Fixed by Albert, Team MediaPortal: ToUniversalTime
+                    // Fixed by Albert, Team MediaPortal: ToUniversalTime
                     if (_useLastModifiedHeader)
-					    response.AddHeader("Last-modified", File.GetLastWriteTime(path).ToUniversalTime().ToString("r"));
-					response.ContentLength = stream.Length;
-					response.SendHeaders();
+                        response.AddHeader("Last-modified", File.GetLastWriteTime(path).ToUniversalTime().ToString("r"));
+                    response.ContentLength = stream.Length;
+                    response.SendHeaders();
 
-					if (request.Method != "Headers" && response.Status != HttpStatusCode.NotModified)
-					{
-						byte[] buffer = new byte[8192];
-						int bytesRead = stream.Read(buffer, 0, 8192);
-						while (bytesRead > 0)
-						{
-							response.SendBody(buffer, 0, bytesRead);
-							bytesRead = stream.Read(buffer, 0, 8192);
-						}
-					}
-				}
+                    if (request.Method != "Headers" && response.Status != HttpStatusCode.NotModified)
+                    {
+                        byte[] buffer = new byte[8192];
+                        int bytesRead = stream.Read(buffer, 0, 8192);
+                        while (bytesRead > 0)
+                        {
+                            response.SendBody(buffer, 0, bytesRead);
+                            bytesRead = stream.Read(buffer, 0, 8192);
+                        }
+                    }
+                }
             }
             catch (FileNotFoundException err)
             {

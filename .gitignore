@@ -118,3 +118,4 @@ debug/eljob.exe
 debug/eljob.vshost.exe.manifest
 debug/BouncyCastle.pdb
 eljob/obj/Debug/eljob.csproj.CoreCompileInputs.cache
+.vs/eljob/v14/.suo
