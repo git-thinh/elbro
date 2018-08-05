@@ -81,6 +81,7 @@ namespace host.Http.HttpModules
         {
             MimeTypes.Add("default", "application/octet-stream");
             MimeTypes.Add("txt", "text/plain");
+            MimeTypes.Add("md", "text/plain");
             MimeTypes.Add("json", "application/json");
             MimeTypes.Add("html", "text/html");
             MimeTypes.Add("htm", "text/html");
@@ -90,6 +91,7 @@ namespace host.Http.HttpModules
             MimeTypes.Add("gif", "image/gif");
             MimeTypes.Add("png", "image/png");
             
+            MimeTypes.Add("svg", "image/svg+xml");
             MimeTypes.Add("woff2", "font/woff2");
             MimeTypes.Add("woff", "application/font-woff");
             MimeTypes.Add("ttf", "font/truetype");
@@ -186,6 +188,7 @@ namespace host.Http.HttpModules
                     string[] folders = Directory.GetDirectories(pathLocal);
                     string[] files = Directory.GetFiles(pathLocal).Where(x =>
                         x.ToLower().EndsWith(".txt") ||
+                        x.ToLower().EndsWith(".md") ||
                         x.ToLower().EndsWith(".json") ||
                         x.ToLower().EndsWith(".html") ||
                         x.ToLower().EndsWith(".htm")
