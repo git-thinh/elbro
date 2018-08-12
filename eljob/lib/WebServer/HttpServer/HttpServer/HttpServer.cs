@@ -653,8 +653,8 @@ namespace host.Http
 		private void ProcessRequest(IHttpClientContext context, IHttpRequest request)
 		{
 			IHttpResponse response = request.CreateResponse(context);
-			try
-			{
+			//////try
+			//////{
 				foreach (IRule rule in _rules)
 				{
 					if (!rule.Process(request, response))
@@ -692,44 +692,44 @@ namespace host.Http
 					session = _sessionStore.Create();
 
 				HandleRequest(context, request, response, session);
-			}
-			catch (Exception err)
-			{
-				if (_exceptionHandler == null)
-#if DEBUG
-					throw;
-#else
-				{
-					WriteLog(LogPrio.Fatal, err.Message);
-					return;
-				}
-#endif
-				_exceptionHandler(this, err);
+//////			//}
+//////			//catch (Exception err)
+//////			//{
+//////				if (_exceptionHandler == null)
+//////#if DEBUG
+//////					throw;
+//////#else
+//////				{
+//////					WriteLog(LogPrio.Fatal, err.Message);
+//////					return;
+//////				}
+//////#endif
+//////				_exceptionHandler(this, err);
 
-				Exception e = err;
-				while (e != null)
-				{
-					if (e is SocketException)
-						return;
+//////				Exception e = err;
+//////				while (e != null)
+//////				{
+//////					if (e is SocketException)
+//////						return;
 
-					e = e.InnerException;
-				}
+//////					e = e.InnerException;
+//////				}
 
-				try
-				{
-#if DEBUG
-					context.Respond("HTTP/1.0", HttpStatusCode.InternalServerError, "Internal server error", err.ToString(), "text/plain");
-#else
-					context.Respond("HTTP/1.0", HttpStatusCode.InternalServerError, "Internal server error");
-#endif
-				}
-				catch (Exception err2)
-				{
-					LogWriter.Write(this, LogPrio.Fatal, "Failed to respond on message with Internal Server Error: " + err2);
-				}
+//////				try
+//////				{
+//////#if DEBUG
+//////					context.Respond("HTTP/1.0", HttpStatusCode.InternalServerError, "Internal server error", err.ToString(), "text/plain");
+//////#else
+//////					context.Respond("HTTP/1.0", HttpStatusCode.InternalServerError, "Internal server error");
+//////#endif
+//////				}
+//////				catch (Exception err2)
+//////				{
+//////					LogWriter.Write(this, LogPrio.Fatal, "Failed to respond on message with Internal Server Error: " + err2);
+//////				}
 
 
-			}			
+			//////}			
 		}
 
 		/// <summary>

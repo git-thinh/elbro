@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\themes\</OutputPath>
+    <OutputPath>..\..\..\themes\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,33 +33,134 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>dll\Newtonsoft.Json.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="DotNetOpenAuth">
+      <HintPath>dll\DotNetOpenAuth.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="System" />
+    <Reference Include="Google.Apis">
+      <HintPath>dll\Google.Apis.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Google.Apis.Authentication.OAuth2">
+      <HintPath>dll\Google.Apis.Authentication.OAuth2.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Google.Apis.Drive.v2">
+      <HintPath>dll\Google.Apis.Drive.v2.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Google.Apis.Oauth2.v2">
+      <HintPath>dll\Google.Apis.Oauth2.v2.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json.Net35, Version=4.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\Newtonsoft.Json.Net35.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\PresentationCore.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationFramework, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\PresentationFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="ReachFramework, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\ReachFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="System">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Core">
       <HintPath>dll\System.Core.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="System.Data" />
+    <Reference Include="System.Data">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Data.Entity, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.Data.Entity.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.Linq, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.Data.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.Services.Client, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.Data.Services.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.Services.Design, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.Data.Services.Design.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IdentityModel, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.IdentityModel.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IdentityModel.Selectors, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.IdentityModel.Selectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Printing, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.Printing.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.Runtime.Serialization.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.ServiceModel.dll</HintPath>
+    </Reference>
     <Reference Include="System.Speech">
       <HintPath>dll\System.Speech.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Threading">
       <HintPath>dll\System.Threading.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Web">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Abstractions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.Web.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.Web.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Routing, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\System.Web.Routing.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq">
       <HintPath>dll\System.Xml.Linq.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="UIAutomationProvider, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\UIAutomationProvider.dll</HintPath>
+    </Reference>
+    <Reference Include="UIAutomationTypes, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\UIAutomationTypes.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dll\WindowsBase.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="app.cs" />
+    <Compile Include="google.driver\_test.cs" />
     <Compile Include="lib\Crypto\CertProperties.cs" />
     <Compile Include="lib\Crypto\CryptContext.cs" />
     <Compile Include="lib\Crypto\CryptKey.cs" />
@@ -261,6 +362,11 @@
     <Compile Include="lib\WebServer\HttpServer\HttpServer\Sessions\MemorySessionStore.cs" />
     <Compile Include="lib\WebServer\HttpServer\HttpServer\Templates\SmartyEngine.cs" />
     <Compile Include="lib\WebServer\HttpServer\HttpServer\Templates\TemplateEngine.cs" />
+    <Compile Include="google.driver\ClientCredentials.cs" />
+    <Compile Include="google.driver\DriveFile.cs" />
+    <Compile Include="google.driver\DriveState.cs" />
+    <Compile Include="google.driver\StoredCredentials.cs" />
+    <Compile Include="google.driver\Utils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -271,6 +377,32 @@
     <EmbeddedResource Include="dll\System.Xml.Linq.dll" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="dll\DotNetOpenAuth.dll" />
+    <EmbeddedResource Include="dll\Google.Apis.Authentication.OAuth2.dll" />
+    <EmbeddedResource Include="dll\Google.Apis.dll" />
+    <EmbeddedResource Include="dll\Google.Apis.Drive.v2.dll" />
+    <EmbeddedResource Include="dll\Google.Apis.Oauth2.v2.dll" />
+    <Content Include="dll\Newtonsoft.Json.Net35.dll" />
+    <Content Include="dll\PresentationCore.dll" />
+    <Content Include="dll\PresentationFramework.dll" />
+    <Content Include="dll\ReachFramework.dll" />
+    <Content Include="dll\System.Data.Entity.dll" />
+    <Content Include="dll\System.Data.Linq.dll" />
+    <Content Include="dll\System.Data.Services.Client.dll" />
+    <Content Include="dll\System.Data.Services.Design.dll" />
+    <Content Include="dll\System.IdentityModel.dll" />
+    <Content Include="dll\System.IdentityModel.Selectors.dll" />
+    <Content Include="dll\System.Net.dll" />
+    <Content Include="dll\System.Printing.dll" />
+    <Content Include="dll\System.Runtime.Serialization.dll" />
+    <Content Include="dll\System.ServiceModel.dll" />
+    <Content Include="dll\System.ServiceModel.Web.dll" />
+    <Content Include="dll\System.Web.Abstractions.dll" />
+    <Content Include="dll\System.Web.Extensions.dll" />
+    <Content Include="dll\System.Web.Routing.dll" />
+    <Content Include="dll\UIAutomationProvider.dll" />
+    <Content Include="dll\UIAutomationTypes.dll" />
+    <Content Include="dll\WindowsBase.dll" />
     <Content Include="lib\IpcChannel\ReadMe.txt" />
     <Content Include="lib\Rpc\ReadMe.txt" />
   </ItemGroup>
